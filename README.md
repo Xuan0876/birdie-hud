@@ -1,3 +1,5 @@
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="res/logo-dark.svg"><img src="res/logo-light.svg" alt="Birdie" width="260"></picture></p>
+
 # Birdie — a head-up display for MSFS 2024
 
 [中文说明](README.zh-CN.md)

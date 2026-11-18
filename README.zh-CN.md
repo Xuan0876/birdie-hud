@@ -1,3 +1,5 @@
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="res/logo-dark.svg"><img src="res/logo-light.svg" alt="Birdie" width="260"></picture></p>
+
 # Birdie 小鸟 —— MSFS 2024 平视显示器
 
 [English](README.md)
