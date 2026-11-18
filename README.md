@@ -10,7 +10,7 @@ scale and a flare cue — Airbus style, glued to the cockpit view you are flying
 It is an external, transparent, click-through window rendered on the GPU (Direct2D + DirectComposition). Nothing is
 injected into the simulator; data comes from SimConnect. An optional toolbar panel lets you adjust it in flight.
 
-> **Status: 0.9.0-beta.** Flown with the FSLabs A321, Fenix A321, FlyByWire A32NX and the C152 on a 21:9 screen.
+> **Status: 0.9.1-beta.** Flown with the FSLabs A321, Fenix A321, FlyByWire A32NX and the C152 on a 21:9 screen.
 > Other screen shapes and aircraft should work but are less tested — reports welcome.
 
 ## Download

@@ -1,4 +1,4 @@
-# 发布前实机测试（0.9.0-beta）
+# 发布前实机测试（0.9.1-beta）
 
 目的：用发布用的 zip，像新用户一样装一遍、飞一遍。离线能测的都测过了（见最后一节），这里只列必须开模拟器的。
 
@@ -6,7 +6,7 @@
 
 1. 退出正在运行的旧 Birdie（托盘右键 → 退出）。
 2. 模拟新用户：把 `%APPDATA%\Birdie\settings.json` 改名（例如 `settings.old.json`），测完再改回来。
-3. 把 `dist\Birdie-0.9.0-beta.zip` 解压到一个新文件夹（例如 `D:\BirdieTest`）。
+3. 把 `dist\Birdie-0.9.1-beta.zip` 解压到一个新文件夹（例如 `D:\BirdieTest`）。
 4. MSFS 2024 无边框或窗口化，ChasePlane 驾驶舱视角。
 
 ## A. 安装和第一次运行

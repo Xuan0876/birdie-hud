@@ -11,7 +11,7 @@
   FakeWS.prototype.close = function () {};
   FakeWS.prototype.push = function () {
     var st = { type: 'state', settings: { visible: true, glide_deg: 3, hud_scale: 1, opacity: 1, lead_ms: 0, flare_tol_deg: 0.3, ladder_step_deg: 6, language: '', bird_ra_below_ft: 500, xwind_mode: false },
-      status: { showing: true, why: 'show', aircraft: 'FSLabs A321-200 CFM', lang: location.search.indexOf('en') >= 0 ? 'en' : 'zh', on_ground: true, version: '0.9.0-beta', border: window.__border, ra: null, runway: null } };
+      status: { showing: true, why: 'show', aircraft: 'FSLabs A321-200 CFM', lang: location.search.indexOf('en') >= 0 ? 'en' : 'zh', on_ground: true, version: '0.9.1-beta', border: window.__border, ra: null, runway: null } };
     var self = this; setTimeout(function () { self.onmessage && self.onmessage({ data: JSON.stringify(st) }); }, 0);
   };
   window.WebSocket = FakeWS;
