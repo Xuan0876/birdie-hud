@@ -882,7 +882,7 @@ void App::on_state(SimState s) {
   t_state_ = now_s();
   state_ = s;
   model_.update(s, t_state_);
-  ++n_msgs_;
+  n_msgs_ += std::max(1, sim_.take_samples());  // data/s above Hz = the paint could not keep up (stale samples skipped)
   ++n_frames_;
   redraw();
 }

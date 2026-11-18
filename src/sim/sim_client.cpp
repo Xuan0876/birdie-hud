@@ -118,11 +118,17 @@ bool SimClient::dispatch(const Events& ev) {
   if (!h_) return false;
   SIMCONNECT_RECV* msg = nullptr;
   DWORD size = 0;
+  latest_.reset();
   for (int guard = 0; guard < 1000; ++guard) {
     HRESULT hr = SimConnect_GetNextDispatch(h_, &msg, &size);
     if (FAILED(hr) || !msg) break;  // E_FAIL = queue empty
     handle(msg, size, ev);
     if (!h_) return false;
+  }
+  if (latest_ && ev.state) {
+    const SimState s = *latest_;
+    latest_.reset();
+    ev.state(s);
   }
   return h_ != nullptr;
 }
@@ -151,7 +157,8 @@ void SimClient::handle(const void* p, DWORD size, const Events& ev) {
         s.*kVars[i].field = v;
       }
       s.ra_raw_ft = s.radio_alt_ft;
-      if (ev.state) ev.state(s);
+      latest_ = s;  // handed over at the end of dispatch()
+      ++samples_;
       return;
     }
     case SIMCONNECT_RECV_ID_EVENT: {

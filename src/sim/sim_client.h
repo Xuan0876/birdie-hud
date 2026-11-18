@@ -8,6 +8,7 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,7 +38,15 @@ class SimClient {
   void close();
   bool connected() const { return h_ != nullptr; }
   // Process every waiting message. Returns false if the connection broke (it is closed then).
+  // The per-frame state comes once per call, newest sample only: a slow paint (the GPU busy with the sim) must not
+  // let the queue grow, or the HUD falls seconds behind the sim and the backlog only drains when painting speeds up.
   bool dispatch(const Events& ev);
+  // State samples received since the last call (including the ones dispatch() skipped as stale).
+  int take_samples() {
+    const int n = samples_;
+    samples_ = 0;
+    return n;
+  }
 
   // ---- facilities: airports in the reality bubble, runways fetched once per airport
   void request_airports();
@@ -52,6 +61,8 @@ class SimClient {
  private:
   void handle(const void* msg, DWORD size, const Events& ev);
   HANDLE h_ = nullptr;
+  std::optional<SimState> latest_;  // newest state of the current dispatch() round
+  int samples_ = 0;
   struct Airport {
     double lat, lon, alt;
   };
