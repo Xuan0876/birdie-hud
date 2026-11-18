@@ -39,3 +39,6 @@ docs/design/panel-fonts/panel/cand/
 
 # release zips (scripts/package.py)
 dist/
+
+# temporary print copies (scripts/make_manual.py)
+docs/manual/.print.*

@@ -22,7 +22,8 @@ injected into the simulator; data comes from SimConnect. An optional toolbar pan
 ## Download
 
 Get the zip from [Releases](https://github.com/Xuan0876/birdie-hud/releases), extract it to a folder of its own and
-run `Birdie.exe`. The `README.txt` inside covers install, use, upgrade and uninstall.
+run `Birdie.exe`. The `README.txt` inside covers install, use, upgrade and uninstall; the manual
+(`Birdie-Manual-en.pdf`, `Birdie-Manual-zh-CN.pdf`) explains every symbol, setting and hotkey.
 
 ## Requirements
 
@@ -68,8 +69,11 @@ without the simulator.
   needs `pip install fonttools`) and rebuild — the package is built into `Birdie.exe` (`src/app/ingame.h`).
   `Birdie.exe --export-panel <folder>` / `--remove-panel <folder>` install it from the command line.
   `tools/panel_preview` serves the page in a browser with a fake Birdie behind it.
-- **Release zip**: `python scripts\package.py` → `dist\Birdie-<version>.zip` (`Birdie.exe`, `SimConnect.dll`,
-  [packaging/README.txt](packaging/README.txt), license files). The same zip goes to GitHub Releases and flightsim.to.
+- **Manual**: [docs/manual](docs/manual) (HTML + CSS, Chinese and English). `python scripts\make_manual.py` redraws
+  the pictures with `birdie_shot` and the panel preview, then prints both PDFs with Edge into `build\manual`;
+  `--pdf` prints only.
+- **Release zip**: `python scripts\make_manual.py --pdf`, then `python scripts\package.py` → `dist\Birdie-<version>.zip`
+  (`Birdie.exe`, `SimConnect.dll`, [packaging/README.txt](packaging/README.txt), the two manual PDFs, license files). The same zip goes to GitHub Releases and flightsim.to.
 
 ## Repository map
 

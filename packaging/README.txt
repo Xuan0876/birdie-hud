@@ -21,6 +21,7 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
      Birdie 是个人开源项目，没有买代码签名证书。
 
 使用
+  - 详细说明（每个符号、设置、快捷键）：同一文件夹里的 Birdie-Manual-zh-CN.pdf。
   - 托盘里的小鸟：单击打开设置，右键是菜单。
   - 显示 / 隐藏 HUD：Ctrl+Alt+Insert（设置 → 细调 → 快捷键 里可以改）。
   - 进驾驶舱视角；起飞滑跑超过 40 kt 时 HUD 自动出现（设置 → 细调 → 自动显示 / 隐藏）。
@@ -74,6 +75,7 @@ Install
      Birdie is a personal open-source project without a code-signing certificate.
 
 Use
+  - The full manual (every symbol, setting and hotkey): Birdie-Manual-en.pdf in this folder.
   - The bird in the tray: click for the settings, right-click for the menu.
   - Show / hide the HUD: Ctrl+Alt+Insert (change it under Settings > Fine tuning > Hotkeys).
   - Use the cockpit view; the HUD comes up by itself once the take-off roll passes 40 kt

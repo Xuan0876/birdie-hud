@@ -1,0 +1,71 @@
+/* Birdie manual, printed to PDF by scripts/make_manual.py (headless Edge). A4, light page, the panel's tool look:
+   neutral greys, one accent, square corners. */
+@page {
+  size: A4;
+  margin: 18mm 17mm 20mm 17mm;
+  @bottom-left { content: "Birdie"; font: 8pt "Bahnschrift", "Segoe UI", sans-serif; color: #8e8e93; }
+  @bottom-right { content: counter(page); font: 8pt "Bahnschrift", "Segoe UI", sans-serif; color: #8e8e93; }
+}
+@page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+
+:root {
+  --ink: #1a1a1a; --ink2: #55555a; --ink3: #8e8e93; --line: #d9d9d7; --field: #f1f1f0; --acc: #16804a;
+}
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #ffffff;
+  font: 10pt/1.62 "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+}
+html[lang="zh-CN"] body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif; line-height: 1.75; }
+
+h1, h2, h3, .num, th, .k { font-family: "Bahnschrift", "Segoe UI", "Microsoft YaHei UI", sans-serif; }
+html[lang="zh-CN"] h1, html[lang="zh-CN"] h2, html[lang="zh-CN"] h3 { font-family: "Bahnschrift", "Microsoft YaHei UI", sans-serif; }
+h2 {
+  break-before: page; margin: 0 0 5mm; padding-top: 2mm; font-size: 17pt; font-weight: 600; letter-spacing: .02em;
+  border-top: 2.2pt solid var(--ink);
+}
+h2 .n { color: var(--acc); margin-right: .5em; }
+h3 { margin: 6mm 0 2mm; font-size: 11.5pt; font-weight: 600; break-after: avoid; }
+h3 + p, h3 + ul, h3 + table { margin-top: 0; }
+p { margin: 0 0 2.4mm; }
+ul, ol { margin: 0 0 2.6mm; padding-left: 5mm; }
+li { margin: 0 0 .8mm; }
+b { font-weight: 600; }
+code, kbd { font: 8.8pt "Consolas", monospace; background: var(--field); padding: 0 .3em; }
+kbd { border: .6pt solid var(--line); white-space: nowrap; }
+a { color: var(--acc); text-decoration: none; }
+.small, figcaption { font-size: 8.6pt; color: var(--ink2); }
+.note { border-left: 2pt solid var(--acc); padding: .6mm 0 .6mm 3.5mm; margin: 3mm 0; color: var(--ink2); }
+
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 4mm; font-size: 9.2pt; break-inside: auto; }
+tr { break-inside: avoid; }
+th { text-align: left; font-weight: 600; font-size: 8.6pt; color: var(--ink2); border-bottom: 1pt solid var(--ink); padding: 1.2mm 2mm 1.2mm 0; }
+td { border-bottom: .5pt solid var(--line); padding: 1.3mm 2mm 1.3mm 0; vertical-align: top; }
+td.k { white-space: nowrap; font-weight: 500; }
+td.nb { width: 7mm; font-family: "Bahnschrift", sans-serif; font-weight: 600; color: var(--acc); }
+
+figure { margin: 3mm 0 5mm; break-inside: avoid; }
+figure img { display: block; width: 100%; border: .5pt solid #2a2a2c; }
+figcaption { margin-top: 1.5mm; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.grid2 figure { margin: 0 0 2mm; }
+.side { display: grid; grid-template-columns: 58mm 1fr; gap: 7mm; align-items: start; margin: 2mm 0 5mm; break-inside: avoid; }
+.side img { width: 58mm; border: .5pt solid #2a2a2c; display: block; }
+.side > div > :first-child { margin-top: 0; }
+
+/* cover */
+.cover { page: cover; height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .top { padding-top: 42mm; }
+.cover img.logo { width: 92mm; display: block; }
+.cover .title { margin-top: 10mm; font: 600 22pt "Bahnschrift", "Microsoft YaHei UI", sans-serif; letter-spacing: .03em; }
+.cover .sub { margin-top: 2mm; font-size: 11pt; color: var(--ink2); }
+.cover .rule { width: 26mm; height: 2.2pt; background: var(--acc); margin: 9mm 0 0; }
+.cover .foot { font-size: 8.8pt; color: var(--ink2); line-height: 1.7; }
+.toc { margin-top: 12mm; font-size: 9.6pt; columns: 2; column-gap: 10mm; }
+.toc div { padding: .6mm 0; border-bottom: .5pt solid var(--line); break-inside: avoid; }
+.toc .n { color: var(--acc); font-family: "Bahnschrift", sans-serif; display: inline-block; width: 7mm; }
+
+/* the flare cue drawing */
+.flare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 2mm 0 4mm; text-align: center; }
+.flare svg { width: 100%; height: auto; background: #26272b; display: block; }
+.flare div { font-size: 8.8pt; color: var(--ink2); }

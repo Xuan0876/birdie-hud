@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Birdie manual</title>
+<link rel="stylesheet" href="manual.css">
+<style>@page { @bottom-left { content: "Birdie {{version}} · Manual"; } } @page :first { @bottom-left { content: none; } @bottom-right { content: none; } }</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="top">
+    <img class="logo" src="../../res/logo-light.svg" alt="Birdie">
+    <div class="title">Manual</div>
+    <div class="sub">A head-up display overlay for Microsoft Flight Simulator 2024 · version {{version}}</div>
+    <div class="rule"></div>
+    <div class="toc">
+      <div><span class="n">1</span>What Birdie is</div>
+      <div><span class="n">2</span>Install and first run</div>
+      <div><span class="n">3</span>The HUD</div>
+      <div><span class="n">4</span>Approach and landing</div>
+      <div><span class="n">5</span>When it shows</div>
+      <div><span class="n">6</span>The settings window</div>
+      <div><span class="n">7</span>HUD look</div>
+      <div><span class="n">8</span>Fine tuning</div>
+      <div><span class="n">9</span>Hotkeys</div>
+      <div><span class="n">10</span>Troubleshooting</div>
+      <div><span class="n">11</span>Upgrade, uninstall, license</div>
+    </div>
+  </div>
+  <div class="foot">
+    Birdie by Naux, built together with Claude Opus 5.5 (Anthropic) · GPL-3.0<br>
+    https://github.com/Xuan0876/birdie-hud · {{date}}
+  </div>
+</section>
+
+<h2><span class="n">1</span>What Birdie is</h2>
+<p>Birdie draws a head-up display <b>over</b> Microsoft Flight Simulator 2024 (MSFS 2024). It is a separate, transparent window that mouse clicks pass through, rendered on the GPU. Nothing is injected into the simulator; all data comes from SimConnect.</p>
+<p>Its core symbol is the <b>flight path vector</b>, the "bird": it marks where the aircraft is actually going. A flat screen makes the glide path and the touchdown point hard to judge; the bird supplies that cue. Put the bird on the runway's aiming point and that is where the aircraft is heading.</p>
+<p>Around the bird, Birdie draws two kinds of symbols:</p>
+<ul>
+  <li><b>Conformal symbols</b>, registered to the outside view: horizon, heading scale, pitch scale, glide reference line, runway outline and touchdown-zone marks. They sit on the real horizon and runway and move with the view.</li>
+  <li><b>Airframe-fixed instruments</b>: speed and altitude tapes, vertical speed, bank scale, radio altitude, the flare cue and more.</li>
+</ul>
+<p>It looks like an Airbus HUD by default. Boeing, fighter and minimal presets are one click away, and every element's style, size, position and colour can be set on its own (chapter 7).</p>
+<div class="note">Birdie does one thing: the HUD. This is a beta: the HUD shows "Birdie beta" above the altitude tape; the 1.0.0 release will not.</div>
+
+<h2><span class="n">2</span>Install and first run</h2>
+<h3>Requirements</h3>
+<ul>
+  <li>Windows 10 / 11, 64-bit.</li>
+  <li>MSFS 2024 in a <b>window or borderless full screen</b>. Exclusive full screen and VR hide the HUD: it is a separate window on top of the sim.</li>
+  <li><b>ChasePlane</b> (Parallel 42) in a cockpit view. Birdie reads the camera angles, zoom and eye point from ChasePlane, so no calibration is needed.</li>
+  <li>Any aircraft. No flight director yet.</li>
+</ul>
+<h3>Install</h3>
+<ol>
+  <li>Extract the <b>whole</b> <code>Birdie-{{version}}.zip</code> to a folder of its own, e.g. <code>D:\Birdie</code>. Do not run it from inside the zip: <code>SimConnect.dll</code> must sit next to <code>Birdie.exe</code>.</li>
+  <li>Run <code>Birdie.exe</code>. It is not code-signed, so Windows may say "Windows protected your PC": click "More info", then "Run anyway".</li>
+  <li>The bird appears in the tray. The first time, the settings window opens with a "Before you fly" card at the top.</li>
+</ol>
+<div class="side">
+  <img src="img/panel-welcome.en.png" alt="">
+  <div>
+    <h3>First run</h3>
+    <p>The "Before you fly" card says three things: ChasePlane is needed; the sim must run windowed or borderless; and the hotkey that shows / hides the HUD (<kbd>Ctrl+Alt+Insert</kbd> by default).</p>
+    <p>It also offers the <b>in-sim panel</b>: once installed, the bird sits in the sim's top toolbar and the same settings can be changed without leaving the flight. The panel is optional; Birdie works without it.</p>
+    <p>Birdie finds the Community folder in <code>UserCfg.opt</code> (Microsoft Store and Steam). <b>Restart the sim once</b> after installing, then the bird is in the toolbar.</p>
+    <p>Click the bird in the tray any time to open the settings window.</p>
+  </div>
+</div>
+<h3>In the sim</h3>
+<ol>
+  <li>Start MSFS 2024 and ChasePlane. Leave Birdie running; it connects by itself when the sim starts.</li>
+  <li>Use the cockpit view. On the ground the HUD stands by and shows once the take-off roll passes 40 kt. To see it at once, press <kbd>Ctrl+Alt+Insert</kbd>.</li>
+</ol>
+
+<h2><span class="n">3</span>The HUD</h2>
+<figure>
+  <img src="img/hud.png" alt="">
+  <figcaption>Airbus preset, about 90 ft above the runway on approach. Drawn off-line by Birdie's own renderer over a plain background.</figcaption>
+</figure>
+<table>
+  <tr><th></th><th>Symbol</th><th>What it shows</th></tr>
+  <tr><td class="nb">1</td><td class="k">Bird (flight path vector)</td><td>Where the aircraft is really going. Here it sits on the aiming point.</td></tr>
+  <tr><td class="nb">2</td><td class="k">Path angle</td><td>Right of the bird: the flight path angle (°), negative when descending.</td></tr>
+  <tr><td class="nb">3</td><td class="k">Vertical speed</td><td>Left of the bird, ft/min.</td></tr>
+  <tr><td class="nb">4</td><td class="k">Radio altitude under the bird</td><td>Shown below a set height (500 ft by default).</td></tr>
+  <tr><td class="nb">5</td><td class="k">Glide reference line</td><td>Dashed line on the ground at the set glide angle (3.0° by default).</td></tr>
+  <tr><td class="nb">6</td><td class="k">Runway outline</td><td>The runway you are lined up with, from the sim's own airport data, with its name under it.</td></tr>
+  <tr><td class="nb">7</td><td class="k">Touchdown-zone marks</td><td>The aiming point marks and the end of the touchdown zone, after ICAO or FAA (chapter 4).</td></tr>
+  <tr><td class="nb">8</td><td class="k">Horizon</td><td>The true horizon.</td></tr>
+  <tr><td class="nb">9</td><td class="k">Heading scale</td><td>Magnetic heading on the horizon; the figures are tens of degrees (7 = 070°).</td></tr>
+  <tr><td class="nb">10</td><td class="k">Pitch scale</td><td>Rungs every set step (6° by default): solid above the horizon, dashed below.</td></tr>
+  <tr><td class="nb">11</td><td class="k">Short marks</td><td>A short mark every 2.5°.</td></tr>
+  <tr><td class="nb">12</td><td class="k">Nose mark</td><td>Where the nose points; read pitch and bank against it.</td></tr>
+  <tr><td class="nb">13</td><td class="k">Bank scale</td><td>Bank scale and pointer at the top; the small trapezoid under the pointer is sideslip.</td></tr>
+  <tr><td class="nb">14</td><td class="k">Speed tape</td><td>Indicated airspeed (kt).</td></tr>
+  <tr><td class="nb">15</td><td class="k">Ground speed &amp; wind</td><td>Ground speed; next to it wind direction / speed and an arrow relative to the nose.</td></tr>
+  <tr><td class="nb">16</td><td class="k">Altitude tape</td><td>Barometric altitude; the readout rolls below the hundreds.</td></tr>
+  <tr><td class="nb">17</td><td class="k">Baro &amp; radio altitude</td><td>Under the altitude tape: pressure setting (hPa) and radio altitude.</td></tr>
+  <tr><td class="nb">18</td><td class="k">Vertical speed needle</td><td>Right of the altitude tape; the figure is hundreds of ft/min.</td></tr>
+</table>
+<p class="small">Each symbol can be switched on or off on the Symbols page of the settings window (chapter 6).</p>
+
+<h2><span class="n">4</span>Approach and landing</h2>
+<h3>Put the bird on the aiming point</h3>
+<p>On approach, fly the bird onto the runway's aiming point (between the two large white blocks) and keep it there. The aircraft goes where the bird is: a bird held on the aiming point is a stable glide path. A bird drifting towards the far end means the path is getting shallower; towards you, steeper.</p>
+<p>The <b>glide reference line</b> marks where the set glide angle (3.0° by default) meets the ground. With the bird on the line, you are on that angle. Set it on the home page (Glide), or with <kbd>Ctrl+Alt+PgUp</kbd> / <kbd>PgDn</kbd> in 0.1° steps, to match the airport's glide path.</p>
+<h3>Runway and touchdown zone</h3>
+<p>Birdie picks the runway you are lined up with and draws its outline from the sim's own airport data, so it matches the runway in the picture. The touchdown-zone marks follow the rules for the runway's length:</p>
+<ul>
+  <li><b>ICAO</b> (Annex 14): on runways of 2,400 m or more the aiming point starts 400 m from the threshold; the zone ends at 900 m (at most a third of the runway).</li>
+  <li><b>FAA</b> (AC 150/5340-1): the aiming point starts 1,020 ft from the threshold; the zone ends at 3,000 ft.</li>
+</ul>
+<p>Show "Aiming point + end" (default), "All marks" or "End only". The end is a pair of short solid blocks across the runway edges.</p>
+<div class="note">Known issue: on some runways Birdie's aiming point marks sit about half a mark along the runway from the scenery's white blocks.</div>
+<h3>Flare cue</h3>
+<p>Below 50 ft (adjustable) a cue blinks above the bird. It compares your flight path angle with an ideal flare: start at 40 ft and reach −0.5° at 10 ft (all three adjustable, chapter 8, Approach).</p>
+<div class="flare">
+  <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M73 32H87M80 25V39"/></g></svg>+ on the profile: hold it</div>
+  <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M57 32H71M64 25V39M89 32H103M96 25V39"/></g></svg>++ still steep: keep pulling</div>
+  <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/></g></svg>Nothing: flatter than the profile, stop pulling</div>
+</div>
+<p>"On the profile" means within the flare cue tolerance (±0.3° by default). On sloped runways the slope is taken out first.</p>
+<h3>Crosswind mode</h3>
+<div class="side">
+  <img src="img/crosswind.png" alt="">
+  <div>
+    <p>In a strong crosswind the aircraft crabs, and the bird and runway drift to one side, where a tape may cover them. <kbd>Ctrl+Alt+Shift+Insert</kbd> turns on crosswind mode: the speed and altitude tapes get shorter and move outward and the vertical speed needle goes, clearing the middle of the view. Press again to go back.</p>
+  </div>
+</div>
+
+<h2><span class="n">5</span>When it shows</h2>
+<p><kbd>Ctrl+Alt+Insert</kbd> turns the HUD on or off. While it is on, Birdie also hides it when it should, and brings it back when the reason is gone. The status line at the top of the settings window says what is going on:</p>
+<table>
+  <tr><th>Status</th><th>Why</th><th>What to do</th></tr>
+  <tr><td class="k">HUD on</td><td>Shown; next to it the runway and glide angle.</td><td></td></tr>
+  <tr><td class="k">HUD standing by</td><td>On the ground, below 40 kt.</td><td>It shows on the take-off roll; or change it under Show / hide by itself.</td></tr>
+  <tr><td class="k">HUD hidden</td><td>You are looking aside.</td><td>Look ahead.</td></tr>
+  <tr><td class="k">HUD not shown</td><td>Outside view.</td><td>Go back to the cockpit view.</td></tr>
+  <tr><td class="k">HUD paused</td><td>MSFS is not in front, or the sim is paused / the data stopped.</td><td>Switch back to the sim / unpause.</td></tr>
+  <tr><td class="k">HUD hidden up high</td><td>"Hide when high" is on and the radio altitude is above the set height.</td><td>It returns below that height.</td></tr>
+  <tr><td class="k">ChasePlane needed</td><td>No ChasePlane cockpit view found.</td><td>Run ChasePlane and use its cockpit view.</td></tr>
+  <tr><td class="k">No simulator</td><td>MSFS is not running yet.</td><td>Connects by itself when MSFS starts.</td></tr>
+  <tr><td class="k">HUD off</td><td>You turned it off.</td><td>The hotkey or the switch on the home page.</td></tr>
+</table>
+<h3>Show / hide by itself</h3>
+<p>Under Fine tuning → Show / hide by itself:</p>
+<ul>
+  <li><b>Show once the roll passes</b> (on, 40 kt): on the ground the HUD waits until the take-off roll passes this speed. 20–80 kt.</li>
+  <li><b>Hide when high</b> (off): hides once the radio altitude has stayed above the set height (2,500 ft) for the set time (30 s); comes back as soon as it drops below.</li>
+</ul>
+
+<h2><span class="n">6</span>The settings window</h2>
+<p>Every setting lives in one page; changes apply at once and are saved by themselves. To open it:</p>
+<ul>
+  <li><b>Click the bird in the tray</b>: Birdie's own settings window (WebView2, part of Windows 11; without it the page opens in your browser).</li>
+  <li><b>Right-click the tray bird</b>: Open panel, Show HUD, Quit.</li>
+  <li><b>The bird in the sim's toolbar</b>, with the in-sim panel installed: the same page, inside the sim.</li>
+</ul>
+<div class="side">
+  <img src="img/panel-home.en.png" alt="">
+  <div>
+    <h3>Home</h3>
+    <ul>
+      <li><b>Preview</b>: while the HUD is not on the screen (standing by on the ground, say), a preview at the top follows your settings. With the HUD on screen, look at the real thing.</li>
+      <li><b>Status and switch</b>: what is going on (chapter 5); the switch turns the HUD on or off.</li>
+      <li><b>Bright</b> (25–100%), <b>Size</b> (60–115%), <b>Glide</b> (2.0–5.9°).</li>
+      <li><b>Symbols</b>, <b>HUD look</b>, <b>Fine tuning</b>: their own pages.</li>
+      <li>At the bottom: language (中文 / EN) and Quit Birdie.</li>
+    </ul>
+  </div>
+</div>
+<div class="side">
+  <img src="img/panel-symbols.en.png" alt="">
+  <div>
+    <h3>Symbols</h3>
+    <p>Sixteen symbols in three groups: flight path (bird, path angle, vertical speed, radio altitude, flare cue, glide line), sky &amp; ground (horizon, heading, pitch marks, runway) and instruments (nose mark, speed, altitude, VS needle, bank, ground speed &amp; wind).</p>
+    <p>Tap one to switch it. Hover a symbol and its stroke lights up on the HUD while the rest dims.</p>
+  </div>
+</div>
+
+<h2><span class="n">7</span>HUD look</h2>
+<h3>Preset</h3>
+<p>One click changes the whole set: layout, element styles, colour and lines (the opening / closing stays). The minimal preset also switches a few symbols off; turn them back on under Symbols if you like. Change anything afterwards and the preset reads "Custom".</p>
+<div class="grid2">
+  <figure><img src="img/preset-airbus.png" alt=""><figcaption>Airbus (default)</figcaption></figure>
+  <figure><img src="img/preset-boeing.png" alt=""><figcaption>Boeing: tapes with readout boxes, vertical speed as a number, acceleration caret, compass arc</figcaption></figure>
+  <figure><img src="img/preset-fighter.png" alt=""><figcaption>Fighter: boxed numbers only, W nose mark, heading tape on top, bent dashed rungs, bank scale low, a soft glow</figcaption></figure>
+  <figure><img src="img/preset-minimal.png" alt=""><figcaption>Minimal: bird, horizon, glide line, runway and small numbers; no bank scale, heading, short marks or nose mark</figcaption></figure>
+</div>
+<div class="side">
+  <img src="img/panel-look.en.png" alt="">
+  <div>
+    <h3>Symbols, one by one</h3>
+    <table>
+      <tr><td class="k">Flight path symbol</td><td>Airbus, Boeing, Fighter, Minimal, Ring, Cross</td></tr>
+      <tr><td class="k">Speed / Altitude</td><td>Airbus (tape), Boeing (tape + box), Box only</td></tr>
+      <tr><td class="k">Vertical speed</td><td>Needle, Number</td></tr>
+      <tr><td class="k">Pitch scale</td><td>Airbus, Boeing, Fighter, Minimal</td></tr>
+      <tr><td class="k">Heading</td><td>On the horizon, Compass arc, Top tape</td></tr>
+      <tr><td class="k">Bank</td><td>Airbus, Boeing, Bottom</td></tr>
+    </table>
+    <p>"Acceleration caret (Boeing)" puts a caret by the bird's left wing; above the wing means gaining speed.</p>
+    <h3>Colour &amp; line</h3>
+    <p>Colour (green, soft green, lime, white, cyan, amber, magenta or your own), font (Bahnschrift, Consolas, Segoe UI, Arial Narrow), outline (a dark edge under every stroke, for bright backgrounds) and glow.</p>
+  </div>
+</div>
+<h3>Layout</h3>
+<p>Each instrument group (speed tape, altitude tape, vertical speed, ground speed &amp; wind, bank scale) moves across and up/down and changes length and size. Overall: spread, text size and line width; and the bird, nose mark, rung width and heading position. Offsets are in degrees on the HUD. While you adjust, the HUD stays on, even on the ground; "Reset the layout" puts it back.</p>
+<h3>Opening / closing</h3>
+<p>How the HUD appears and goes: none, fade (default), iris, power-on, scan, assemble; duration 0.5–2×. From the cockpit view, "Play the opening / closing" shows it on the HUD.</p>
+
+<h2><span class="n">8</span>Fine tuning</h2>
+<div class="side">
+  <img src="img/panel-fine.en.png" alt="">
+  <div>
+    <table>
+      <tr><td class="k">Display latency</td><td>The HUD is always a little behind the sim picture. These milliseconds extrapolate the attitude forward to hide it. If the HUD lags in turns, add some (0–150 ms, 0 by default).</td></tr>
+      <tr><td class="k">Flare cue tolerance</td><td>How wide "+" is, ±0.3° by default.</td></tr>
+      <tr><td class="k">Pitch scale every</td><td>Off, 3°, 5°, 6° (default), 10°.</td></tr>
+      <tr><td class="k">Radio altitude under the bird</td><td>The height below which it shows, 500 ft by default.</td></tr>
+      <tr><td class="k">Crosswind mode</td><td>See chapter 4.</td></tr>
+    </table>
+    <p>Then four pages: <b>Show / hide by itself</b> (chapter 5), <b>Approach</b>, <b>HUD border</b> and <b>Hotkeys</b> (chapter 9).</p>
+  </div>
+</div>
+<div class="side">
+  <img src="img/panel-approach.en.png" alt="">
+  <div>
+    <h3>Approach: touchdown zone · flare</h3>
+    <p>Touchdown-zone marks on or off, the rule (ICAO / FAA) and what to show (chapter 4).</p>
+    <p>Flare cue: cue from (50 ft), flare starts at (40 ft), flare ends at (10 ft), path angle at touchdown (−0.5°).</p>
+  </div>
+</div>
+<h3>HUD border</h3>
+<p>The HUD can reach past the cockpit's windscreen. From the cockpit view, choose "Trace it on the screen" and click a polygon along the window frame; <kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels. The HUD is then drawn only inside the border, fading over its last degree, and the border stays on the frame through zoom and head turns. It is kept per aircraft and seat; the other seat mirrors it until traced. If instruments fall outside, the page says how far to shrink the HUD to fit.</p>
+<h3>Radio altitude zero</h3>
+<p>Some aircraft read more than 0 ft standing on the ground. Birdie keeps an offset per aircraft: it sets itself the first time you stand still on the ground, or take the reading yourself, or clear it.</p>
+<h3>More</h3>
+<ul>
+  <li><b>In-sim panel</b>: install / update / remove / open folder; choose the Community folder if it is not found, or "Export elsewhere" for add-on managers. After an upgrade Birdie replaces an installed panel when it starts (restart the sim to see it).</li>
+  <li><b>Look</b>: Tool (default), Light, Dusk. Changes the settings window only, not the HUD.</li>
+  <li><b>Start with Windows</b>, <b>Log</b> (opens the log file), the version.</li>
+</ul>
+
+<h2><span class="n">9</span>Hotkeys</h2>
+<p>Hotkeys work from any window. Under Fine tuning → Hotkeys, click a combo and press the new one; <kbd>Esc</kbd> keeps it, Backspace clears it. A combo another program already uses is marked taken. Combos need Ctrl, Alt or Shift.</p>
+<table>
+  <tr><th>Action</th><th>Default</th></tr>
+  <tr><td class="k">Show / hide the HUD</td><td><kbd>Ctrl+Alt+Insert</kbd></td></tr>
+  <tr><td class="k">Crosswind mode</td><td><kbd>Ctrl+Alt+Shift+Insert</kbd></td></tr>
+  <tr><td class="k">Glide reference +0.1° / −0.1°</td><td><kbd>Ctrl+Alt+PgUp</kbd> / <kbd>Ctrl+Alt+PgDn</kbd></td></tr>
+  <tr><td class="k">Display latency +10 / −10 ms</td><td><kbd>Ctrl+Alt+Home</kbd> / <kbd>Ctrl+Alt+End</kbd></td></tr>
+  <tr><td class="k">Quit Birdie</td><td><kbd>Ctrl+Alt+Shift+End</kbd></td></tr>
+  <tr><td class="k">Brightness ±5%, size ±5%, next preset, play the opening, open the settings window</td><td>none; set your own</td></tr>
+</table>
+<p>A hotkey that changes a setting shows the new value briefly at the top left of the screen.</p>
+
+<h2><span class="n">10</span>Troubleshooting</h2>
+<table>
+  <tr><th>What you see</th><th>Cause and fix</th></tr>
+  <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: the sim is in exclusive full screen (use borderless or windowed), not in the cockpit view, on the ground below 40 kt, or the HUD was turned off by its hotkey.</td></tr>
+  <tr><td class="k">"ChasePlane needed"</td><td>Birdie works with the ChasePlane cockpit view for now. Make sure ChasePlane runs and use its cockpit view.</td></tr>
+  <tr><td class="k">SimConnect.dll not found at start</td><td>The zip was not extracted whole. <code>SimConnect.dll</code> must be in the same folder as <code>Birdie.exe</code>.</td></tr>
+  <tr><td class="k">"Windows protected your PC"</td><td>Birdie is not code-signed. Click "More info", then "Run anyway".</td></tr>
+  <tr><td class="k">Settings open in the browser</td><td>No WebView2 runtime (Windows 10 may lack it). Everything works the same; install the Microsoft Edge WebView2 runtime for Birdie's own window.</td></tr>
+  <tr><td class="k">Runway outline off sideways or along</td><td>16:9 / 16:10 screens and the eye point of some aircraft are still being checked. Please open an issue with a screenshot, the aircraft, your screen size and the log.</td></tr>
+  <tr><td class="k">Radio altitude not 0 on the ground</td><td>Stand still and take the reading (chapter 8).</td></tr>
+  <tr><td class="k">HUD lags in turns</td><td>Add display latency (chapter 8), 10–20 ms at a time.</td></tr>
+  <tr><td class="k">No bird in the toolbar</td><td>Restart the sim after installing the in-sim panel; check its state and folder under Fine tuning → In-sim panel.</td></tr>
+  <tr><td class="k">A hotkey does nothing</td><td>Another program may use it; pick another one on the Hotkeys page.</td></tr>
+</table>
+<h3>Log and reports</h3>
+<p>The log is <code>%APPDATA%\Birdie\birdie.log</code> (Fine tuning → Log opens it); the settings are <code>settings.json</code> in the same folder. Report problems at https://github.com/Xuan0876/birdie-hud/issues: what you did, what you saw, with the log, the aircraft and your screen size; a screenshot helps.</p>
+
+<h2><span class="n">11</span>Upgrade, uninstall, license</h2>
+<h3>Upgrade</h3>
+<p>Quit Birdie (right-click the tray bird → Quit), copy the new files over the old folder and start it again. Your settings stay; an installed in-sim panel updates itself (restart the sim to see it).</p>
+<h3>Uninstall</h3>
+<ol>
+  <li>If you installed the in-sim panel: Fine tuning → In-sim panel → Remove.</li>
+  <li>Turn off "Start with Windows" if you turned it on, then quit Birdie.</li>
+  <li>Delete Birdie's folder. Settings and the log are in <code>%APPDATA%\Birdie</code>; delete that too if you like.</li>
+</ol>
+<h3>Known limitations</h3>
+<ul>
+  <li>The HUD is drawn a little after the sim frame it belongs to; display latency hides most of it.</li>
+  <li>No exclusive full screen or VR. The sim's own screenshots and game-capture recordings do not include the HUD; record with display capture.</li>
+  <li>ChasePlane is needed for now; the sim's own camera comes later. No flight director yet.</li>
+</ul>
+<h3>License and credits</h3>
+<p>Birdie is free software under the GNU General Public License, version 3 (GPL-3.0), with no warranty. Source: https://github.com/Xuan0876/birdie-hud. The HUD layout follows the FlyByWire A32NX HUD (GPL-3.0); third-party licenses are in <code>THIRD_PARTY_NOTICES.md</code> and the <code>licenses</code> folder of the release.</p>
+<p>Microsoft Flight Simulator, ChasePlane, FlyByWire, FSLabs, Fenix, Airbus and Boeing are trademarks of their owners. Birdie is not affiliated with or endorsed by any of them.</p>
+<p>Birdie by Naux, built together with Claude Opus 5.5 (Anthropic).</p>
+
+</body>
+</html>

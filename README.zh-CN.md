@@ -14,7 +14,7 @@ Birdie（小鸟）是微软模拟飞行 2024 的平视显示器（HUD）覆盖�
 
 ## 下载
 
-在 [Releases](https://github.com/Xuan0876/birdie-hud/releases) 下载 zip，解压到一个单独的文件夹，运行 `Birdie.exe`。安装、使用、升级、卸载都写在包里的 `README.txt`。
+在 [Releases](https://github.com/Xuan0876/birdie-hud/releases) 下载 zip，解压到一个单独的文件夹，运行 `Birdie.exe`。安装、使用、升级、卸载都写在包里的 `README.txt`；每个符号、设置和快捷键的说明在使用说明书里（`Birdie-Manual-zh-CN.pdf`，英文版 `Birdie-Manual-en.pdf`）。
 
 ## 需要
 
@@ -46,7 +46,8 @@ build\release\Birdie.exe
 `build.bat` 会配置、编译并跑测试（`ctest`：单元测试 + 和参照版标准输出的对照）。`Birdie.exe --replay tests\fixtures\lax_dusk_07L` 不开模拟器、在主显示器上回放一段录好的进近。
 
 - **面板**：改了 `panel\birdie-panel` 之后跑 `python scripts\make_panel.py`（字体子集 + `layout.json`；要先 `pip install fonttools`），再重新编译；社区包整个编进了 `Birdie.exe`（`src/app/ingame.h`）。命令行 `Birdie.exe --export-panel <文件夹>` / `--remove-panel <文件夹>` 也能装 / 删。`tools/panel_preview` 在浏览器里打开页面，后面接一个假的 Birdie。
-- **发布包**：`python scripts\package.py` → `dist\Birdie-<版本>.zip`（`Birdie.exe`、`SimConnect.dll`、[packaging/README.txt](packaging/README.txt)、许可证文件）。GitHub Releases 和 flightsim.to 放同一个包。
+- **说明书**：[docs/manual](docs/manual)（HTML + CSS，中英两份）。`python scripts\make_manual.py` 用 `birdie_shot` 和面板预览重画配图，再用 Edge 打印两份 PDF 到 `build\manual`；加 `--pdf` 只打印。
+- **发布包**：先 `python scripts\make_manual.py --pdf`，再 `python scripts\package.py` → `dist\Birdie-<版本>.zip`（`Birdie.exe`、`SimConnect.dll`、[packaging/README.txt](packaging/README.txt)、两份说明书 PDF、许可证文件）。GitHub Releases 和 flightsim.to 放同一个包。
 
 ## 目录
 

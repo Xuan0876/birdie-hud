@@ -8,6 +8,8 @@ Contents (one folder, so "extract here" does not scatter files):
   Birdie/Birdie.exe              carries the settings page and the in-sim panel (src/app/ingame.h)
   Birdie/SimConnect.dll          MSFS 2024 SDK, next to the exe (delay-loaded)
   Birdie/README.txt              install / use / in-sim panel / upgrade / uninstall / log, Chinese + English
+  Birdie/Birdie-Manual-zh-CN.pdf the manual (scripts/make_manual.py --pdf, from docs/manual/)
+  Birdie/Birdie-Manual-en.pdf
   Birdie/LICENSE.txt             GPL-3.0
   Birdie/THIRD_PARTY_NOTICES.md
   Birdie/licenses/               WebView2 SDK (BSD-3 + NOTICE), nlohmann/json (MIT), fonts in the panel (OFL)
@@ -61,6 +63,13 @@ def main():
     newest = newest_source()
     if exe.stat().st_mtime < newest.stat().st_mtime:
         sys.exit(f"{exe} is older than {newest.relative_to(ROOT)}: rebuild first")
+    manuals = [ROOT / "build" / "manual" / n for n in ("Birdie-Manual-zh-CN.pdf", "Birdie-Manual-en.pdf")]
+    for f in manuals:
+        if not f.exists():
+            sys.exit(f"missing {f.relative_to(ROOT)} (run python scripts/make_manual.py --pdf first)")
+    man_src = max((p for p in (ROOT / "docs" / "manual").rglob("*") if p.is_file()), key=lambda p: p.stat().st_mtime)
+    if min(f.stat().st_mtime for f in manuals) < man_src.stat().st_mtime:
+        sys.exit(f"manual PDFs are older than {man_src.relative_to(ROOT)}: run python scripts/make_manual.py --pdf")
     dirty = git("status", "--porcelain")
     if dirty and not a.allow_dirty:
         sys.exit("uncommitted changes (commit first, or --allow-dirty for a test zip):\n" + dirty)
@@ -73,6 +82,7 @@ def main():
         ("Birdie.exe", exe),
         ("SimConnect.dll", dll),
         ("README.txt", readme.encode("utf-8-sig")),
+        *[(f.name, f) for f in manuals],
         ("LICENSE.txt", ROOT / "LICENSE"),
         ("THIRD_PARTY_NOTICES.md", ROOT / "THIRD_PARTY_NOTICES.md"),
         ("licenses/WebView2-LICENSE.txt", ROOT / "third_party" / "webview2" / "LICENSE.txt"),
