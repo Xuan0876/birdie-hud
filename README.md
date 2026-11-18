@@ -83,6 +83,10 @@ without the simulator.
 - Exclusive full screen and VR: not supported. The sim's own screenshots and game-capture recordings do not include
   the HUD (capture the display instead).
 
+## Credits
+
+Birdie by **Naux**, built together with **Claude Opus 5.5** (Anthropic).
+
 ## License
 
 GPL-3.0-only — see [LICENSE](LICENSE). The HUD geometry follows the FlyByWire A32NX HUD (GPL-3.0); details and other

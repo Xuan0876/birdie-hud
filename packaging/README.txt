@@ -47,6 +47,9 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
   - 日志：%APPDATA%\Birdie\birdie.log（设置 → 细调 → 日志 可以直接打开）。反馈问题时请附上它。
   - 反馈：{repo}/issues
 
+作者
+  Naux，与 Claude Opus 5.5（Anthropic）协作完成。
+
 许可
   Birdie 是自由软件，按 GNU 通用公共许可证第 3 版（GPL-3.0）发布，见 LICENSE.txt；不提供任何担保。
   源代码：{repo}
@@ -99,6 +102,9 @@ Uninstall
 When something goes wrong
   - Log: %APPDATA%\Birdie\birdie.log (Settings > Fine tuning > Log opens it). Please attach it to reports.
   - Reports: {repo}/issues
+
+Credits
+  Birdie by Naux, built together with Claude Opus 5.5 (Anthropic).
 
 License
   Birdie is free software under the GNU General Public License, version 3 (GPL-3.0), see LICENSE.txt;
