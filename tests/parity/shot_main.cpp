@@ -49,6 +49,7 @@ int main(int argc, char** argv) {
     const json& meta = fx.meta;
     json sj = meta.at("settings");
     std::string anim = "none", preset;
+  std::wstring wm;  // wm=zh / wm=en: the test-build watermark (app/i18n.cpp S::Watermark)
     double p = 1.0;
     for (int i = 4; i < argc; ++i) {
       const std::string a = argv[i];
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
       if (k == "anim") anim = v;
       else if (k == "p") p = std::stod(v);
       else if (k == "preset") preset = v;
+      else if (k == "wm") wm = v == "zh" ? L"Birdie 测试版" : L"Birdie beta";
       else {
         json jv;
         try {
@@ -78,7 +80,7 @@ int main(int argc, char** argv) {
         const auto eq = a.find('=');
         if (eq == std::string::npos) continue;
         const std::string k = a.substr(0, eq);
-        if (k != "anim" && k != "p" && k != "preset") birdie::set_look_value(set, k, keep[k]);
+        if (k != "anim" && k != "p" && k != "preset" && k != "wm") birdie::set_look_value(set, k, keep[k]);
       }
     }
     const auto runway = [&]() -> std::optional<birdie::Runway> {
@@ -102,7 +104,8 @@ int main(int argc, char** argv) {
     const double now = static_cast<double>(ck.row) / hz;
     const auto kind = birdie::hud::anim_kind(anim);
     const birdie::Settings fs_ = birdie::hud::anim_settings(set, kind, p);
-    const auto scene = birdie::hud::build_scene(model, s, W, H, ox, oy, fs_, runway ? &*runway : nullptr, L"", now);
+    const auto scene = birdie::hud::build_scene(model, s, W, H, ox, oy, fs_, runway ? &*runway : nullptr, L"", now,
+                                                nullptr, wm);
     const auto cl = birdie::hud::animated_commands(scene, set.opacity, kind, p, now);
     birdie::render::D2DRenderer r;
     if (!r.init_offscreen()) {

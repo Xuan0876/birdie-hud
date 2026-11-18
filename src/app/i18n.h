@@ -28,6 +28,8 @@ enum class S {
   SimConnectMissing, AlreadyRunning, HotkeyFailedFmt, TooltipFmt, ChasePlaneMissing, FirstRunHello,
   // in-sim panel (app/ingame.h)
   IngameUpdated, PickCommunity, PickExport,
+  // test builds: on the HUD, above the altitude tape
+  Watermark,
   kCount
 };
 

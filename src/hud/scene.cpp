@@ -742,7 +742,7 @@ bool layout_moved(const Settings& s) {
 
 Scene build_scene(const Model& model, const SimState& s, double W, double H, double ox, double oy,
                   const Settings& set, const Runway* runway, const std::wstring& flash, double now,
-                  const std::vector<Vec2>* border) {
+                  const std::vector<Vec2>* border, const std::wstring& watermark) {
   const Geometry geo = model.geometry(s, W, H, runway);
   const SimState& p = geo.p;
   Frame fr{p, geo.R, camera_to_body(p.cp_yaw, p.cp_pitch, p.cp_roll).transposed(), geo.f, W, H, ox, oy,
@@ -943,6 +943,11 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
   if (T) {
     const Groups g = groups(set);
     const auto d = fixed_symbols(B, p, model.filters(), set, g);
+    if (!watermark.empty()) {  // test builds: over the top of the altitude tape, wherever the layout puts it, even
+      B.set_xform(g.alt);      // with the tape turned off
+      B.text(1095.0, tape_span(set, set.alt_len).top - 18.0, watermark, 22, kMid, true);
+      B.set_xform(Xf{});
+    }
     if (d) {  // rolling tens of the altitude readout: clipped to its window
       Batch D(T, sc);
       D.set_finish(set.line_w, set.text_size);

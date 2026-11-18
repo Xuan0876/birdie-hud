@@ -112,10 +112,11 @@ struct CommandList {
 
 // The full HUD for one frame. (W, H) = MSFS client size, (ox, oy) = overlay window offset inside the client.
 // `now` drives the flare cue blink (s). `flash` = status message or empty. `border` = the HUD border in HUD-plane
-// degrees (core/border.h), nullptr = none: everything is then exactly as without the feature.
+// degrees (core/border.h), nullptr = none: everything is then exactly as without the feature. `watermark` = a line
+// above the altitude tape that no setting turns off (test builds: "Birdie beta"), empty = none.
 Scene build_scene(const Model& model, const SimState& s, double W, double H, double ox, double oy,
                   const Settings& set, const Runway* runway, const std::wstring& flash, double now,
-                  const std::vector<Vec2>* border = nullptr);
+                  const std::vector<Vec2>* border = nullptr, const std::wstring& watermark = {});
 
 // ---- HUD border (core/border.h): HUD-plane degrees <-> overlay px for this frame's camera
 // The border polygon on the screen, cut at the camera's near plane; nullopt if none of it is in front.

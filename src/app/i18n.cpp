@@ -88,6 +88,7 @@ const Pair kStrings[] = {
      L"The in-sim panel now matches this version. If the sim is running, it takes effect after a restart."},
     {S::PickCommunity, L"选择 MSFS 2024 的 Community 文件夹", L"Choose the MSFS 2024 Community folder"},
     {S::PickExport, L"把游戏内面板导出到哪个文件夹", L"Export the in-sim panel to which folder"},
+    {S::Watermark, L"Birdie 测试版", L"Birdie beta"},
     {S::TooltipFmt, L"Birdie HUD\n%ls\n下滑角 %.1f°", L"Birdie HUD\n%ls\nGlide %.1f°"},
 };
 

@@ -436,6 +436,10 @@ void App::ingame_action(const std::string& name) {
   panel_push(true);
 }
 
+std::wstring App::watermark() {
+  return std::strchr(version(), '-') ? std::wstring(tr(S::Watermark)) : std::wstring();
+}
+
 nlohmann::json App::ingame_status() const {
   nlohmann::json j;
   j["state"] = community_.empty() ? "nofolder" : ingame::state_key(ingame_);
@@ -1182,7 +1186,7 @@ void App::redraw() {
     compute_why();
     const double W = client_->right - client_->left, H = client_->bottom - client_->top;
     const double ox = box_->left - client_->left, oy = box_->top - client_->top;
-    cl = hud::commands(hud::build_scene(model_, *state_, W, H, ox, oy, set_, runway_, L"", t0, &edit_.pts),
+    cl = hud::commands(hud::build_scene(model_, *state_, W, H, ox, oy, set_, runway_, L"", t0, &edit_.pts, watermark()),
                        set_.opacity * 0.28);
     hud::EditView e;
     e.poly = hud::border_to_screen(model_, *state_, W, H, ox, oy, edit_.pts).value_or(Polyline{});
@@ -1208,7 +1212,7 @@ void App::redraw() {
       const double ox = box_->left - client_->left, oy = box_->top - client_->top;
       const auto scene = hud::build_scene(model_, *state_, client_->right - client_->left,
                                           client_->bottom - client_->top, ox, oy, fs, runway_, flash_, t0,
-                                          border ? &*border : nullptr);
+                                          border ? &*border : nullptr, watermark());
       cl = hud::animated_commands(scene, set_.opacity, kind, p, t0);
     } else if (!can && !hud_on_) {
       anim_p0_ = 0, anim_t0_ = t0;  // nothing to close on: done
@@ -1220,7 +1224,7 @@ void App::redraw() {
     const double ox = box_->left - client_->left, oy = box_->top - client_->top;
     const auto scene = hud::build_scene(model_, *state_, client_->right - client_->left,
                                         client_->bottom - client_->top, ox, oy, set_, runway_, flash_, t0,
-                                        border ? &*border : nullptr);
+                                        border ? &*border : nullptr, watermark());
     if (!focus_key_.empty() && t0 < focus_until_ && panel_.ws_clients() > 0) {
       // the panel points at one symbol: everything else steps back, that one stays (half strength if it is off)
       cl = hud::commands(scene, set_.opacity * 0.2);
