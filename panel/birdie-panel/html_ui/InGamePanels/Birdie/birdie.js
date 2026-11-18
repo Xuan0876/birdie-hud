@@ -376,6 +376,208 @@
   }
   rwSetup(false);
 
+  // ---- element styles as hud/scene.cpp draws them, in the preview's moment: heading 071, 140 kt, 340 ft,
+  // -700 fpm, wings level. Conformal angles map linearly (D px per degree) around (CX, HY).
+  var PV = { hdg: 71, ias: 140, alt: 340 };
+  function pts(a, close) { return 'M' + a.map(function (q) { return f1(q[0]) + ' ' + f1(q[1]); }).join('L') + (close ? 'Z' : ''); }
+  function range(a, b, n) { var o = []; for (var i = 0; i < n; i++) o.push(a + (b - a) * i / (n - 1)); return o; }
+  function readoutBox(x0, x1, yc, h, side, tip) {  // scene.cpp readout_box()
+    if (side > 0) return pts([[x0, yc - h], [x1, yc - h], [x1 + tip, yc], [x1, yc + h], [x0, yc + h]], true);
+    if (side < 0) return pts([[x0, yc - h], [x1, yc - h], [x1, yc + h], [x0, yc + h], [x0 - tip, yc]], true);
+    return pts([[x0, yc - h], [x1, yc - h], [x1, yc + h], [x0, yc + h]], true);
+  }
+  function tapeSpan(len) {  // scene.cpp tape_span(): [top, bottom]
+    var xw = !!S.set.xwind_mode;
+    if (len == null) len = 1;
+    if (!xw && len === 1) return [328.865, 692.13];
+    var k = len * (xw ? 0.55 : 1);
+    return [510.5 - (510.5 - 328.865) * k, 510.5 + (692.13 - 510.5) * k];
+  }
+  function TXr(x, y, s, size, ang) {  // text turned by ang degrees about its anchor
+    return '<g transform="rotate(' + f1(ang) + ' ' + f1(x) + ' ' + f1(y) + ')">' + TX(f1(x), f1(y), s, size) + '</g>';
+  }
+  function ladderSvg(s) {  // conformal() rungs: airbus / boeing / fighter (bent) / minimal
+    var step = s.ladder_step_deg;
+    if (!(step > 0)) return '';
+    var ls = s.sty_ladder, boeing = ls === 'boeing', fighter = ls === 'fighter', minimal = ls === 'minimal';
+    var inner = (CX - 518.26) / D, outer = (CX - 447.16) / D;
+    if (boeing) { inner = 2.6; outer = 6.4; } else if (fighter) { inner = 2.2; outer = 6.0; } else if (minimal) { inner = 1.6; outer = 3.0; }
+    var lw = s.ladder_w == null ? 1 : s.ladder_w;
+    if (lw !== 1) outer = inner + (outer - inner) * lw;
+    var tick = (fighter ? 16 : 11) / D, dashes = boeing ? 3 : minimal ? 2 : 4, dl = (outer - inner) / (dashes * 1.64 - 0.64);
+    var kmax = Math.floor(Math.min(s.ladder_max_deg || 30, 30) / step + 1e-6), d = '', lab = '', k, e, side, j, a0, a1, p;
+    function at(a, el) { return [CX + a * D, HY - el * D]; }
+    function el(a) { return fighter ? e - (e > 0 ? 1 : -1) * (a - inner) * Math.tan(Math.abs(e) / 2 / DEG) : e; }
+    for (k = -kmax; k <= kmax; k++) {
+      if (!k) continue;
+      e = k * step;
+      if (HY - e * D < 70 || HY - e * D > 870) continue;
+      for (side = -1; side <= 1; side += 2) {
+        if (e > 0) {  // solid, end tick down towards the horizon
+          p = range(inner, outer, 6).map(function (a) { return at(side * a, el(a)); });
+          if (!minimal) p.push(at(side * outer, el(outer) - tick));
+          d += pts(p);
+        } else if (!boeing && !fighter && !minimal && lw === 1) {  // the Airbus dashes
+          for (j = 0; j < 4; j++) {
+            a0 = inner + j * 19.7 / D; a1 = a0 + 12 / D;
+            p = [at(side * a0, e), at(side * a1, e)];
+            if (j === 3) p.push(at(side * a1, e + tick));
+            d += pts(p);
+          }
+        } else {
+          for (j = 0; j < dashes; j++) {
+            a0 = inner + j * dl * 1.64; a1 = a0 + dl;
+            p = range(a0, a1, 3).map(function (a) { return at(side * a, el(a)); });
+            if (j === dashes - 1 && !minimal) p.push(at(side * a1, el(a1) + tick));
+            d += pts(p);
+          }
+        }
+        if (!minimal) {
+          var la = outer + 2.5 / D, q = at(side * la, fighter ? el(la) : e);
+          lab += TX(f1(q[0]), f1(q[1] + 9), String(Math.round(e * 10) / 10), 21, side < 0 ? 'end' : 'start');
+        }
+      }
+    }
+    return (d ? P(d) : '') + lab;
+  }
+  function hdgFixedSvg(s) {  // heading_fixed(): a compass arc low in the view, or a tape across the top
+    var hdg = PV.hdg, h, d, x, ten, path = '', txt = '', half;
+    function label(v) { return String(Math.floor((((v % 360) + 360) % 360) / 10)); }
+    if (s.sty_hdg === 'arc') {
+      var cy = 1010, R = 230;
+      half = 35;
+      var at = function (dd, r) { return [CX + r * Math.sin(dd / DEG), cy - r * Math.cos(dd / DEG)]; };
+      path = pts(range(-half, half, 36).map(function (dd) { return at(dd, R); }));
+      for (h = Math.floor((hdg - half) / 5) * 5; h <= Math.floor(hdg + half) + 1; h += 5) {
+        d = h - hdg;
+        if (Math.abs(d) > half) continue;
+        ten = h % 10 === 0;
+        path += pts([at(d, R), at(d, R - (ten ? 15 : 8))]);
+        if (ten && Math.abs(d) > 4) { var q = at(d, R - 38); txt += TXr(q[0], q[1] + 8, label(h), 24, d); }
+      }
+      path += pts([[CX, cy - R - 3], [CX - 9, cy - R - 18], [CX + 9, cy - R - 18]], true);
+      return P(path) + txt + TX(CX, cy - R - 26, '071', 26);
+    }
+    var y0 = 95, ppd = 6;
+    half = 26;
+    path = 'M' + (CX - half * ppd) + ' ' + y0 + 'H' + (CX + half * ppd);
+    for (h = Math.floor((hdg - half) / 5) * 5; h <= Math.floor(hdg + half) + 1; h += 5) {
+      d = h - hdg;
+      if (Math.abs(d) > half) continue;
+      x = CX + d * ppd; ten = h % 10 === 0;
+      path += 'M' + f1(x) + ' ' + y0 + 'V' + (y0 + (ten ? 14 : 8));
+      if (ten && Math.abs(x - CX) > 36) txt += TX(f1(x), y0 - 8, label(h), 22);
+    }
+    path += pts([[CX - 8, y0 + 28], [CX, y0 + 17], [CX + 8, y0 + 28]]) + readoutBox(CX - 31, CX + 31, y0 - 22, 15, 0, 0);
+    return P(path) + txt + TX(CX, y0 - 13, '071', 24);
+  }
+  function speedSvg(s) {  // speed_tape(): airbus / boeing (box pointing at the tape) / box only
+    var box = s.sty_speed === 'box', boeing = s.sty_speed === 'boeing', sp = tapeSpan(s.spd_len), top = sp[0], bot = sp[1];
+    var d = '', t = '', v, y, ias = PV.ias;
+    if (!box) {
+      d = 'M140.9 ' + f1(top) + 'V' + f1(bot) + 'M68.1 ' + f1(top) + 'H161M68.1 ' + f1(bot) + 'H161';
+      for (v = Math.max(30, Math.floor((ias - 45) / 10) * 10); v < ias + 46; v += 10) {
+        y = 510.5 - (v - ias) * 4.25;
+        if (!(top + 4 < y && y < bot - 4)) continue;
+        d += 'M128.9 ' + f1(y) + 'H140.9';
+        if (v % 20 === 0 && top + 14 < y && y < bot - 6 && !(boeing && Math.abs(y - 510.5) < 32)) t += TX(94, f1(y + 9.3), String(v), 26);
+      }
+    }
+    if (box || boeing) {
+      var x0 = box ? 50 : 56, x1 = box ? 136 : 126;
+      return P(d + readoutBox(x0, x1, 510.5, 21, boeing ? 1 : 0, 12)) + t + TX((x0 + x1) / 2, 522, String(ias), 32);
+    }
+    return P(d) + '<path class="solid" d="M119.5 509.5V512.6H147.3L160.6 517.5V504.6L147.3 509.5Z"/>' + t;
+  }
+  function altSvg(s) {  // altitude_tape() + the baro setting + misc() RA: airbus (drum) / boeing / box only
+    var box = s.sty_alt === 'box', boeing = s.sty_alt === 'boeing', sp = tapeSpan(s.alt_len), top = sp[0], bot = sp[1];
+    var d = '', t = '', v, y, alt = PV.alt, by0 = boeing ? -1e9 : 480.1, by1 = boeing ? -1e9 : 540.9, lift = 692.13 - bot;
+    if (!box) {
+      d = 'M1057.4 ' + f1(bot) + 'H1133.2M1113.1 ' + f1(top) + 'V' + f1(bot) + 'M1057.4 ' + f1(top) + 'H1133.2';
+      for (v = Math.floor((alt - 650) / 100) * 100; v < alt + 651; v += 100) {
+        y = 510.5 - (v - alt) * 0.32;
+        if (!(top + 4 < y && y < bot - 4) || (by0 - 4 < y && y < by1 + 4)) continue;
+        d += 'M1104.6 ' + f1(y) + 'H1113.1';
+        if (((v % 500) + 500) % 500 === 0 && top + 14 < y && y < bot - 6 && !(by0 - 12 < y && y < by1 + 18))
+          t += TX(1081, f1(y + 8.5), v >= 0 ? String(Math.floor(v / 100)) : '-' + Math.floor(-v / 100), 26);
+      }
+    }
+    if (box || boeing) {
+      var x0 = box ? 1050 : 1124, x1 = box ? 1150 : 1206;
+      d += readoutBox(x0, x1, 510.5, 21, boeing ? -1 : 0, 11);
+      t += TX((x0 + x1) / 2, 522, String(Math.round(alt / 20) * 20), 30);
+    } else {
+      d += 'M1113.1 529.6H1057.3V491.4H1113.1V480.1H1150.8V540.9H1113.1V529.6';
+      t += TX(1110, 522, '3', 34, 'end') + TX(1132, 520, '40', 26);
+    }
+    t += box ? TX(1100, 592.5, '1013', 26) + TX(1100, 624.5, 'RA 150', 26)
+             : TX(1095, f1(730 - lift), '1013', 26) + TX(1095, f1(772 - lift), 'RA 150', 26);
+    return P(d) + t;
+  }
+  function vsSvg(s) {  // vertical_speed(): the needle, or a number under the altitude readout
+    if (s.sty_vs === 'digital') return TX(s.sty_alt === 'boeing' ? 1165 : s.sty_alt === 'box' ? 1100 : 1104, 560.5, 'VS −700', 22);
+    if (s.xwind_mode) return '';
+    var yo = 95.27;  // -700 fpm
+    return '<path class="solid" d="M1165 508.5H1185V512.5H1165Z"/>' + P('M1220 ' + f1(510.5 + 0.26 * yo) + 'L1183 ' + f1(510.5 + yo), 'stroke', 'stroke-width="4"') +
+      TX(1192, f1(518 + yo + 14), '-07', 22);
+  }
+  function rollSvg(s) {  // roll_scale(), wings level
+    var cx = 640, cy = 329.143, d;
+    function at(a, r) { var t = (90 + a) / DEG; return [cx + r * Math.cos(t), cy - r * Math.sin(t)]; }
+    function ticks(list, len, R, f) { var o = ''; list.forEach(function (a) { o += pts([f(a, R), f(a, R + len(a))]); }); return o; }
+    var index = pts([[640, 138.44], [652.22, 118.24], [627.79, 118.24]], true);
+    if (s.sty_roll === 'boeing')
+      return P(ticks([-60, -45, -30, -20, -10, 10, 20, 30, 45, 60], function (a) { return Math.abs(a) === 30 || Math.abs(a) === 60 ? 24 : 13; }, 190, at) + index +
+        pts([[640, 144], [630, 162], [650, 162]], true) + pts([[630, 166], [650, 166], [650, 174], [630, 174]], true));
+    if (s.sty_roll === 'bottom') {
+      var bx = 640, by = 760, R = 110;
+      var bat = function (a, r) { var t = (a - 90) / DEG; return [bx + r * Math.cos(t), by - r * Math.sin(t)]; };
+      d = pts(range(-60, 60, 41).map(function (a) { return bat(a, R); }));
+      d += ticks([-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60], function (a) { return Math.abs(a) === 30 || Math.abs(a) === 60 || a === 0 ? 18 : 10; }, R, bat);
+      return P(d + pts([[bx, by + R - 4], [bx - 9, by + R - 21], [bx + 9, by + R - 21]], true) +
+        pts([[bx - 9, by + R - 26], [bx + 9, by + R - 26], [bx + 9, by + R - 32], [bx - 9, by + R - 32]], true));
+    }
+    var pointer = pts([[640.18, 140], [630.18, 161.89], [650.18, 161.89]], true) + pts([[629, 164.85], [621, 181], [659, 181.07], [651, 164.85]], true);
+    if (s.sty_roll === 'airbus') {  // the A320 HUD: a short arc, ticks at 10, 20, 30 and 45
+      d = pts(range(-45, 45, 31).map(function (a) { return at(a, 190); }));
+      d += ticks([-45, -30, -20, -10, 10, 20, 30, 45], function (a) { return Math.abs(a) === 10 || Math.abs(a) === 20 ? 13 : 24; }, 190, at);
+      return P(d + index + pointer);
+    }
+    d = '';  // the FlyByWire (PFD) geometry
+    for (var j = 0; j <= 39; j++) {
+      var a = (155.16 + (24.84 - 155.16) * j / 39) / DEG;
+      d += (j ? 'L' : 'M') + f1(640 + 190 * Math.cos(a)) + ' ' + f1(329.1 - 190 * Math.sin(a));
+    }
+    d += 'M735.2 164L749.3 139.5M705.1 150L712.8 129.3M673 141.5L677 119.3M544.8 164L530.7 139.5M574.9 150L567.2 129.3M607 141.5L603 119.3M774.5 194.5L794.5 174.5M505.5 194.5L485.5 174.5M813 249L832 240M467 249L448 240';
+    return P(d + index + pointer);
+  }
+  function attSvg(s) {  // aircraft_ref(): wings + square, or the fighter's W with that bird
+    if (s.sty_fpv === 'fighter') return P('M596 332L614 332L626 348L640 334L654 348L666 332L684 332', 'stroke', 'stroke-width="3.4"');
+    return P('M625 335V329H595M637 332H643V326H637ZM655 335V329H685', 'stroke', 'stroke-width="3.4"');
+  }
+  function birdShape(s, y) {  // the flight path symbol (scene.cpp sty_fpv): circle cr, wings to `wing`, tail to `tail`
+    var r = 17 * (s.bird_size || 1), st = s.sty_fpv, cr = r, wing = 3 * r, tail = 2.1 * r, wings = true, x = CX, d, extra = '', k, a;
+    if (st === 'boeing') { cr = 0.9 * r; wing = 3.3 * r; tail = 1.9 * r; }
+    else if (st === 'fighter') { cr = 0.8 * r; wing = 2.5 * r; tail = 2.0 * r; }
+    else if (st === 'minimal') { cr = 0.85 * r; wing = 2.0 * r; tail = 0; }
+    else if (st === 'ring') { wing = 1.6 * r; tail = 0; wings = false; }
+    else if (st === 'cross') { cr = 0.7 * r; wing = 1.7 * r; tail = 0; wings = false; }
+    d = 'M' + f1(x - cr) + ' ' + f1(y) + 'a' + f1(cr) + ' ' + f1(cr) + ' 0 1 0 ' + f1(2 * cr) + ' 0a' + f1(cr) + ' ' + f1(cr) + ' 0 1 0 ' + f1(-2 * cr) + ' 0';
+    if (wings) d += 'M' + f1(x - cr) + ' ' + f1(y) + 'H' + f1(x - wing) + 'M' + f1(x + cr) + ' ' + f1(y) + 'H' + f1(x + wing);
+    if (tail > 0) d += 'M' + x + ' ' + f1(y - cr) + 'V' + f1(y - tail);
+    if (st === 'cross') for (k = 0; k < 4; k++) {
+      a = k * Math.PI / 2;
+      d += 'M' + f1(x + cr * Math.cos(a)) + ' ' + f1(y + cr * Math.sin(a)) + 'L' + f1(x + 1.7 * r * Math.cos(a)) + ' ' + f1(y + 1.7 * r * Math.sin(a));
+    }
+    if (st === 'ring') extra = '<circle class="solid" cx="' + x + '" cy="' + f1(y) + '" r="' + f1(0.16 * r) + '"/>';
+    return { d: d, extra: extra, r: r, cr: cr, wing: wing, tail: tail };
+  }
+  function watermarkSvg(s) {  // test builds (version with a suffix): over the altitude tape, as the program draws it
+    var v = S.st && S.st.version ? String(S.st.version) : '';
+    if (v.indexOf('-') < 0) return '';
+    return TX(1095, f1(tapeSpan(s.alt_len)[0] - 18), S.lang === 'zh' ? 'Birdie 测试版' : 'Birdie beta', 22);
+  }
+
   function build() {
     var s = S.set, out = [], h, k, y, e, j, side;
     var glide = s.glide_deg, ladder = s.ladder_step_deg, scale = s.hud_scale;
@@ -385,33 +587,22 @@
     // ---- conformal: stays with the world
     out.push('<g class="el" data-el="horizon">' + P('M-40 ' + HY + 'H' + f1(CX - farHalf - 6) + 'M' + f1(CX + farHalf + 6) + ' ' + HY + 'H1320') + '</g>');
     var hd = '', hl = '';
-    for (h = 50; h <= 95; h += 5) {
-      var x = CX + (h - 71) * D, ten = h % 10 === 0;
-      hd += 'M' + f1(x) + ' ' + HY + 'v' + (ten ? 14 : 8);
-      if (ten) hl += TX(f1(x), HY + 40, String(h / 10), 21);
-    }
-    out.push('<g class="el" data-el="hdg">' + P(hd, 'stroke thin') + hl + '</g>');
-    var lad = '', ll = '', inner = 121.74, outer = 192.84, tick = 11;
-    if (ladder > 0) for (k = -Math.floor(30 / ladder); k <= Math.floor(30 / ladder); k++) {
-      if (!k) continue;
-      e = k * ladder; y = HY - e * D;
-      if (y < 70 || y > 870) continue;
-      for (side = -1; side <= 1; side += 2) {
-        if (e > 0) lad += 'M' + (CX + side * inner) + ' ' + f1(y) + 'H' + (CX + side * outer) + 'v' + tick;
-        else for (j = 0; j < 4; j++) {
-          var a0 = inner + j * 19.7, a1 = a0 + 12;
-          lad += 'M' + (CX + side * a0) + ' ' + f1(y) + 'H' + (CX + side * a1) + (j === 3 ? 'v' + (-tick) : '');
-        }
-        ll += TX(CX + side * (outer + 4), f1(y + 9), String(Math.round(e * 10) / 10), 21, side < 0 ? 'end' : 'start');
+    if (s.sty_hdg !== 'arc' && s.sty_hdg !== 'tape') {  // marks on the horizon (the arc and the tape: airframe-fixed, below)
+      for (h = 50; h <= 95; h += 5) {
+        var x = CX + (h - 71) * D, ten = h % 10 === 0;
+        hd += 'M' + f1(x) + ' ' + HY + 'v' + (ten ? 14 : 8);
+        if (ten) hl += TX(f1(x), HY + 40, String(h / 10), 21);
       }
+      out.push('<g class="el" data-el="hdg">' + P(hd, 'stroke thin') + hl + '</g>');
     }
+    out.push('<g class="el" data-el="ladder">' + ladderSvg(s) + '</g>');
     var mn = '';
     for (j = -12; j <= 12; j++) {
       e = j * 2.5; y = HY - e * D;
       if (!j || y < 70 || y > 870 || (ladder > 0 && Math.abs(e / ladder - Math.round(e / ladder)) < 1e-6)) continue;
       if (!(y > top && y < bot + 20)) mn += 'M' + (CX - 12) + ' ' + f1(y) + 'H' + (CX + 12);  // clipped across the runway
     }
-    out.push('<g class="el" data-el="minor">' + (lad ? P(lad) : '') + (mn ? P(mn, 'stroke thin') : '') + ll + '</g>');
+    out.push('<g class="el" data-el="minor">' + (mn ? P(mn, 'stroke thin') : '') + '</g>');
     // runway outline + touchdown zone marks (aiming point stripes; all bars with "full"; the zone's end as two ticks)
     var hw = RW.w / 2, rwp = rwQuad([0, RW.len, -hw, hw]), mk = '', mf = '';
     if (s.show_tdz) {
@@ -428,52 +619,30 @@
     var gl = gap ? 'M' + (CX - span) + ' ' + f1(gy) + 'H' + (CX - gap) + 'M' + (CX + gap) + ' ' + f1(gy) + 'H' + (CX + span)
                  : 'M' + (CX - span) + ' ' + f1(gy) + 'H' + (CX + span);
     out.push('<g class="el" data-el="glide"><path class="stroke dash" d="' + gl + '"/>' + TX(CX + span + 6, f1(gy + 8), '-' + glide.toFixed(1), 20, 'start') + '</g>');
-    // bird (floats a little) + numbers + flare cue
-    var by = rwAt(rwAim, 0)[1], r = 17 * (s.bird_size || 1);  // = 3° down: on the aiming point
+    // bird (floats a little) + numbers + flare cue, placed off its shape as scene.cpp does
+    var by = rwAt(rwAim, 0)[1], b = birdShape(s, by), r = b.r;  // = 3° down: on the aiming point
+    var arm = 0.55 * r, fy = by - (b.tail > 0 ? b.tail : b.cr + 0.4 * r) - 12 - arm, fl = '';
+    [CX - arm - 7, CX + arm + 7].forEach(function (xc) {
+      fl += 'M' + f1(xc - arm) + ' ' + f1(fy) + 'H' + f1(xc + arm) + 'M' + f1(xc) + ' ' + f1(fy - arm) + 'V' + f1(fy + arm);
+    });
     out.push('<g id="birdfloat">' +
-      '<g class="el" data-el="bird">' + P('M' + (CX - r) + ' ' + f1(by) + 'a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0M' +
-        (CX - r) + ' ' + f1(by) + 'H' + (CX - 3 * r) + 'M' + (CX + r) + ' ' + f1(by) + 'H' + (CX + 3 * r) + 'M' + CX + ' ' + f1(by - r) + 'V' + f1(by - 2.1 * r)) + '</g>' +
-      '<g class="el" data-el="fpa">' + TX(CX + 3 * r + 10, f1(by + 9), '−3.0', 22, 'start') + '</g>' +
-      '<g class="el" data-el="vsn">' + TX(CX - 3 * r - 10, f1(by + 9), '−700', 22, 'end') + '</g>' +
+      '<g class="el" data-el="bird">' + P(b.d) + b.extra + '</g>' +
+      '<g class="el" data-el="fpa">' + TX(f1(CX + b.wing + 10), f1(by + 9), '\u22123.0', 22, 'start') + '</g>' +
+      '<g class="el" data-el="vsn">' + TX(f1(CX - b.wing - 10), f1(by + 9), '\u2212700', 22, 'end') + '</g>' +
       '<g class="el" data-el="bra">' + TX(CX, f1(by + r + 30), '150', 22) + '</g>' +
-      '<g class="el" data-el="flare"><g id="flare" opacity="0">' + P('M' + (CX - 30) + ' ' + f1(by - 70) + 'h18M' + (CX - 21) + ' ' + f1(by - 79) + 'v18M' +
-        (CX + 12) + ' ' + f1(by - 70) + 'h18M' + (CX + 21) + ' ' + f1(by - 79) + 'v18') + '</g></g></g>');
+      '<g class="el" data-el="flare"><g id="flare" opacity="0">' + P(fl) + '</g></g></g>');
     // ---- airframe-fixed: scales with size around the boresight
-    // crosswind mode (scene.cpp kXw*): tapes 55 % as tall, speed 50 left, altitude 60 right, no VS needle
-    var xw = !!s.xwind_mode, tt = xw ? 510.5 - 181.6 * 0.55 : 328.9, tb = xw ? 510.5 + 181.6 * 0.55 : 692.1;
-    var spd = gx('spd'), altd = gx('alt');
-    var fx = [], v, sp = 'M140.9 ' + f1(tt) + 'V' + f1(tb) + 'M68.1 ' + f1(tt) + 'H161M68.1 ' + f1(tb) + 'H161', sl = '';
-    for (v = 100; v <= 180; v += 10) {
-      y = 510.5 - (v - 140) * 4.25;
-      if (y < tt + 4 || y > tb - 4) continue;
-      sp += 'M128.9 ' + f1(y) + 'H140.9';
-      if (v % 20 === 0) sl += TX(94, f1(y + 9.3), String(v), 25);
-    }
-    fx.push('<g class="el" data-el="speed"' + spd + '>' + P(sp) + '<path class="solid" d="M119.5 509.5V512.6H147.3L160.6 517.5V504.6L147.3 509.5Z"/>' + sl + '</g>');
+    // crosswind mode (scene.cpp kXw*): tapes 55 % as tall (tapeSpan), moved out (gx), no VS needle
+    var fx = [];
+    fx.push('<g class="el" data-el="speed"' + gx('spd') + '>' + speedSvg(s) + '</g>');
     fx.push('<g class="el" data-el="gs"' + gx('wind') + '>' + TX(68, 300, 'GS 142', 24, 'start') + TX(298, 258, '264', 22, 'end') +
       TX(306, 257, '/', 20) + TX(315, 258, '8', 22, 'start') + P('M276 298V268M269.5 280L276 268L282.5 280', 'stroke', 'transform="rotate(193 276 283)"') + '</g>');
-    var al = 'M1057.4 ' + f1(tb) + 'H1133.2M1113.1 ' + f1(tt) + 'V' + f1(tb) + 'M1057.4 ' + f1(tt) + 'H1133.2', all = '';
-    for (v = -300; v <= 1000; v += 100) {
-      y = 510.5 - (v - 340) * 0.32;
-      if (y < tt + 4 || y > tb - 4 || (y > 476 && y < 545)) continue;
-      al += 'M1104.6 ' + f1(y) + 'H1113.1';
-      if (v % 500 === 0 && !(y > 468 && y < 559)) all += TX(1081, f1(y + 8.5), String(v / 100), 25);
-    }
-    al += 'M1113.1 529.6H1057.3V491.4H1113.1V480.1H1150.8V540.9H1113.1V529.6';
-    fx.push('<g class="el" data-el="alt"' + altd + '>' + P(al) + all + TX(1110, 522, '3', 34, 'end') +
-      TX(1132, 520, '40', 26) + TX(1095, f1(730 - (692.1 - tb)), '1013', 26) + TX(1095, f1(772 - (692.1 - tb)), 'RA 150', 26) + '</g>');
-    var yo = 95.27;
-    if (!xw) fx.push('<g class="el" data-el="vs"' + gx('vs') + '><path class="solid" d="M1165 508.5H1185V512.5H1165Z"/>' + P('M1220 ' + f1(510.5 + 0.26 * yo) + 'L1183 ' + f1(510.5 + yo), 'stroke', 'stroke-width="4"') +
-      TX(1192, f1(518 + yo + 14), '-07', 22) + '</g>');
-    var arc = '';
-    for (j = 0; j <= 39; j++) {
-      var a = (155.16 + (24.84 - 155.16) * j / 39) * Math.PI / 180;
-      arc += (j ? 'L' : 'M') + f1(640 + 190 * Math.cos(a)) + ' ' + f1(329.1 - 190 * Math.sin(a));
-    }
-    arc += 'M735.2 164L749.3 139.5M705.1 150L712.8 129.3M673 141.5L677 119.3M544.8 164L530.7 139.5M574.9 150L567.2 129.3M607 141.5L603 119.3M774.5 194.5L794.5 174.5M505.5 194.5L485.5 174.5M813 249L832 240M467 249L448 240';
-    arc += 'M640 138.4L652.2 118.2H627.8ZM640.2 140L630.2 161.9H650.2ZM629 164.9L621 181H659L651 164.9Z';
-    fx.push('<g class="el" data-el="roll"' + gx('roll') + '>' + P(arc) + '</g>');
-    fx.push('<g class="el" data-el="att"' + gx('att') + '>' + P('M625 335V329H595M637 332H643V326H637ZM655 335V329H685', 'stroke', 'stroke-width="3.4"') + '</g>');
+    fx.push('<g class="el" data-el="alt"' + gx('alt') + '>' + altSvg(s) + '</g>');
+    fx.push('<g class="el" data-el="wm"' + gx('alt') + '>' + watermarkSvg(s) + '</g>');
+    fx.push('<g class="el" data-el="vs"' + gx('vs') + '>' + vsSvg(s) + '</g>');
+    fx.push('<g class="el" data-el="roll"' + gx('roll') + '>' + rollSvg(s) + '</g>');
+    fx.push('<g class="el" data-el="att"' + gx('att') + '>' + attSvg(s) + '</g>');
+    if (s.sty_hdg === 'arc' || s.sty_hdg === 'tape') fx.push('<g class="el" data-el="hdg"' + gx('hdg') + '>' + hdgFixedSvg(s) + '</g>');
     out.push('<g id="fixed" transform="' + fixedTransform(scale) + '">' + fx.join('') + '</g>');
     return out.join('');
   }
@@ -484,7 +653,8 @@
     var t = { spd: [sideS + s.spd_dx * D, s.spd_dy * D, s.spd_size, 140.882, 510.5],
               alt: [sideA + s.alt_dx * D, s.alt_dy * D, s.alt_size, 1113.112, 510.5],
               wind: [(xw ? -50 : 0) + s.wind_dx * D, s.wind_dy * D, s.wind_size, 68, 300],
-              roll: [0, s.roll_dy * D, s.roll_size, 640, 329.143], att: [0, 0, s.att_size, 640, 332] };
+              roll: [0, s.roll_dy * D, s.roll_size, 640, 329.143], att: [0, 0, s.att_size, 640, 332],
+              hdg: [0, (s.hdg_dy || 0) * D, 1, 640, 329.143] };
     t.vs = [t.alt[0] + s.vs_dx * D, t.alt[1] + s.vs_dy * D, s.vs_size, 1185, 510.5];
     var a = t[n];
     if (!a[0] && !a[1] && a[2] === 1) return '';
@@ -497,7 +667,8 @@
     var s = S.set, key = [s.glide_deg, s.ladder_step_deg, s.xwind_mode, S.st && S.st.runway ? S.st.runway.name : '', s.bird_size, s.lay_spread,
       s.show_tdz, s.tdz_rule, s.tdz_style,
       s.spd_dx, s.spd_dy, s.spd_size, s.alt_dx, s.alt_dy, s.alt_size, s.vs_dx, s.vs_dy, s.vs_size, s.wind_dx, s.wind_dy, s.wind_size,
-      s.roll_dy, s.roll_size, s.att_size].join('|');
+      s.roll_dy, s.roll_size, s.att_size, s.spd_len, s.alt_len, s.hdg_dy, s.ladder_w, s.ladder_max_deg,
+      s.sty_fpv, s.sty_speed, s.sty_alt, s.sty_vs, s.sty_ladder, s.sty_hdg, s.sty_roll, S.lang, S.st && S.st.version].join('|');
     if (key !== builtKey) {  // rebuild only for what changes geometry; the rest is classes and attributes
       builtKey = key;
       hud.innerHTML = build();
