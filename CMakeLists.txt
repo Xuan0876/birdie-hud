@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Birdie VERSION 0.9.1 LANGUAGES CXX RC)
+project(Birdie VERSION 0.9.2 LANGUAGES CXX RC)
 set(BIRDIE_VERSION_SUFFIX "-beta")  # "" for a stable release; shown in the app and in the zip name
 
 if(NOT WIN32 OR NOT MSVC)
