@@ -60,6 +60,10 @@ build\release\Birdie.exe
 - HUD 比它对应的模拟帧晚一点显示（SimConnect + 合成器）；可调的提前量会外推姿态来抵消。
 - 不支持独占全屏和 VR。模拟器自己的截图和"游戏捕获"录像里没有 HUD（请用显示器捕获）。
 
+## 参与
+
+Birdie 暂时不接受 PR；欢迎通过 [Issue](https://github.com/Xuan0876/birdie-hud/issues) 报告 bug 和提建议，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 署名
 
 Birdie 由 **Naux** 制作，与 **Claude Opus 5.5**（Anthropic）协作完成。

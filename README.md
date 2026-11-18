@@ -83,6 +83,11 @@ without the simulator.
 - Exclusive full screen and VR: not supported. The sim's own screenshots and game-capture recordings do not include
   the HUD (capture the display instead).
 
+## Contributing
+
+For now Birdie does not accept pull requests; bug reports and ideas are welcome as
+[issues](https://github.com/Xuan0876/birdie-hud/issues). See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Credits
 
 Birdie by **Naux**, built together with **Claude Opus 5.5** (Anthropic).
