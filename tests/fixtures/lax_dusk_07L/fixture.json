@@ -1,0 +1,183 @@
+{
+ "name": "lax_dusk_07L",
+ "aircraft": "FSLabs A321-271NX",
+ "camera": "ChasePlane fixed cockpit view (cp_mode 0)",
+ "client_px": [
+  3440,
+  1440
+ ],
+ "box_px": [
+  688,
+  216,
+  2064,
+  1007
+ ],
+ "input": {
+  "file": "input.csv",
+  "hz": 30.0,
+  "t": "seconds from the first row",
+  "derived": "vy_fps from altitude difference, radio_alt_ft = agl_ft, baro 1013, mach ias/661.5, beta 0"
+ },
+ "runway": {
+  "lat": "33.9376997",
+  "lon": "-118.4011429",
+  "alt_m": "26.6",
+  "landing_hdg_true": "82.97",
+  "length_m": "3388",
+  "width_m": "45",
+  "name": "07L",
+  "source": "OpenStreetMap (sim has its own data live)"
+ },
+ "settings": {
+  "glide_deg": 3.0,
+  "lead_ms": 0,
+  "smooth_s": 0.15,
+  "box_w": 0.6,
+  "box_h": 0.7,
+  "visible": true,
+  "line_span_deg": 18.0,
+  "line_gap_deg": 6.0,
+  "show_runway": true,
+  "show_bird": true,
+  "show_glide": true,
+  "show_horizon": true,
+  "opacity": 1.0,
+  "ladder_step_deg": 6.0,
+  "ladder_max_deg": 30.0,
+  "show_speed": true,
+  "show_alt": true,
+  "show_vs": true,
+  "show_roll": true,
+  "show_hdg": true,
+  "show_gs": true,
+  "show_att": true,
+  "show_fd": false,
+  "hud_scale": 0.75,
+  "show_pitch_minor": true,
+  "show_fpa_num": true,
+  "show_vs_num": true,
+  "fd_ra_cutoff": true,
+  "show_flare": true,
+  "flare_tol_deg": 0.3,
+  "ra_offset_ft": 0.0,
+  "ra_offset_note": "",
+  "fpd_lag_ms": 120,
+  "fpd_tau_ms": 100
+ },
+ "flare_blink_clock": "replay time t (live app: time.perf_counter)",
+ "checks": [
+  {
+   "index": 0,
+   "video_s": 290.0,
+   "t": 5.0333,
+   "agl_ft": 1493.6,
+   "bird_px": [
+    1724.446969791591,
+    690.7367629978692
+   ],
+   "flare": null
+  },
+  {
+   "index": 1,
+   "video_s": 320.0,
+   "t": 35.0333,
+   "agl_ft": 1056.1,
+   "bird_px": [
+    1738.010805737549,
+    691.4359090573714
+   ],
+   "flare": null
+  },
+  {
+   "index": 2,
+   "video_s": 350.0,
+   "t": 65.0333,
+   "agl_ft": 596.7,
+   "bird_px": [
+    1728.4891831059992,
+    702.7704904462091
+   ],
+   "flare": null
+  },
+  {
+   "index": 3,
+   "video_s": 370.0,
+   "t": 85.0333,
+   "agl_ft": 209.9,
+   "bird_px": [
+    1725.2251061943284,
+    710.0001348939303
+   ],
+   "flare": null
+  },
+  {
+   "index": 4,
+   "video_s": 380.0,
+   "t": 95.0333,
+   "agl_ft": 90.2,
+   "bird_px": [
+    1731.8782711087001,
+    697.4771115455299
+   ],
+   "flare": null
+  },
+  {
+   "index": 5,
+   "video_s": 384.0,
+   "t": 99.0333,
+   "agl_ft": 38.0,
+   "bird_px": [
+    1731.9741293183226,
+    714.9348054259478
+   ],
+   "flare": 2
+  },
+  {
+   "index": 6,
+   "video_s": 386.0,
+   "t": 101.0333,
+   "agl_ft": 22.1,
+   "bird_px": [
+    1733.033983940233,
+    708.3710836961537
+   ],
+   "flare": 2
+  },
+  {
+   "index": 7,
+   "video_s": 388.0,
+   "t": 103.0333,
+   "agl_ft": 17.2,
+   "bird_px": [
+    1726.593162587102,
+    679.7037831876208
+   ],
+   "flare": 2
+  },
+  {
+   "index": 8,
+   "video_s": 390.0,
+   "t": 105.0333,
+   "agl_ft": 15.3,
+   "bird_px": [
+    1718.6767194848248,
+    634.8841513550427
+   ],
+   "flare": null
+  }
+ ],
+ "provenance": {
+  "recorded": "2026-11-03",
+  "video_window_s": [
+   285.0,
+   392.0
+  ],
+  "log_video_lag_s": -0.38,
+  "generator": "tests/make_golden.py (reference/python)"
+ },
+ "compare": {
+  "geometry_tol_px": 0.05,
+  "commands_tol": 0.001,
+  "image": "D2D anti-aliasing may differ in the last bit: compare with a small per-pixel tolerance"
+ }
+}

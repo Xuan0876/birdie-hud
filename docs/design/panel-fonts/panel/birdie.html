@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!-- Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
+     The settings panel (v2 "pocket"). One page for three places: the MSFS toolbar (Coherent GT,
+     html_ui/InGamePanels/Birdie), Birdie's own settings window (WebView2; tray: Open panel) and, without WebView2, a
+     desktop browser. Birdie serves this folder on 127.0.0.1 and the page talks to Birdie.exe over a WebSocket there.
+     The /JS and /templates files exist only inside the sim; elsewhere they are skipped. -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Birdie</title>
+  <link rel="stylesheet" href="/SCSS/common.css" />
+  <link rel="stylesheet" href="birdie.css" />
+  <script type="text/javascript" src="/JS/coherent.js"></script>
+  <script type="text/javascript" src="/JS/common.js"></script>
+  <script type="text/javascript" src="/JS/dataStorage.js"></script>
+  <script type="text/javascript" src="/JS/buttons.js"></script>
+  <script type="text/javascript" src="/JS/Services/ToolBarPanels.js"></script>
+  <link rel="import" href="/templates/ingameUi/ingameUi.html" />
+  <link rel="import" href="/templates/ingameUiHeader/ingameUiHeader.html" />
+  <script src="fake.js"></script><script src="fonts.js"></script><script type="text/javascript" src="birdie.js"></script>
+</head>
+<body class="border-box">
+  <ingamepanel-birdie>
+    <ingame-ui id="BirdiePanel" panel-id="PANEL_BIRDIE" title="Birdie" class="ingameUiFrame panelInvisible"
+               content-fit="false" min-width="40" min-height="40" resize="both">
+      <div id="birdie" class="offline">
+        <div class="pocket" id="pocket">
+          <!-- Birdie's own window only: the top edge moves it, the hairline cross hides it -->
+          <div class="grip" id="grip"></div>
+          <div class="x" id="x" role="button" tabindex="0"></div>
+
+          <!-- the peek (mouse resting on the tray icon): a narrow card under the wordmark, whose i is dotted with the bird -->
+          <div class="peekcard" id="peekcard">
+            <svg class="wm rise" viewBox="0 0 150 58" aria-label="Birdie">
+              <text id="wm-t" x="75" y="46" text-anchor="middle">B<tspan id="wm-i">ı</tspan>rdie</text>
+              <g id="wm-dot" transform="translate(52.5 20)"><g class="wb"><circle r="3.6"/><path d="M-3.6 0H-11M3.6 0H11M0 -3.6V-8.5"/></g></g>
+            </svg>
+            <div class="pk-hair"></div>
+            <div class="pk-voice serif rise" id="pk-voice"></div>
+            <div class="pk-fact rise" id="pk-fact"></div>
+            <div class="pk-sw rise"><span id="t-pk"></span>
+              <div class="knob" id="pk-power" role="button" tabindex="0">
+                <svg viewBox="0 0 34 34"><circle class="halo" cx="17" cy="17" r="16"/><circle class="ring" cx="17" cy="17" r="16"/><circle class="core" cx="17" cy="17" r="6.7"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- preview: the HUD as set now, only while the real one is not on the screen -->
+          <div class="pvwrap" id="pvwrap"><div class="pv" id="pv">
+            <div class="sun"></div>
+            <svg viewBox="20 60 1240 830" preserveAspectRatio="xMidYMid meet">
+              <g class="lights" id="lights"></g>
+              <g class="hud" id="hud"></g>
+            </svg>
+            <div class="pvl"><span id="pv-l"></span><span id="pv-r"></span></div>
+          </div></div>
+
+          <div class="panel" id="panel" data-p="0">
+            <div class="pages">
+              <!-- home: what you touch in flight -->
+              <div class="page p0" id="page0">
+                <div class="head drag rise" id="head">
+                  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g class="b" fill="none" stroke-width="3.8" stroke-linecap="round"><circle cx="32" cy="36" r="10"/><path d="M22 36H5M42 36h17M32 26V12"/></g></svg>
+                  <div class="voice serif" id="voice"></div>
+                  <div class="knob" id="power" role="button" tabindex="0" aria-pressed="true">
+                    <svg viewBox="0 0 34 34"><circle class="halo" cx="17" cy="17" r="16"/><circle class="ring" cx="17" cy="17" r="16"/><circle class="core" cx="17" cy="17" r="6.7"/></svg>
+                  </div>
+                </div>
+                <div class="fact rise" id="fact"></div>
+                <div class="dimmable">
+                  <div class="hair"></div>
+                  <div class="scale rise" id="s-bright"></div>
+                  <div class="scale rise" id="s-size"></div>
+                  <div class="scale rise" id="s-glide"></div>
+                  <div class="nav first rise" role="button" tabindex="0" data-go="1"><b id="t-sym"></b><span id="n-sym"></span><span class="ar">›</span></div>
+                  <div class="nav rise" role="button" tabindex="0" data-go="2"><b id="t-fine"></b><span id="n-fine"></span><span class="ar">›</span></div>
+                </div>
+                <div class="foot rise">
+                  <span class="pick" id="lang-zh" role="button" tabindex="0">中文</span>
+                  <span class="pick" id="lang-en" role="button" tabindex="0">EN</span>
+                  <span class="act plain r" id="t-quit" role="button" tabindex="0"></span>
+                </div>
+              </div>
+
+              <!-- symbols -->
+              <div class="page p1" id="page1">
+                <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif" id="t-sym2"></span></div>
+                <div class="dimmable">
+                  <div class="gh"><span id="t-path"></span><i></i></div><div class="gl" id="g-path"></div>
+                  <div class="gh"><span id="t-world"></span><i></i></div><div class="gl" id="g-world"></div>
+                  <div class="gh"><span id="t-inst"></span><i></i></div><div class="gl" id="g-inst"></div>
+                  <div class="gdesc" id="gdesc"></div>
+                </div>
+              </div>
+
+              <!-- fine tuning -->
+              <div class="page p2" id="page2">
+                <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif" id="t-fine2"></span></div>
+                <div class="dimmable">
+                  <div class="row"><div class="k" id="t-lead"></div><div class="picks" id="p-lead"></div></div>
+                  <div class="row"><div class="k" id="t-tol"></div><div class="picks" id="p-tol"></div></div>
+                  <div class="row"><div class="k" id="t-ladder"></div><div class="picks" id="p-ladder"></div></div>
+                  <div class="row"><div class="k" id="t-rah"></div><div class="picks" id="p-rah"></div></div>
+                  <div class="toggle" id="xw" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-xw"></span><span class="hk">Ctrl+Alt+Shift+Insert</span></div>
+                  <div class="nav inner" role="button" tabindex="0" data-go="3"><b id="t-border"></b><span id="n-border"></span><span class="ar">›</span></div>
+                  <div class="hair"></div>
+                  <div class="ra">
+                    <div><span id="t-ra"></span><span class="ac" id="ra-ac"></span></div>
+                    <div id="ra-note"></div>
+                    <div><span class="act" id="ra-btn" role="button" tabindex="0"></span><span class="act quiet" id="ra-clear" role="button" tabindex="0"></span></div>
+                  </div>
+                  <div class="foot2">
+                    <span class="toggle" id="auto" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-auto"></span></span>
+                    <span class="act plain" id="t-log" role="button" tabindex="0"></span>
+                    <span class="ver num" id="ver"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HUD border: traced on the screen, kept per aircraft and seat -->
+              <div class="page p3" id="page3">
+                <div class="back" role="button" tabindex="0" data-go="2">‹<span class="serif" id="t-border2"></span></div>
+                <div class="dimmable">
+                  <div class="bd">
+                    <div class="bd-who" id="bd-who"></div>
+                    <div class="bd-state" id="bd-state"></div>
+                    <div class="bd-go"><span class="act" id="bd-edit" role="button" tabindex="0"></span></div>
+                    <div class="bd-note" id="bd-eye"></div>
+                    <div class="bd-note" id="bd-cut"><span id="bd-cut-t"></span><span class="act" id="bd-fit" role="button" tabindex="0"></span></div>
+                    <div class="bd-more"><span class="act quiet" id="bd-mirror" role="button" tabindex="0"></span><span class="act quiet" id="bd-clear" role="button" tabindex="0"></span></div>
+                  </div>
+                  <div class="gdesc" id="bd-desc"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ingame-ui>
+  </ingamepanel-birdie>
+</body>
+</html>

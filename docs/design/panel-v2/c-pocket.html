@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1180">
+<title>方向 C · 随身</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=Noto+Serif+SC:wght@400;500&family=Noto+Sans+SC:wght@300;400&family=Barlow+Semi+Condensed:wght@500&display=swap">
+<style>
+/* Direction C, "pocket": in the sim the real HUD is already behind the panel, so the panel drops its preview and
+   becomes small: one page for what you touch in flight, two more pages slide in for symbols and fine tuning.
+   The backdrop here stands for the sim view; changes show on that HUD, as they would in the cockpit. */
+* { box-sizing: border-box; border-radius: 0; }
+html, body { margin: 0; width: 1180px; height: 820px; overflow: hidden; background: #1c1518; color-scheme: dark; }
+body { position: relative; color: #f2e7df; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-weight: 300; font-size: 14px; line-height: 1.6; user-select: none; }
+.num { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; }
+.serif { font-family: "Noto Serif SC", serif; }
+[role="button"] { cursor: pointer; outline: none; }
+[role="button"]:focus-visible { outline: 1px solid #f2b48a; outline-offset: 3px; }
+
+svg#sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+.simtag { position: absolute; left: 24px; top: 18px; font-size: 12px; letter-spacing: .08em; color: rgba(242,231,223,.5); }
+
+/* the sim's own panel frame (MSFS draws this; shown for scale) */
+.frame { position: absolute; right: 36px; top: 96px; width: 352px; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.bar { height: 30px; background: #141414; display: flex; align-items: center; padding: 0 10px; font-family: "Segoe UI", sans-serif; font-size: 12px; color: #ddd; font-weight: 400; }
+.bar b { flex: 1; font-weight: 600; } .bar span { margin-left: 12px; color: #999; }
+.panel { background: #261c21; overflow: hidden; position: relative; transition: height .75s cubic-bezier(.22,.61,.36,1); }
+.pages { display: flex; align-items: flex-start; width: 300%; transition: transform .75s cubic-bezier(.22,.61,.36,1); }
+.page { width: 33.3333%; padding: 20px 24px 18px; transition: opacity .6s; }
+.panel[data-p="1"] .pages { transform: translateX(-33.3333%); }
+.panel[data-p="2"] .pages { transform: translateX(-66.6667%); }
+.panel[data-p="0"] .page:not(.p0), .panel[data-p="1"] .page:not(.p1), .panel[data-p="2"] .page:not(.p2) { opacity: 0; }
+
+.head { display: flex; align-items: center; }
+.mark { width: 26px; height: 26px; margin-right: 12px; flex: none; }
+.mark .b { stroke: #f2b48a; animation: breathe 4.8s cubic-bezier(.22,.61,.36,1) infinite; transform-origin: 32px 36px; }
+@keyframes breathe { 0%,100% { opacity: .75; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+.voice { flex: 1; font-size: 22px; letter-spacing: .05em; line-height: 1.3; transition: opacity .9s; }
+.knob { width: 26px; height: 26px; flex: none; }
+.knob svg { width: 100%; height: 100%; overflow: visible; }
+.knob .ring { fill: none; stroke: #f2b48a; stroke-width: 1; } .knob .core { fill: #f2b48a; transition: opacity .7s; }
+.knob .halo { fill: none; stroke: #f2b48a; stroke-width: 1; transform-origin: 17px 17px; animation: halo 4.8s cubic-bezier(.22,.61,.36,1) infinite; }
+body.hudoff .knob .core { opacity: 0; } body.hudoff .knob .halo { animation: none; opacity: 0; } body.hudoff .knob .ring { stroke: #a8979a; }
+@keyframes halo { 0% { opacity: .55; transform: scale(.5); } 70%,100% { opacity: 0; transform: scale(1.35); } }
+.fact { color: #a8979a; font-size: 12.5px; margin: 4px 0 14px 38px; }
+.hair { height: 1px; background: rgba(242,231,223,.12); margin: 0 0 10px; }
+
+.scale { display: flex; align-items: center; padding: 2px 0; }
+.scale .k { width: 46px; font-size: 13px; }
+.scale .tr { position: relative; flex: 1; height: 28px; margin: 0 10px; cursor: pointer; }
+.scale .rail, .scale .fill { position: absolute; left: 0; top: 14px; height: 1px; }
+.scale .rail { width: 100%; background: rgba(242,231,223,.16); } .scale .fill { background: #f2b48a; }
+.scale .th { position: absolute; top: 8px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; border: 1px solid #f2b48a; background: #261c21; transition: transform .4s; }
+.scale .tr:hover .th { transform: scale(1.25); }
+.scale .o { width: 52px; text-align: right; font-size: 22px; line-height: 1; }
+
+.nav { display: flex; align-items: baseline; padding: 9px 0; font-size: 13.5px; border-top: 1px solid rgba(242,231,223,.08); }
+.nav:first-of-type { margin-top: 8px; }
+.nav b { font-weight: 300; flex: 1; } .nav span { color: #a8979a; } .nav .ar { margin-left: 10px; color: #f2b48a; transition: transform .5s; }
+.nav:hover .ar { transform: translateX(3px); }
+.foot { display: flex; font-size: 12px; color: #a8979a; margin-top: 10px; }
+.foot span { margin-right: 14px; } .foot .r { margin: 0 0 0 auto; } .foot .sel { color: #f2e7df; border-bottom: 1px solid #f2b48a; }
+
+.back { font-size: 13px; color: #a8979a; margin-bottom: 12px; display: inline-flex; align-items: center; }
+.back:hover { color: #f2e7df; }
+.back .serif { font-size: 19px; color: #f2e7df; margin-left: 8px; letter-spacing: .06em; }
+.gh { font-family: "Noto Serif SC", serif; font-size: 12px; letter-spacing: .16em; color: #a8979a; display: flex; align-items: center; margin: 4px 0 4px; }
+.gh i { flex: 1; height: 1px; background: rgba(242,231,223,.12); margin-left: 10px; }
+.gl { display: flex; flex-wrap: wrap; margin-bottom: 6px; }
+.g { width: 33.333%; display: flex; flex-direction: column; align-items: center; padding: 5px 0 6px; color: #a8979a; position: relative; transition: color .5s; }
+.g svg { width: 26px; height: 26px; overflow: visible; }
+.g .ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.g .t { fill: currentColor; font-family: "Cormorant Garamond", serif; font-style: italic; }
+.g .nm { font-size: 11.5px; margin-top: 1px; }
+.g:after { content: ""; position: absolute; left: 50%; bottom: 1px; width: 0; height: 1px; background: #f2b48a; transition: width .6s, margin-left .6s; }
+.g.sel { color: #f2b48a; } .g.sel:after { width: 18px; margin-left: -9px; }
+.g:not(.sel) .ic { opacity: .5; } .g:hover { color: #f2e7df; }
+
+.row { margin-bottom: 10px; }
+.row .k { font-size: 12.5px; color: #a8979a; }
+.picks .p { margin-right: 14px; font-size: 18px; color: #a8979a; position: relative; }
+.picks .p.sel { color: #f2b48a; border-bottom: 1px solid #f2b48a; }
+.ra { font-size: 12.5px; color: #a8979a; line-height: 1.7; }
+.ra .act { color: #f2e7df; border-bottom: 1px solid #f2b48a; }
+</style>
+</head>
+<body>
+  <svg id="sky" viewBox="0 30 1280 890" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="simtag">模拟器画面（示意）· 面板按 2560×1440 下的实际比例</div>
+
+  <div class="frame">
+    <div class="bar"><b>Birdie</b><span>⤢</span><span>✕</span></div>
+    <div class="panel" id="panel" data-p="0">
+      <div class="pages">
+        <div class="page p0">
+          <div class="head">
+            <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g class="b" fill="none" stroke-width="3.8" stroke-linecap="round"><circle cx="32" cy="36" r="10"/><path d="M22 36H5M42 36h17M32 26V12"/></g></svg>
+            <div class="voice serif" id="voice">在你身边</div>
+            <div class="knob" id="power" role="button" tabindex="0"><svg viewBox="0 0 34 34"><circle class="halo" cx="17" cy="17" r="16"/><circle class="ring" cx="17" cy="17" r="16"/><circle class="core" cx="17" cy="17" r="6.7"/></svg></div>
+          </div>
+          <div class="fact" id="fact">ZSNB 31 已对准 · 下滑 3.0°</div>
+          <div class="hair"></div>
+          <div class="scale" data-s="bright"></div>
+          <div class="scale" data-s="size"></div>
+          <div class="scale" data-s="glide"></div>
+          <div class="nav" role="button" tabindex="0" data-go="1"><b>符号</b><span id="count">15 / 15 显示中</span><span class="ar">›</span></div>
+          <div class="nav" role="button" tabindex="0" data-go="2"><b>细调</b><span>40 ms · ±0.3° · 6°</span><span class="ar">›</span></div>
+          <div class="foot"><span class="sel">中文</span><span>EN</span><span class="r">让 Birdie 休息</span></div>
+        </div>
+        <div class="page p1">
+          <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif">符号</span></div>
+          <div class="gh">飞行路径<i></i></div><div class="gl" data-g="path"></div>
+          <div class="gh">天地<i></i></div><div class="gl" data-g="world"></div>
+          <div class="gh">仪表<i></i></div><div class="gl" data-g="inst"></div>
+        </div>
+        <div class="page p2">
+          <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif">细调</span></div>
+          <div class="row"><div class="k">显示延迟补偿</div><div class="picks num"><span class="p">0</span><span class="p">20</span><span class="p sel">40</span><span class="p">60</span><span class="p">100</span><span class="p">150 ms</span></div></div>
+          <div class="row"><div class="k">拉平提示容差</div><div class="picks num"><span class="p">±0.2°</span><span class="p sel">±0.3°</span><span class="p">±0.5°</span><span class="p">±0.8°</span></div></div>
+          <div class="row"><div class="k">俯仰刻度间隔</div><div class="picks num"><span class="p">3°</span><span class="p">5°</span><span class="p sel">6°</span><span class="p">10°</span></div></div>
+          <div class="row"><div class="k">小鸟下的 RA 从多高开始出现</div><div class="picks num"><span class="p">200</span><span class="p">300</span><span class="p sel">500</span><span class="p">1000</span><span class="p">1500</span><span class="p">2500 ft</span></div></div>
+          <div class="hair"></div>
+          <div class="ra">无线电高度校准 · FlyByWire A320neo<br>读数减去 <span class="num" style="font-size:17px;color:#f2e7df">6.2 ft</span> · 停在地面时 <span class="act">重新记下</span><br><span style="opacity:.7">开机时陪着你 ● · 日志</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="hud.js"></script>
+<script>
+(function () {
+  var H = BirdieHUD, s = JSON.parse(JSON.stringify(H.DEFAULT)), $ = function (id) { return document.getElementById(id); };
+  var pv = H.Preview($('sky'), s, { sky: true });
+
+  function fitPanel() { var p = $('panel'); p.style.height = p.querySelector('.p' + p.getAttribute('data-p')).offsetHeight + 'px'; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (b) {
+    b.addEventListener('click', function () { $('panel').setAttribute('data-p', b.getAttribute('data-go')); fitPanel(); });
+  });
+  window.addEventListener('load', fitPanel);
+  setTimeout(fitPanel, 0);
+
+  var gs = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.gl'), function (box) {
+    H.GLYPHS[box.getAttribute('data-g')].forEach(function (g) {
+      var el = document.createElement('div');
+      el.className = 'g'; el.setAttribute('role', 'button'); el.setAttribute('tabindex', '0');
+      el.innerHTML = '<svg viewBox="0 0 34 34">' + g[5] + '</svg><span class="nm">' + g[2] + '</span>';
+      el.addEventListener('mouseenter', function () { pv.setFocus(g[0]); });
+      el.addEventListener('mouseleave', function () { pv.setFocus(null); });
+      el.addEventListener('click', function () { s[g[1]] = !s[g[1]]; paint(); pv.update(); });
+      box.appendChild(el); gs[g[0]] = el;
+    });
+  });
+  function paint() {
+    var n = 0;
+    for (var k in gs) { var on = !!s[H.glyph(k)[1]]; H.cls(gs[k], 'sel', on); n += on ? 1 : 0; }
+    $('count').textContent = n + ' / ' + H.ALL.length + ' 显示中';
+  }
+  paint();
+
+  var SC = {
+    bright: { lbl: '亮度', key: 'opacity', min: 25, max: 100, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
+    size: { lbl: '大小', key: 'hud_scale', min: 60, max: 115, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
+    glide: { lbl: '下滑角', key: 'glide_deg', min: 2.0, max: 5.9, step: 0.1, get: function (v) { return v; }, put: function (x) { return Math.round(x * 10) / 10; }, out: function (x) { return x.toFixed(1) + '°'; } }
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('.scale'), function (box) {
+    var id = box.getAttribute('data-s'), c = SC[id];
+    box.innerHTML = '<span class="k">' + c.lbl + '</span><div class="tr" role="button" tabindex="0"><div class="rail"></div><div class="fill"></div><div class="th"></div></div><span class="o num"></span>';
+    var tr = box.querySelector('.tr');
+    var draw = function () { var x = c.get(s[c.key]), p = (x - c.min) / (c.max - c.min) * 100; box.querySelector('.fill').style.width = p + '%'; box.querySelector('.th').style.left = p + '%'; box.querySelector('.o').textContent = c.out(x); };
+    var at = function (cx) { var r = tr.getBoundingClientRect(), p = Math.max(0, Math.min(1, (cx - r.left) / r.width)); s[c.key] = c.put(Math.round((c.min + p * (c.max - c.min)) / c.step) * c.step); draw(); pv.update(); $('fact').textContent = 'ZSNB 31 已对准 · 下滑 ' + s.glide_deg.toFixed(1) + '°'; };
+    tr.addEventListener('mousedown', function (e) { e.preventDefault(); at(e.clientX); var mv = function (ev) { at(ev.clientX); }, up = function () { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); }; document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up); });
+    draw();
+  });
+
+  $('power').addEventListener('click', function () {
+    s.visible = !s.visible; H.cls(document.body, 'hudoff', !s.visible); pv.update();
+    var v = $('voice'); v.style.opacity = 0;
+    setTimeout(function () { v.textContent = s.visible ? '在你身边' : '先安静一会儿'; v.style.opacity = 1; }, 450);
+  });
+})();
+</script>
+</body>
+</html>

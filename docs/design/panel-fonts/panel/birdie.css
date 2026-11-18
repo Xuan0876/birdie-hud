@@ -1,0 +1,260 @@
+/* Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
+   Panel look v2, "pocket" (design: docs/design/panel-v2/c-pocket.html), in the dusk colours of v1: plum-black to
+   apricot, hairlines and open space, no rounded rectangles; circles only where a circle is the meaning (the bird, a
+   knob, a dot). One small page for what you touch in flight; symbols and fine tuning slide in from the right. A small
+   preview unfolds on top only while the real HUD is not on the screen.
+   Written for Coherent GT as well as browsers: flexbox only (no grid), no CSS variables, no native range inputs.
+   1rem = 14 px of the design at 352 px width; birdie.js sets the root size from the panel's width. */
+
+@font-face { font-family: "Birdie Serif"; src: url("fonts/birdie-serif.ttf"); font-weight: 400; }
+@font-face { font-family: "Birdie Sans"; src: url("fonts/birdie-sans-light.ttf"); font-weight: 300; }
+@font-face { font-family: "Birdie Sans"; src: url("fonts/birdie-sans.ttf"); font-weight: 400; }
+@font-face { font-family: "Birdie Numerals"; src: url("fonts/birdie-numerals.ttf"); font-style: italic; font-weight: 400; }
+@font-face { font-family: "Birdie Numerals"; src: url("fonts/birdie-numerals.ttf"); font-style: normal; font-weight: 400; }
+@font-face { font-family: "Birdie HUD"; src: url("fonts/birdie-hud.ttf"); font-weight: 500; }
+
+html { font-size: 14px; }
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #1c1518; }
+html.host, html.host body { background: #261c21; overflow: hidden; }
+* { box-sizing: border-box; border-radius: 0; }
+
+/* ---------------------------------------------------------------- the sim's panel frame */
+ingamepanel-birdie, ingame-ui#BirdiePanel { display: block; width: 100%; height: 100%; }
+ingame-ui#BirdiePanel .ingameUiContent, ingame-ui#BirdiePanel .ingameUiWrapper {
+  padding: 0 !important; height: 100%; background: #261c21 !important; }
+ingame-ui#BirdiePanel .ingameUiFrame { background: #261c21 !important; }
+
+/* ---------------------------------------------------------------- root */
+#birdie { position: relative; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; background: #261c21;
+  color: #f2e7df; font-family: "Birdie Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 300; font-size: 1rem; line-height: 1.6; -webkit-user-select: none; user-select: none; }
+#birdie::-webkit-scrollbar { width: 6px; }
+#birdie::-webkit-scrollbar-thumb { background: rgba(242, 231, 223, 0.14); }
+#birdie::-webkit-scrollbar-track { background: transparent; }
+/* a desktop browser (no host, not the sim): the pocket on the dusk, at its design size */
+html.web #birdie { background: #1c1518; }
+html.web .pocket { width: 352px; margin: 9vh auto 4vh; background: #261c21; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+html.host #birdie { overflow: hidden; }
+.pocket { position: relative; }
+
+[role="button"] { cursor: pointer; outline: none; }
+[role="button"]:focus-visible { outline: 1px solid #f2b48a; outline-offset: .2rem; }
+.serif { font-family: "Birdie Serif", "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif; font-weight: 400; }
+.num { font-family: "Birdie Numerals", "Cormorant Garamond", Georgia, serif; font-style: italic; }
+
+/* ---------------------------------------------------------------- Birdie's own window: no frame, a grip and a hairline cross */
+.grip, .x { display: none; }
+html.host .grip { display: block; position: absolute; left: 0; right: 2.6rem; top: 0; height: 1.6rem; z-index: 4;
+  -webkit-app-region: drag; app-region: drag; }
+html.host .drag { -webkit-app-region: drag; app-region: drag; }
+html.host .drag .knob { -webkit-app-region: no-drag; app-region: no-drag; }
+html.host .x { display: block; position: absolute; right: 0; top: 0; width: 2.6rem; height: 2.2rem; z-index: 5;
+  -webkit-app-region: no-drag; app-region: no-drag; }
+.x:before, .x:after { content: ""; position: absolute; left: 1rem; top: 1.05rem; width: .72rem; height: 1px; background: #a8979a;
+  transform: rotate(45deg); transition: background-color .5s, transform .7s cubic-bezier(.22, .61, .36, 1); }
+.x:after { transform: rotate(-45deg); }
+.x:hover:before { background: #f2b48a; transform: rotate(135deg); }
+.x:hover:after { background: #f2b48a; transform: rotate(45deg); }
+.pvon .x:before, .pvon .x:after { background: rgba(242, 231, 223, .75); }
+html.host .page { padding-top: 1.86rem; }
+
+/* ---------------------------------------------------------------- the peek: hovering the tray icon, a narrow card (236 px) */
+.peekcard { display: none; }
+html.peek .grip, html.peek .x, html.peek .pvwrap, html.peek .panel { display: none; }
+html.peek .peekcard { display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden;
+  padding: 1.29rem 1.43rem 1.14rem; cursor: pointer; }
+.peekcard:before { content: ""; position: absolute; left: -30%; top: -4.3rem; width: 160%; height: 12rem; pointer-events: none;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(242, 180, 138, .13), rgba(242, 180, 138, 0) 70%);
+  transition: opacity 1s cubic-bezier(.22, .61, .36, 1); opacity: .8; }
+.peekcard:hover:before { opacity: 1; }
+.wm { width: 9.4rem; height: 3.63rem; overflow: visible; }
+.wm text { font-family: "Birdie Numerals", "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 44px; letter-spacing: 1px; fill: #f2e7df; }
+.wm .wb { fill: none; stroke: #f2b48a; stroke-width: 1.5; stroke-linecap: round; }
+.wm .wb { animation: breathe 4.8s cubic-bezier(.22, .61, .36, 1) infinite; transform-box: fill-box; transform-origin: center; }
+.pk-hair { width: 100%; height: 1px; margin: .93rem 0 .86rem;
+  background: linear-gradient(90deg, rgba(242, 231, 223, 0), rgba(242, 231, 223, .16), rgba(242, 231, 223, 0)); }
+.pk-voice { font-size: 1.29rem; letter-spacing: .08em; line-height: 1.35; text-align: center;
+  transition: opacity .9s cubic-bezier(.22, .61, .36, 1), color .6s; }
+.pk-voice.swap { opacity: 0; }
+.peekcard:hover .pk-voice { color: #fff6ef; }
+.pk-fact { font-size: .82rem; color: #a8979a; margin-top: .21rem; text-align: center; min-height: 1.4em;
+  transition: opacity .9s cubic-bezier(.22, .61, .36, 1), color .6s; }
+.pk-fact.notice { color: #f2b48a; }
+.pk-fact.swap { opacity: 0; }
+.pk-sw { display: flex; align-items: center; margin-top: .93rem; font-size: .86rem; color: #a8979a; letter-spacing: .06em; }
+.pk-sw .knob { width: 1.57rem; height: 1.57rem; margin-left: .71rem; }
+
+/* ---------------------------------------------------------------- preview: unfolds only while the real HUD is away */
+.pvwrap { height: 0; overflow: hidden; transition: height .9s cubic-bezier(.22, .61, .36, 1); }
+.pv { position: relative; height: 0; padding-top: 66.94%; /* = the viewBox 1240 x 830, the whole HUD (tapes, roll scale, ladder); horizon at 43.4 % */ overflow: hidden; opacity: 0; border-bottom: 1px solid rgba(242, 231, 223, 0.10);
+  transition: opacity .9s cubic-bezier(.22, .61, .36, 1) .1s;
+  background: linear-gradient(180deg, #2f2234 0%, #5b3a4f 13%, #a2606a 28%, #e0927a 38%, #f3c497 43.2%, #3a2a2c 43.4%, #2a1f22 68%, #1d1618 100%); }
+.pvon .pv { opacity: 1; }
+.pv .sun { position: absolute; left: -20%; top: -20%; width: 140%; height: 140%; pointer-events: none;
+  background: radial-gradient(ellipse 42% 20% at 50% 42%, rgba(255, 214, 168, .5), rgba(255, 214, 168, 0) 70%);
+  animation: sun 22s ease-in-out infinite alternate; }
+@keyframes sun { from { transform: translateX(-2%); opacity: .8; } to { transform: translateX(2%); opacity: 1; } }
+.pv svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.pvl { position: absolute; left: 1.71rem; right: 1.71rem; bottom: .5rem; display: flex; font-size: .82rem; letter-spacing: .06em; color: rgba(242, 231, 223, .62); }
+.pvl span:first-child { flex: 1; }
+.hud { transition: opacity 1.2s cubic-bezier(.22, .61, .36, 1); }
+.hud .el { transition: opacity .9s cubic-bezier(.22, .61, .36, 1), filter .9s; }
+.hud .el.off { opacity: 0; filter: blur(5px); }
+.hud.spot .el { opacity: .16; }
+.hud.spot .el.focus { opacity: 1; }
+.hud.spot .el.off.focus { opacity: .35; filter: none; }
+.hud .el.focus { filter: drop-shadow(0 0 6px rgba(242, 180, 138, .95)); }
+.stroke { fill: none; stroke: #57f27f; stroke-width: 3; stroke-linecap: square; stroke-linejoin: bevel; }
+.stroke.thin { stroke-width: 2.2; }
+.solid { fill: #57f27f; }
+.htxt { fill: #57f27f; font-family: "Birdie HUD", "Bahnschrift", "Arial Narrow", sans-serif; font-weight: 500; }
+.dash { stroke-dasharray: 14 9; }
+#birdfloat { animation: float 6.5s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(2px, -2px); } 66% { transform: translate(-2px, 1.5px); } }
+#flare.blink { animation: blink 1.6s ease-in-out infinite; }
+@keyframes blink { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.lights circle { fill: #ffd9a8; animation: twinkle 5s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: .9; } }
+
+/* ---------------------------------------------------------------- pages: one shown, the others wait to the side */
+.panel { position: relative; overflow: hidden; transition: height .75s cubic-bezier(.22, .61, .36, 1); }
+.pages { display: flex; align-items: flex-start; width: 400%; transition: transform .75s cubic-bezier(.22, .61, .36, 1); }
+.page { width: 25%; padding: 1.43rem 1.71rem 1.29rem; transition: opacity .6s cubic-bezier(.22, .61, .36, 1); }
+.panel[data-p="1"] .pages { transform: translateX(-25%); }
+.panel[data-p="2"] .pages { transform: translateX(-50%); }
+.panel[data-p="3"] .pages { transform: translateX(-75%); }
+.panel[data-p="0"] .page:not(.p0), .panel[data-p="1"] .page:not(.p1), .panel[data-p="2"] .page:not(.p2),
+.panel[data-p="3"] .page:not(.p3) { opacity: 0; }
+
+/* ---------------------------------------------------------------- home: the companion's voice */
+.head { display: flex; align-items: center; }
+.mark { width: 1.86rem; height: 1.86rem; margin-right: .86rem; flex: none; }
+.mark .b { stroke: #f2b48a; animation: breathe 4.8s cubic-bezier(.22, .61, .36, 1) infinite; transform-origin: 32px 36px; }
+@keyframes breathe { 0%, 100% { opacity: .75; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+.voice { flex: 1; min-width: 0; font-size: 1.57rem; letter-spacing: .05em; line-height: 1.3;
+  transition: opacity .9s cubic-bezier(.22, .61, .36, 1), transform .9s cubic-bezier(.22, .61, .36, 1), filter .9s; }
+.voice.swap { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+.fact { color: #a8979a; font-size: .89rem; margin: .29rem 0 1rem 2.71rem; min-height: 1.4em; transition: opacity .9s cubic-bezier(.22, .61, .36, 1), color .6s; }
+.fact.notice { color: #f2b48a; }
+.fact.swap { opacity: 0; }
+.knob { width: 1.86rem; height: 1.86rem; flex: none; margin-left: .71rem; }
+.knob svg { width: 100%; height: 100%; overflow: visible; }
+.knob .ring { fill: none; stroke: #a8979a; stroke-width: 1; transition: stroke .6s; }
+.knob .core { fill: #f2b48a; opacity: 0; transition: opacity .7s cubic-bezier(.22, .61, .36, 1); }
+.knob .halo { fill: none; stroke: #f2b48a; stroke-width: 1; opacity: 0; transform-origin: 17px 17px; }
+.on .knob .ring { stroke: #f2b48a; }
+.on .knob .core { opacity: 1; }
+.on .knob .halo { animation: halo 4.8s cubic-bezier(.22, .61, .36, 1) infinite; }
+@keyframes halo { 0% { opacity: .55; transform: scale(.5); } 70%, 100% { opacity: 0; transform: scale(1.35); } }
+.hair { height: 1px; background: rgba(242, 231, 223, .12); margin: 0 0 .71rem; }
+
+.scale { display: flex; align-items: center; padding: .14rem 0; }
+.scale .lbl { width: 3.3rem; flex: none; font-size: .93rem; }
+.scale .track { position: relative; flex: 1 1 auto; height: 2rem; margin: 0 .71rem; cursor: pointer; }
+.scale .rail, .scale .fill { position: absolute; left: 0; top: 1rem; height: 1px; }
+.scale .rail { width: 100%; background: rgba(242, 231, 223, .16); }
+.scale .fill { background: #f2b48a; }
+.scale .thumb { position: absolute; top: .54rem; width: .93rem; height: .93rem; margin-left: -.46rem; border-radius: 50%;
+  border: 1px solid #f2b48a; background: #261c21; transition: transform .4s cubic-bezier(.22, .61, .36, 1), box-shadow .4s; }
+.scale .track:hover .thumb, .scale .track.drag .thumb { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(242, 180, 138, .12); }
+.scale .track.ease .fill, .scale .track.ease .thumb { transition: left .25s cubic-bezier(.22, .61, .36, 1), width .25s cubic-bezier(.22, .61, .36, 1),
+  transform .4s cubic-bezier(.22, .61, .36, 1), box-shadow .4s; }
+.scale .out { width: 3.9rem; flex: none; text-align: right; font-family: "Birdie Numerals", "Cormorant Garamond", Georgia, serif; font-style: italic;
+  font-size: 1.57rem; line-height: 1; color: #f2e7df; }
+
+.nav { display: flex; align-items: baseline; padding: .64rem 0; font-size: .96rem; border-top: 1px solid rgba(242, 231, 223, .08); }
+.nav.first { margin-top: .57rem; }
+.nav b { font-weight: 300; flex: 1; }
+.nav span { color: #a8979a; font-size: .89rem; }
+.nav .ar { margin-left: .71rem; color: #f2b48a; transition: transform .5s cubic-bezier(.22, .61, .36, 1); }
+.nav:hover .ar { transform: translateX(3px); }
+.nav:hover b { color: #fff6ef; }
+
+.foot { display: flex; align-items: baseline; font-size: .86rem; color: #a8979a; margin-top: .71rem; }
+.foot .pick { margin-right: 1rem; }
+.foot .r { margin-left: auto; }
+
+/* underline that grows from the centre: what is on */
+.pick { position: relative; padding-bottom: 2px; transition: color .5s; }
+.pick:after { content: ""; position: absolute; left: 50%; bottom: 0; width: 0; height: 1px; background: #f2b48a;
+  transition: width .6s cubic-bezier(.22, .61, .36, 1), left .6s cubic-bezier(.22, .61, .36, 1); }
+.pick.sel { color: #f2e7df; }
+.pick.sel:after { width: 100%; left: 0; }
+.pick:hover { color: #f2e7df; }
+
+.act { color: #f2e7df; border-bottom: 1px solid #f2b48a; padding-bottom: 1px; transition: color .4s, border-color .4s, opacity .4s; }
+.act.quiet { color: #a8979a; border-bottom-color: rgba(242, 231, 223, .14); margin-left: .86rem; }
+.act.dim { opacity: .4; cursor: default; }
+.act.plain { border-bottom: 0; color: #a8979a; }
+.act.plain:hover { color: #f2e7df; }
+.act.ask { color: #f2b48a; }
+
+/* ---------------------------------------------------------------- sub pages */
+.back { display: flex; align-items: center; font-size: .93rem; color: #a8979a; margin-bottom: .86rem; transition: color .5s; }
+.back:hover { color: #f2e7df; }
+.back .serif { font-size: 1.36rem; color: #f2e7df; margin-left: .57rem; letter-spacing: .06em; }
+.gh { font-family: "Birdie Serif", "Noto Serif SC", serif; font-size: .86rem; letter-spacing: .16em; color: #a8979a; display: flex; align-items: center; margin: .29rem 0; }
+.gh i { flex: 1; height: 1px; background: rgba(242, 231, 223, .12); margin-left: .71rem; }
+.gl { display: flex; flex-wrap: wrap; margin-bottom: .43rem; }
+.g { width: 33.333%; display: flex; flex-direction: column; align-items: center; padding: .36rem 0 .43rem; color: #a8979a; position: relative;
+  transition: color .6s cubic-bezier(.22, .61, .36, 1); }
+.g svg { width: 1.86rem; height: 1.86rem; overflow: visible; }
+.g .ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: opacity .6s; }
+.g .t { fill: currentColor; stroke: none; font-family: "Birdie Numerals", "Cormorant Garamond", Georgia, serif; font-style: italic; }
+.g .nm { font-size: .82rem; line-height: 1.3; margin-top: .07rem; text-align: center; }
+.g:after { content: ""; position: absolute; left: 50%; bottom: 1px; width: 0; height: 1px; margin-left: 0; background: #f2b48a;
+  transition: width .7s cubic-bezier(.22, .61, .36, 1), margin-left .7s cubic-bezier(.22, .61, .36, 1); }
+.g.sel { color: #f2b48a; }
+.g.sel:after { width: 1.29rem; margin-left: -.64rem; }
+.g.unsel .ic { opacity: .5; }
+.g:hover { color: #f2e7df; }
+.g.sel:hover { color: #f2b48a; }
+.gdesc { min-height: 2.9rem; padding-top: .57rem; border-top: 1px solid rgba(242, 231, 223, .08); font-size: .86rem; color: #a8979a; line-height: 1.5;
+  transition: opacity .5s cubic-bezier(.22, .61, .36, 1); }
+.gdesc b { display: block; font-weight: 400; color: #f2e7df; }
+
+.row { margin-bottom: .71rem; }
+.row .k { font-size: .89rem; color: #a8979a; }
+.picks { display: flex; flex-wrap: wrap; }
+.picks .pick { margin-right: 1rem; font-family: "Birdie Numerals", "Cormorant Garamond", Georgia, serif; font-size: 1.29rem; font-style: italic; color: #a8979a; line-height: 1.35; }
+.picks .pick.sel { color: #f2b48a; }
+.picks .pick.word { font-family: "Birdie Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif; font-style: normal; font-size: .93rem; }
+.toggle { display: flex; align-items: center; font-size: .93rem; color: #a8979a; margin: .14rem 0 .86rem; transition: color .5s; }
+.toggle.sel, .toggle:hover { color: #f2e7df; }
+.toggle .hk { margin-left: .71rem; color: rgba(168, 151, 154, .6); font-size: .79rem; }
+.dot { display: inline-block; flex: none; width: .64rem; height: .64rem; margin-right: .57rem; border: 1px solid #a8979a; border-radius: 50%;
+  transition: background-color .5s, border-color .5s; }
+.sel > .dot { background: #f2b48a; border-color: #f2b48a; }
+.ra { font-size: .89rem; color: #a8979a; line-height: 1.75; }
+.ra .ac { color: rgba(168, 151, 154, .75); }
+.ra .v { font-size: 1.21rem; color: #f2e7df; }
+/* HUD border page */
+.nav.inner { margin: -.29rem 0 .57rem; }
+.bd { font-size: .89rem; color: #a8979a; line-height: 1.75; }
+.bd-who { color: rgba(168, 151, 154, .75); }
+.bd-state { font-family: "Birdie Serif", "Noto Serif SC", serif; color: #f2e7df; font-size: 1.14rem; letter-spacing: .04em; margin: .07rem 0 .64rem; }
+.bd-go { margin-bottom: .71rem; }
+.bd-note { color: #e0927a; margin-bottom: .43rem; }
+.bd-note .act { margin-left: .57rem; }
+.bd-more { margin: .14rem 0 .86rem; }
+.bd-more .act.quiet { margin: 0 .86rem 0 0; }
+.foot2 { display: flex; align-items: center; font-size: .86rem; color: #a8979a; margin-top: .86rem; padding-top: .71rem; border-top: 1px solid rgba(242, 231, 223, .08); }
+.foot2 > * { margin-right: 1.14rem; }
+.foot2 .toggle { margin: 0 1.14rem 0 0; }
+.foot2 .ver { margin: 0 0 0 auto; color: rgba(168, 151, 154, .6); }
+
+/* ---------------------------------------------------------------- not connected: everything rests, quietly */
+.dimmable { transition: opacity 1s cubic-bezier(.22, .61, .36, 1); }
+#birdie.offline .dimmable { opacity: .38; pointer-events: none; }
+
+/* entrance: everything rests visible; the stagger only lifts it in */
+.rise { animation: rise 1.1s cubic-bezier(.22, .61, .36, 1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Coherent GT (in the sim): no blur */
+html.coui .hud .el.off, html.coui .voice.swap { filter: none; }
+html.coui .hud .el.focus { filter: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}

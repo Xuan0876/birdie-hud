@@ -1,0 +1,140 @@
+<meta charset="utf-8">
+<title>Birdie 面板 v2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=Noto+Serif+SC:wght@400;500&family=Noto+Sans+SC:wght@300;400&display=swap">
+<style>
+/* Layout: one dusk sheet for the chosen direction, "pocket": the mockup at its true 1180 x 820 size scaled to fit,
+   then what it is made of, then the small things still open. Single dusk look by choice: the panel's own world. */
+:root {
+  --night: #1c1518;
+  --dusk: #261c21;
+  --ink: #f2e7df;
+  --mist: #a8979a;
+  --hair: rgba(242, 231, 223, .13);
+  --glow: #f2b48a;
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --num: "Cormorant Garamond", Georgia, serif;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; border-radius: 0; }
+body { background: var(--night); color: var(--ink); font-family: var(--sans); font-weight: 300; font-size: 15px; line-height: 1.75; }
+.page { max-width: 1240px; margin: 0 auto; padding-block: 44px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header { display: flex; align-items: flex-end; gap: 28px; flex-wrap: wrap; padding-bottom: 30px; border-bottom: 1px solid var(--hair); }
+header svg { width: 56px; height: 56px; flex: none; }
+header svg g { stroke: var(--glow); animation: breathe 4.8s var(--ease) infinite; transform-origin: 32px 36px; }
+@keyframes breathe { 0%, 100% { opacity: .75; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 4vw, 44px); letter-spacing: .06em; margin: 0; line-height: 1.2; }
+h1 em { font-family: var(--num); font-size: 1.05em; color: var(--glow); letter-spacing: 0; margin-left: .2em; }
+.lede { flex: 1 1 380px; min-width: 0; color: var(--mist); max-width: 62ch; margin: 0; }
+.lede b { color: var(--ink); font-weight: 400; }
+
+section { padding: 44px 0 8px; }
+section + section { border-top: 1px solid var(--hair); margin-top: 44px; }
+.eyebrow { font-family: var(--serif); font-size: 13px; letter-spacing: .2em; color: var(--glow); }
+h2 { font-family: var(--serif); font-weight: 400; font-size: 30px; letter-spacing: .06em; margin: 2px 0 6px; text-wrap: balance; }
+.pitch { color: var(--mist); max-width: 70ch; margin: 0 0 22px; }
+
+.stage { position: relative; width: 100%; overflow: hidden; background: var(--dusk); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+.stage iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: var(--dusk); display: block; }
+
+.three { display: flex; flex-wrap: wrap; gap: 20px 40px; margin-top: 26px; }
+.three > div { flex: 1 1 260px; min-width: 0; }
+.three h3 { font-family: var(--serif); font-weight: 400; font-size: 14px; letter-spacing: .16em; color: var(--mist); margin: 0 0 6px; display: flex; align-items: center; }
+.three h3 i { flex: 1; height: 1px; background: var(--hair); margin-left: 12px; }
+.three p { margin: 0; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 28px 44px; margin-top: 18px; }
+.opt { display: flex; flex-direction: column; gap: 10px; }
+.strip { display: flex; align-items: center; gap: 18px; background: rgba(12, 12, 14, .85); padding: 10px 18px; border-top: 1px solid rgba(255,255,255,.08); }
+.strip svg { width: 30px; height: 30px; }
+.strip .dim { opacity: .55; }
+.opt .cap { font-size: 14px; } .opt .cap small { display: block; color: var(--mist); font-size: 13px; }
+
+.quote { font-family: var(--serif); font-size: 19px; letter-spacing: .04em; }
+.quote small { font-family: var(--sans); font-size: 13px; color: var(--mist); letter-spacing: 0; margin-left: 10px; }
+.quotes { display: flex; flex-wrap: wrap; gap: 10px 44px; margin-top: 14px; }
+
+footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--hair); color: var(--mist); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px 32px; }
+footer code { font-family: Consolas, monospace; font-size: 12.5px; color: var(--ink); word-break: break-all; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page">
+  <header>
+    <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke-width="3" stroke-linecap="round"><circle cx="32" cy="36" r="10"/><path d="M22 36H5M42 36h17M32 26V12"/></g></svg>
+    <h1>Birdie 面板<em>v2</em></h1>
+    <p class="lede">定下的方向是<b>随身</b>：模拟器里真正的 HUD 就在面板后面，所以面板不再放预览，缩成一个小窗口，飞着也能一直开着调。下面的样稿能点、能拖，背景代表模拟器画面。</p>
+  </header>
+
+  <section id="c">
+    <div class="eyebrow">方向 C · 已选</div>
+    <h2>随身</h2>
+    <p class="pitch">面板约 350 × 470，靠右上。首页放飞行中会动的东西；点“符号”和“细调”会滑到第二、三页。面板里改什么，后面的 HUD 就变什么；悬停一个符号，那一笔会亮起来。</p>
+    <div class="stage" data-w="1180" data-h="820"><iframe src="c-pocket.html" title="随身面板样稿" width="1180" height="820"></iframe></div>
+    <div class="three">
+      <div><h3>首页<i></i></h3><p>一句陪伴的话和当前状态，HUD 开关，亮度、大小、下滑角三条刻度，再往下是“符号”和“细调”两个入口。2560 × 1440 下约占 14% × 33% 屏幕，不挡风挡。</p></div>
+      <div><h3>符号与细调<i></i></h3><p>16 个符号分三组，点一下藏起或请回来；新加的“RA 高度”在小鸟正下方。细调里是显示延迟、拉平容差、俯仰刻度间隔、小鸟下 RA 从多高开始出现，以及 RA 校准。</p></div>
+      <div><h3>要做的<i></i></h3><p>悬停时真 HUD 那一笔亮起，要加一条面板到 Birdie 的消息，HUD 也要会画高亮。桌面浏览器里没有模拟器画面，要留一个小预览兜底。</p></div>
+    </div>
+  </section>
+
+  <section id="any">
+    <div class="eyebrow">还没定</div>
+    <h2>小事</h2>
+    <p class="pitch">工具栏图标。MSFS 的工具栏会把图标染成白色，所以只能是单色形状。下面并排放在工具栏上的样子（两边的灰点代表别的插件）。</p>
+    <div class="bar">
+      <div class="opt">
+        <div class="strip"><svg class="dim" viewBox="0 0 64 64"><circle cx="32" cy="32" r="14" fill="#fff"/></svg>
+          <svg viewBox="0 0 64 64"><path fill="#fff" fill-rule="evenodd" d="M32 24.5a11.5 11.5 0 1 1 0 23a11.5 11.5 0 1 1 0-23zM32 28a8 8 0 1 0 0 16a8 8 0 1 0 0-16z"/><path fill="#fff" d="M4 34.25h16.6v3.5H4zM43.4 34.25H60v3.5H43.4zM30.25 10h3.5v14.6h-3.5z"/></svg>
+          <svg class="dim" viewBox="0 0 64 64"><rect x="18" y="18" width="28" height="28" fill="#fff"/></svg></div>
+        <div class="cap">① 现在<small>粗环加三笔，和 HUD 上的小鸟一样</small></div>
+      </div>
+      <div class="opt">
+        <div class="strip"><svg class="dim" viewBox="0 0 64 64"><circle cx="32" cy="32" r="14" fill="#fff"/></svg>
+          <svg viewBox="0 0 64 64"><g fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="32" cy="36" r="10"/><path d="M22 36H5M42 36h17M32 26V12"/></g></svg>
+          <svg class="dim" viewBox="0 0 64 64"><rect x="18" y="18" width="28" height="28" fill="#fff"/></svg></div>
+        <div class="cap">② 细线<small>更轻，像面板里的那只；小尺寸下可能偏淡</small></div>
+      </div>
+      <div class="opt">
+        <div class="strip"><svg class="dim" viewBox="0 0 64 64"><circle cx="32" cy="32" r="14" fill="#fff"/></svg>
+          <svg viewBox="0 0 64 64"><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="32" cy="36" r="10"/><path d="M22 36H6M42 36h16M32 26V13"/></g><circle cx="32" cy="36" r="3.4" fill="#fff"/></svg>
+          <svg class="dim" viewBox="0 0 64 64"><rect x="18" y="18" width="28" height="28" fill="#fff"/></svg></div>
+        <div class="cap">③ 环里一点光<small>中间多一个亮点，像在发光的小鸟</small></div>
+      </div>
+    </div>
+
+    <p class="pitch" style="margin-top:34px">几句语气。现在是这么写的，哪句不对味直接说：</p>
+    <div class="quotes">
+      <div class="quote">我还没醒<small>Birdie.exe 没开</small></div>
+      <div class="quote">让 Birdie 休息<small>退出；点一次后变成“再点一次，它就去睡了”</small></div>
+      <div class="quote">转回前方，我就在<small>转头看别处</small></div>
+      <div class="quote">你回来，我就回来<small>切到别的窗口</small></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>样稿在 <code>birdie-hud/docs/design/panel-v2/c-pocket.html</code></span>
+    <span>实现时照 Coherent 的规矩写：只用 flex、不用 CSS 变量、不用模糊。</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  function fit() {
+    document.querySelectorAll('.stage').forEach(function (st) {
+      var w = +st.dataset.w, h = +st.dataset.h, f = st.querySelector('iframe');
+      var k = Math.min(1, st.clientWidth / w);
+      f.style.width = w + 'px'; f.style.height = h + 'px';
+      f.style.transform = 'scale(' + k + ')';
+      st.style.height = Math.round(h * k) + 'px';
+    });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>

@@ -1,0 +1,74 @@
+{
+  "content": [
+    {
+      "path": "html_ui/icons/toolbar/ICON_TOOLBAR_BIRDIE.svg",
+      "size": 481,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/birdie.css",
+      "size": 29971,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/birdie.html",
+      "size": 18176,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/birdie.js",
+      "size": 85008,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/birdie-hud.ttf",
+      "size": 19148,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/birdie-numerals.ttf",
+      "size": 30308,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/birdie-sans-light.ttf",
+      "size": 119820,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/birdie-sans.ttf",
+      "size": 119752,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/birdie-serif.ttf",
+      "size": 175164,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/OFL-barlow.txt",
+      "size": 4377,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/OFL-cormorant.txt",
+      "size": 4387,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/OFL-jost.txt",
+      "size": 4384,
+      "date": 0
+    },
+    {
+      "path": "html_ui/InGamePanels/Birdie/fonts/OFL-noto.txt",
+      "size": 4350,
+      "date": 0
+    },
+    {
+      "path": "InGamePanels/birdie-panel.spb",
+      "size": 648,
+      "date": 0
+    }
+  ]
+}

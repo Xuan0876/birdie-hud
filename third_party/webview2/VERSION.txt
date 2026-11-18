@@ -1,0 +1,2 @@
+Microsoft.Web.WebView2 1.0.4258.31 (NuGet, https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.4258.31)
+Only the headers and the static x64 loader are kept: build/native/include/*.h, build/native/x64/WebView2LoaderStatic.lib.

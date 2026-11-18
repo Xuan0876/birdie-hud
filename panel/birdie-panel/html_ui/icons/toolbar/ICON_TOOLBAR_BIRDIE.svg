@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>ICON_TOOLBAR_BIRDIE</title>
+  <!-- Birdie's bird (flight path vector): a ring, two wings, a tail. Filled shapes, so the toolbar can tint it. -->
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M32 24.5a11.5 11.5 0 1 1 0 23a11.5 11.5 0 1 1 0-23zM32 28a8 8 0 1 0 0 16a8 8 0 1 0 0-16z"/>
+  <path fill="#FFFFFF" d="M4 34.25h16.6v3.5H4zM43.4 34.25H60v3.5H43.4zM30.25 10h3.5v14.6h-3.5z"/>
+</svg>

@@ -1,0 +1,6 @@
+* text=auto
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+# the community package is shipped byte for byte: layout.json lists every file's size
+panel/birdie-panel/** -text

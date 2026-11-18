@@ -1,0 +1,4 @@
+// Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
+// The exe's own icon (Explorer, Start menu, shortcuts). birdie.ico comes from scripts/make_icon.ps1.
+// The first icon resource is the one Windows shows for the file.
+1 ICON "birdie.ico"

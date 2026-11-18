@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- Birdie panel: English font candidates (11/17). The real panel (copied into panel/, fake Birdie in fake.js),
+     English, with only the Latin faces swapped by panel/fonts.js. Numerals stay Cormorant Garamond Italic. -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Birdie 英文字体对比</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #1c1518; color: #f2e7df; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-weight: 300; }
+  header { padding: 28px 32px 8px; }
+  h1 { font-family: "Noto Serif SC", serif; font-weight: 400; font-size: 22px; letter-spacing: .06em; margin: 0 0 6px; }
+  header p { color: #a8979a; font-size: 13px; margin: 0; }
+  .row { display: flex; gap: 22px; padding: 18px 32px 40px; overflow-x: auto; }
+  .col { flex: none; width: 352px; }
+  .col h2 { font-family: "Noto Serif SC", serif; font-weight: 400; font-size: 17px; margin: 0; color: #f2b48a; letter-spacing: .04em; }
+  .col .who { font-size: 12.5px; color: #a8979a; margin: 2px 0 10px; min-height: 2.8em; line-height: 1.45; }
+  iframe { display: block; width: 352px; border: 0; background: #261c21; margin-bottom: 14px; }
+  .h0 { height: 525px; } .h2 { height: 690px; } .h3 { height: 400px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>英文字体 · 排一排比一比</h1>
+  <p>真面板、英文界面，只换西文字体；中文和斜体数字（Cormorant Garamond Italic）不变。从上到下：首页、细调、HUD 边框。</p>
+</header>
+<div class="row" id="row"></div>
+<script>
+  var C = [
+    ['now', '0 · 现在', '正文 Noto Sans、标题 Noto Serif（思源自带的拉丁字母）'],
+    ['jost', 'A · Jost + Cormorant', '正文 Jost Light（几何，像 Futura）· 标题 Cormorant Garamond，和数字同族'],
+    ['nunito', 'B · Nunito Sans + Cormorant', '正文 Nunito Sans Light（圆润人文）· 标题 Cormorant Garamond'],
+    ['garamond', 'C · EB Garamond 全衬线', '正文 EB Garamond（书卷）· 标题 Cormorant Garamond'],
+    ['fraunces', 'D · Figtree + Fraunces', '正文 Figtree Light（温和）· 标题 Fraunces Light（软衬线，有体温）'],
+    ['news', 'E · Source Sans 3 + Newsreader', '正文 Source Sans 3 Light（安静好读）· 标题 Newsreader（报刊衬线）']
+  ];
+  var row = document.getElementById('row');
+  C.forEach(function (c) {
+    var d = document.createElement('div');
+    d.className = 'col';
+    d.innerHTML = '<h2>' + c[1] + '</h2><div class="who">' + c[2] + '</div>' +
+      [0, 2, 3].map(function (p) { return '<iframe class="h' + p + '" src="panel/birdie.html?en&font=' + c[0] + '&page=' + p + '"></iframe>'; }).join('');
+    row.appendChild(d);
+  });
+</script>
+</body>
+</html>

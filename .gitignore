@@ -1,0 +1,41 @@
+# build outputs
+build/
+out/
+*.dll
+*.exe
+*.lib
+*.exp
+*.obj
+*.pdb
+
+# python
+__pycache__/
+*.pyc
+
+# local state of the reference implementation
+reference/python/settings.json
+reference/python/foe_out/
+
+# recording frames written by tests/make_golden.py (simulator screenshots: kept out of the repository)
+tests/fixtures/*/frames/
+tests/fixtures/*/preview/
+
+# ChasePlane Remote client used by tools/runway_calib/forward.py (undocumented protocol, not published)
+tools/runway_calib/cpremote.py
+
+# downloaded data (OurAirports) for tools/runway_calib
+tools/runway_calib/data/
+
+# editors
+.vs/
+.vscode/
+*.user
+
+# vendored WebView2 static loader (Birdie.exe links it; no NuGet step)
+!third_party/webview2/x64/WebView2LoaderStatic.lib
+
+# candidate fonts tried for the panel (not shipped; the chosen ones are subset into panel/)
+docs/design/panel-fonts/panel/cand/
+
+# release zips (scripts/package.py)
+dist/
