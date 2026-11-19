@@ -4,6 +4,9 @@
 
 [中文说明](README.zh-CN.md)
 
+<p align="center"><img src="res/readme/landing.webp" alt="Last 17 seconds of the approach: runway outline, touchdown-zone marks, flare, touchdown" width="960"></p>
+<p align="center"><sub>Live over MSFS 2024, not added in editing. Fenix A321 SL IAE, ILS 03 at Wenzhou (ZSWZ) at night, the last 17 s: the runway outline sits on the real edges, the touchdown-zone marks land on the painted aiming point, touchdown at 150 fpm.</sub></p>
+
 Birdie is a head-up display overlay for Microsoft Flight Simulator 2024. Its core symbol is the flight path vector
 (the "bird"), which marks where the aircraft is actually going — the cue a flat screen lacks when judging the glide
 path and touchdown point. Around it Birdie draws conformal symbols registered to the outside view (horizon, pitch
@@ -12,6 +15,9 @@ instruments (speed, altitude and vertical-speed tapes, bank scale, radio altitud
 
 The symbology has four presets — Airbus (default), Boeing, fighter and minimal — and every element's style, size
 and position can be set on its own, as can colour, font, line width and glow.
+
+![The four presets: Airbus, Boeing, fighter, minimal](res/readme/presets.jpg)
+<sub>Airbus · Boeing · fighter · minimal</sub>
 
 It is an external, transparent, click-through window rendered on the GPU (Direct2D + DirectComposition). Nothing is
 injected into the simulator; data comes from SimConnect. An optional toolbar panel lets you adjust it in flight.
