@@ -127,6 +127,8 @@ class App {
   HANDLE sim_event_ = nullptr;
   bool sim_dll_ = false;
   double t_connect_ = -1e9;
+  static constexpr double kStallS = 10.0;  // connected, had data, then none this long: reconnect (connect_sim)
+  double t_reconnect_ = -1;                // when that reconnect happened, until its data arrives (-1 = none pending)
   double t_airports_ = -1e9;
   const Runway* runway_ = nullptr;
   std::optional<Runway> replay_runway_;

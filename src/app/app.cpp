@@ -822,9 +822,31 @@ void App::on_hotkey(int id) {
 
 // ---------------------------------------------------------------- simulator
 void App::connect_sim() {
-  if (!opt_.replay.empty() || sim_.connected() || !sim_dll_) return;
+  if (!opt_.replay.empty() || !sim_dll_) return;
   const double now = now_s();
-  if (now - t_connect_ < 2.0) return;
+  // MSFS can stop sending without a QUIT while the sim runs on (a user's log 11/21: the data stopped while taxiing and
+  // never came back, 40 min). This connection has had data, then nothing for a while: drop it and open a new one. Only
+  // once per stall: the new connection arms it again with its first sample (the main menu sends none, so no loop).
+  if (sim_.connected() && state_ && now - t_state_ > kStallS) {
+    logf("[sim] no data for %.0f s: reconnecting", now - t_state_);
+    if (edit_.on) border_edit_end(false);
+    sim_.close();
+    state_.reset();
+    runway_ = nullptr;
+    t_reconnect_ = now;
+    t_connect_ = -1e9;
+  }
+  if (t_reconnect_ >= 0) {
+    if (state_) {
+      logf("[sim] data back %.1f s after reconnecting", now - t_reconnect_);
+      t_reconnect_ = -1;
+    } else if (now - t_reconnect_ > 30) {
+      log_line("[sim] still no data 30 s after reconnecting (normal in the main menu; in a flight MSFS's SimConnect "
+               "has stopped: restart the sim)");
+      t_reconnect_ = -1;
+    }
+  }
+  if (sim_.connected() || now - t_connect_ < 2.0) return;
   t_connect_ = now;
   std::wstring err;
   if (sim_.open(sim_event_, &err)) {
@@ -1091,10 +1113,17 @@ App::Front App::front() {
 bool App::compute_why() {
   const bool replay = !opt_.replay.empty();
   const Front fr = replay ? Front::Sim : front();
+  // MSFS in the background sends its data in bursts (seen 11/17: 18–29 msgs/s with gaps over 0.5 s while the settings
+  // window was in front), so "the data stopped" waits longer then; a real pause still hides at once through Pause_EX1
+  const bool stale = now_s() - t_state_ > (fr == Front::Birdie ? 2.0 : 0.5);
   if (!state_) {
     const bool nosim = !replay && !sim_.connected();
     why_ = nosim ? tr(S::WhySimNotRunning) : tr(S::WhyWaitData);
     why_key_ = nosim ? "nosim" : "wait";
+  } else if (stale) {
+    // the reasons below would judge the last sample: an old one tells a wrong story (the 11/21 log said "slow on the
+    // ground" for 40 min of no data, after take-off too). The checks further down still go first, then "data stopped".
+    why_.clear();
   } else if (const char* r = hide_reason(*state_, holding() ? 0.0 : show_above_kt())) {
     why_ = tr_why(r);
     why_key_ = !std::strcmp(r, "no_chaseplane")   ? "nocp"
@@ -1106,7 +1135,9 @@ bool App::compute_why() {
     why_.clear();
   }
   // up high for a while (auto_hide): hidden until the radio altitude drops below the set height again
-  if (state_ && set_.auto_hide && state_->on_ground < 0.5 && state_->radio_alt_ft > set_.auto_hide_ft) {
+  if (stale) {
+    // keep high_since_ as it was: the data may come back
+  } else if (state_ && set_.auto_hide && state_->on_ground < 0.5 && state_->radio_alt_ft > set_.auto_hide_ft) {
     if (high_since_ < 0) high_since_ = now_s();
     if (why_.empty() && !holding() && now_s() - high_since_ >= set_.auto_hide_s)
       why_ = tr(S::WhyHigh), why_key_ = "high";
@@ -1120,10 +1151,7 @@ bool App::compute_why() {
   // the ESC menu pauses the sim with the data still coming: the Pause_EX1 event says so; "the data stopped" stays
   // as the fallback (a pause the event does not report, a stalled sim)
   if (why_.empty() && !replay && pause_hides_hud(pause_flags_)) why_ = tr(S::WhyPaused), why_key_ = "pause";
-  // MSFS in the background sends its data in bursts (seen 11/17: 18–29 msgs/s with gaps over 0.5 s while the settings
-  // window was in front), so the fallback waits longer then; a real pause still hides at once through Pause_EX1
-  const double stale = fr == Front::Birdie ? 2.0 : 0.5;
-  if (why_.empty() && now_s() - t_state_ > stale) why_ = tr(S::WhyDataStopped), why_key_ = "pause";
+  if (why_.empty() && stale) why_ = tr(S::WhyDataStopped), why_key_ = "pause";
   return set_.visible && why_.empty() && client_ && box_;
 }
 
