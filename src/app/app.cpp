@@ -827,8 +827,11 @@ void App::connect_sim() {
   // MSFS can stop sending without a QUIT while the sim runs on (a user's log 11/21: the data stopped while taxiing and
   // never came back, 40 min). This connection has had data, then nothing for a while: drop it and open a new one. Only
   // once per stall: the new connection arms it again with its first sample (the main menu sends none, so no loop).
-  if (sim_.connected() && state_ && now - t_state_ > kStallS) {
-    logf("[sim] no data for %.0f s: reconnecting", now - t_state_);
+  // Not while Pause_EX1 says paused (any kind): per-frame data may stop in a pause, and that is not a stall; and the
+  // clock starts again when the pause ends, so the first frames after it are waited for.
+  const double quiet = now - std::max(t_state_, t_pause_);
+  if (sim_.connected() && state_ && pause_flags_ == 0 && quiet > kStallS) {
+    logf("[sim] no data for %.0f s: reconnecting", quiet);
     if (edit_.on) border_edit_end(false);
     sim_.close();
     state_.reset();
@@ -1597,6 +1600,7 @@ int App::run() {
                                   [this](const std::string& t, const std::string& m) { on_aircraft(t, m); },
                                   [this](unsigned flags) {
                                     pause_flags_ = flags;
+                                    t_pause_ = now_s();
                                     redraw();
                                   }};
 

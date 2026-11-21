@@ -145,6 +145,7 @@ class App {
   double anim_t0_ = 0, anim_p0_ = 0;  // when it set off, and from which progress
   double anim_hide_until_ = 0;        // anim_test("out"): pretend hidden until then, then open again
   unsigned pause_flags_ = 0;  // last Pause_EX1 flags (core/pause.h), 0 = running
+  double t_pause_ = -1e9;     // when they last changed (the stall check in connect_sim restarts from it)
   // Whose window is in front. Birdie's own windows (settings window, tray card) count as the sim, so the HUD stays
   // while the user changes settings there (the only way when the in-sim panel is not installed).
   enum class Front { Sim, Birdie, Other };
