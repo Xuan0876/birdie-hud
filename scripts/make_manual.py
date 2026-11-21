@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -25,6 +26,25 @@ MAN = ROOT / "docs" / "manual"
 IMG = MAN / "img"
 OUT = ROOT / "build" / "manual"
 EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+# Headless Edge can return before it has written its output (with another Edge open on the same profile it hands the
+# job over and exits), and a shared profile can serve cached panel scripts. So: a profile of its own for this run,
+# the old output deleted first, and a wait until the new file is there and has stopped growing.
+EDGE_PROFILE = tempfile.mkdtemp(prefix="birdie-manual-edge-")
+
+
+def edge(args, out, timeout):
+    out = Path(out)
+    out.unlink(missing_ok=True)
+    subprocess.run([EDGE, "--headless=new", f"--user-data-dir={EDGE_PROFILE}", "--disable-gpu", *args],
+                   check=True, capture_output=True, timeout=timeout)
+    deadline, last = time.time() + timeout, -1
+    while time.time() < deadline:
+        size = out.stat().st_size if out.exists() else -1
+        if size > 0 and size == last:
+            return
+        last = size
+        time.sleep(0.5)
+    sys.exit(f"Edge did not write {out}")
 LANGS = ("zh-CN", "en")
 
 # the HUD pictures: (name, fixture check, birdie_shot arguments, crop in overlay px x0, y0, x1, y1)
@@ -120,9 +140,8 @@ class PreviewServer:
 
 def panel_picture(port, query, out, scale=2):
     """Headless Edge, tall window; the page sits at the left (preview.js): crop its width, trim the empty bottom."""
-    subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars", f"--force-device-scale-factor={scale}",
-                    "--window-size=600,1400", "--virtual-time-budget=8000", f"--screenshot={out}",
-                    f"http://127.0.0.1:{port}/birdie.html?{query}"], check=True, capture_output=True, timeout=90)
+    edge(["--hide-scrollbars", f"--force-device-scale-factor={scale}", "--window-size=600,1400",
+          "--virtual-time-budget=8000", f"--screenshot={out}", f"http://127.0.0.1:{port}/birdie.html?{query}"], out, 90)
     im = Image.open(out).convert("RGB")
     im = im.crop((0, 0, PANEL_W * scale, im.height))
     px, bottom = im.load(), 0
@@ -154,9 +173,8 @@ def pdfs():
         tmp.write_text(src.replace("{{version}}", ver).replace("{{date}}", day), encoding="utf-8")
         out = OUT / PDF_NAMES[lang]
         try:
-            subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-                            "--virtual-time-budget=8000", f"--print-to-pdf={out}", tmp.as_uri()],
-                           check=True, capture_output=True, timeout=120)
+            edge(["--no-pdf-header-footer", "--virtual-time-budget=8000", f"--print-to-pdf={out}", tmp.as_uri()],
+                 out, 120)
         finally:
             tmp.unlink(missing_ok=True)
         print(out.relative_to(ROOT), f"{out.stat().st_size // 1024} KB")
