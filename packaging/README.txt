@@ -9,7 +9,7 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
 ======================================================================
 
 需要
-  - Microsoft Flight Simulator 2024，窗口化或无边框全屏（独占全屏时 HUD 叠不上去）
+  - Microsoft Flight Simulator 2024，全屏、无边框、窗口化都可以（VR 下看不到 HUD）
   - ChasePlane：HUD 跟着它的驾驶舱镜头摆位置
   - Windows 10 / 11（64 位）。设置窗口用 Microsoft Edge WebView2，Windows 11 自带；
     没有的话设置会在浏览器里打开
@@ -63,7 +63,7 @@ English
 ======================================================================
 
 Requirements
-  - Microsoft Flight Simulator 2024, windowed or borderless (exclusive full screen hides the HUD)
+  - Microsoft Flight Simulator 2024: full screen, borderless or windowed (the HUD does not show in VR)
   - ChasePlane: the HUD follows its cockpit camera
   - Windows 10 / 11, 64-bit. The settings window uses Microsoft Edge WebView2 (part of Windows 11);
     without it the settings open in your browser

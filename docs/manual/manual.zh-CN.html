@@ -49,7 +49,7 @@
 <h3>需要</h3>
 <ul>
   <li>Windows 10 / 11 64 位。</li>
-  <li>MSFS 2024，<b>窗口化或无边框全屏</b>。独占全屏和 VR 下 HUD 叠不上去：它是盖在模拟器上面的另一个窗口。</li>
+  <li>MSFS 2024，<b>全屏、无边框、窗口化都可以</b>（MSFS 2024 只有 DX12，全屏下 HUD 照样叠得上去）。VR 下看不到 HUD：它是盖在模拟器上面的另一个窗口。</li>
   <li><b>ChasePlane</b>（Parallel 42），驾驶舱视角。Birdie 从 ChasePlane 读镜头角度、缩放和眼点，所以不需要标定。</li>
   <li>机型不限。目前没有飞行指引（FD）。</li>
 </ul>
@@ -63,7 +63,7 @@
   <img src="img/panel-welcome.zh-CN.png" alt="">
   <div>
     <h3>第一次运行</h3>
-    <p>"开始之前"卡片提醒三件事：需要 ChasePlane；模拟器要窗口化或无边框；显示 / 隐藏 HUD 的快捷键（默认 <kbd>Ctrl+Alt+Insert</kbd>）。</p>
+    <p>"开始之前"卡片提醒三件事：需要 ChasePlane；VR 下看不到 HUD（全屏、无边框、窗口化都行）；显示 / 隐藏 HUD 的快捷键（默认 <kbd>Ctrl+Alt+Insert</kbd>）。</p>
     <p>卡片里可以顺便装上<b>游戏内面板</b>：装好后，模拟器顶部工具栏里会有小鸟，飞行中不用切出去也能调设置。游戏内面板是可选的，不装也能用。</p>
     <p>装面板时，Birdie 会从 <code>UserCfg.opt</code> 自动找到 Community 文件夹（商店版和 Steam 版都行）。装好后<b>重启一次模拟器</b>，小鸟才会出现在工具栏里。</p>
     <p>以后随时可以单击托盘里的小鸟打开设置窗口。</p>
@@ -261,7 +261,7 @@
 <h2><span class="n">10</span>问题排查</h2>
 <table>
   <tr><th>现象</th><th>原因和办法</th></tr>
-  <tr><td class="k">完全看不到 HUD</td><td>先看设置窗口首页的状态行（第 5 章）。最常见的是：模拟器在独占全屏（改成无边框或窗口化）、不在驾驶舱视角、在地面上还没到 40 kt、HUD 被快捷键关了。</td></tr>
+  <tr><td class="k">完全看不到 HUD</td><td>先看设置窗口首页的状态行（第 5 章）。最常见的是：不在驾驶舱视角、在地面上还没到 40 kt、HUD 被快捷键关了。</td></tr>
   <tr><td class="k">"需要 ChasePlane"</td><td>Birdie 目前只支持 ChasePlane 的驾驶舱视角。确认 ChasePlane 在运行，并切到它的驾驶舱视角。</td></tr>
   <tr><td class="k">启动时提示找不到 SimConnect.dll</td><td>没有把 zip 整个解压。<code>SimConnect.dll</code> 要和 <code>Birdie.exe</code> 在同一个文件夹。</td></tr>
   <tr><td class="k">"Windows 已保护你的电脑"</td><td>程序没有代码签名。点"更多信息"→"仍要运行"。</td></tr>
@@ -287,7 +287,7 @@
 <h3>已知限制</h3>
 <ul>
   <li>HUD 比它对应的模拟器画面晚一点显示；显示延迟补偿可以抵消大部分。</li>
-  <li>不支持独占全屏和 VR。模拟器自己的截图和"游戏捕获"录像里没有 HUD，录像请用显示器捕获。</li>
+  <li>不支持 VR。模拟器自己的截图和"游戏捕获"录像里没有 HUD，录像请用显示器捕获。</li>
   <li>目前需要 ChasePlane；模拟器原生镜头以后支持。没有飞行指引（FD）。</li>
 </ul>
 <h3>许可与署名</h3>

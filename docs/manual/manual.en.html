@@ -49,7 +49,7 @@
 <h3>Requirements</h3>
 <ul>
   <li>Windows 10 / 11, 64-bit.</li>
-  <li>MSFS 2024 in a <b>window or borderless full screen</b>. Exclusive full screen and VR hide the HUD: it is a separate window on top of the sim.</li>
+  <li>MSFS 2024 in <b>full screen, borderless or a window</b>: all work (MSFS 2024 is DX12 only, so its full screen still lets the HUD sit on top). VR hides the HUD: it is a separate window on top of the sim.</li>
   <li><b>ChasePlane</b> (Parallel 42) in a cockpit view. Birdie reads the camera angles, zoom and eye point from ChasePlane, so no calibration is needed.</li>
   <li>Any aircraft. No flight director yet.</li>
 </ul>
@@ -63,7 +63,7 @@
   <img src="img/panel-welcome.en.png" alt="">
   <div>
     <h3>First run</h3>
-    <p>The "Before you fly" card says three things: ChasePlane is needed; the sim must run windowed or borderless; and the hotkey that shows / hides the HUD (<kbd>Ctrl+Alt+Insert</kbd> by default).</p>
+    <p>The "Before you fly" card says three things: ChasePlane is needed; the HUD does not show in VR (full screen, borderless and windowed all work); and the hotkey that shows / hides the HUD (<kbd>Ctrl+Alt+Insert</kbd> by default).</p>
     <p>It also offers the <b>in-sim panel</b>: once installed, the bird sits in the sim's top toolbar and the same settings can be changed without leaving the flight. The panel is optional; Birdie works without it.</p>
     <p>Birdie finds the Community folder in <code>UserCfg.opt</code> (Microsoft Store and Steam). <b>Restart the sim once</b> after installing, then the bird is in the toolbar.</p>
     <p>Click the bird in the tray any time to open the settings window.</p>
@@ -261,7 +261,7 @@
 <h2><span class="n">10</span>Troubleshooting</h2>
 <table>
   <tr><th>What you see</th><th>Cause and fix</th></tr>
-  <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: the sim is in exclusive full screen (use borderless or windowed), not in the cockpit view, on the ground below 40 kt, or the HUD was turned off by its hotkey.</td></tr>
+  <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: not in the cockpit view, on the ground below 40 kt, or the HUD was turned off by its hotkey.</td></tr>
   <tr><td class="k">"ChasePlane needed"</td><td>Birdie works with the ChasePlane cockpit view for now. Make sure ChasePlane runs and use its cockpit view.</td></tr>
   <tr><td class="k">SimConnect.dll not found at start</td><td>The zip was not extracted whole. <code>SimConnect.dll</code> must be in the same folder as <code>Birdie.exe</code>.</td></tr>
   <tr><td class="k">"Windows protected your PC"</td><td>Birdie is not code-signed. Click "More info", then "Run anyway".</td></tr>
@@ -287,7 +287,7 @@
 <h3>Known limitations</h3>
 <ul>
   <li>The HUD is drawn a little after the sim frame it belongs to; display latency hides most of it.</li>
-  <li>No exclusive full screen or VR. The sim's own screenshots and game-capture recordings do not include the HUD; record with display capture.</li>
+  <li>No VR. The sim's own screenshots and game-capture recordings do not include the HUD; record with display capture.</li>
   <li>ChasePlane is needed for now; the sim's own camera comes later. No flight director yet.</li>
 </ul>
 <h3>License and credits</h3>
