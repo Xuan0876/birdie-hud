@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
-project(Birdie VERSION 0.9.2 LANGUAGES CXX RC)
-set(BIRDIE_VERSION_SUFFIX "-beta")  # "" for a stable release; shown in the app and in the zip name
+project(Birdie VERSION 1.0.0 LANGUAGES CXX RC)
+set(BIRDIE_VERSION_SUFFIX "")  # "" for a stable release; shown in the app and in the zip name
 
 if(NOT WIN32 OR NOT MSVC)
   message(FATAL_ERROR "Birdie builds with MSVC on Windows only (MSFS 2024 is Windows-only).")

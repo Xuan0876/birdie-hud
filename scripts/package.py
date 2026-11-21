@@ -1,7 +1,7 @@
 """Make the release zip: dist/Birdie-<version>.zip, the same file for GitHub Releases and flightsim.to.
 
   scripts\\build.bat                     build first (release preset -> build/release)
-  python scripts/package.py              -> dist/Birdie-0.9.2-beta.zip
+  python scripts/package.py              -> dist/Birdie-1.0.0.zip
   python scripts/package.py --build build/border --allow-dirty
 
 Contents (one folder, so "extract here" does not scatter files):

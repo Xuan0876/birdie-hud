@@ -11,7 +11,7 @@
   FakeWS.prototype.close = function () {};
   FakeWS.prototype.push = function () {
     var st = { type: 'state', settings: { visible: true, glide_deg: 3, hud_scale: 1, opacity: 1, lead_ms: 0, flare_tol_deg: 0.3, ladder_step_deg: 6, language: '', bird_ra_below_ft: 500, xwind_mode: false },
-      status: { showing: !/[?&]why=/.test(location.search), why: ((location.search.match(/[?&]why=(\w+)/) || [])[1]) || 'show', aircraft: 'FSLabs A321-200 CFM', lang: location.search.indexOf('en') >= 0 ? 'en' : 'zh', on_ground: true, version: '0.9.2-beta', border: window.__border, ra: null, runway: null,
+      status: { showing: !/[?&]why=/.test(location.search), why: ((location.search.match(/[?&]why=(\w+)/) || [])[1]) || 'show', aircraft: 'FSLabs A321-200 CFM', lang: location.search.indexOf('en') >= 0 ? 'en' : 'zh', on_ground: true, version: '1.0.0', border: window.__border, ra: null, runway: null,
         ingame: { state: ((location.search.match(/[?&]ig=(\w+)/) || [])[1]) || 'none', dir: 'C:\\Users\\me\\AppData\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalCache\\Packages\\Community',
                   chosen: false, has_pack: true, note: ((location.search.match(/[?&]ignote=(\w+)/) || [])[1]) || '', err: '', sim_running: true } } };
     // ?set=key:value,key:value overrides settings (numbers, true/false, or text)
