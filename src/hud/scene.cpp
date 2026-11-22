@@ -457,7 +457,11 @@ void roll_scale(Batch& B, const SimState& s, const Settings& set) {
     const double x = qx - cx, y = qy - cy;
     return Vec2{cx + x * ca - y * sa, cy + x * sa + y * ca};
   };
-  const double slip = std::max(-30.0, std::min(30.0, s.beta_deg * 6.0));
+  // INCIDENCE BETA is the airflow's angle: standing still (or taxiing slowly) the airflow is next to nothing and its
+  // direction is noise, so the index flicked between its stops every frame (user 11/22, parked at ZULS). Centred below
+  // 30 kt IAS, the real value fades in up to 50 kt (the take-off roll still shows a crosswind's slip from there).
+  const double slip_k = std::clamp((s.ias_kt - 30.0) / 20.0, 0.0, 1.0);
+  const double slip = std::max(-30.0, std::min(30.0, s.beta_deg * 6.0 * slip_k));
   auto at = [&](double a_deg, double r) {  // a = bank angle on the scale (0 = top), r = radius
     const double t = rad(90.0 + a_deg);
     return Vec2{cx + r * std::cos(t), cy - r * std::sin(t)};
