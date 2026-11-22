@@ -10,6 +10,7 @@
 
 #include "core/border.h"
 #include "core/geo.h"
+#include "hud/terrain_draw.h"
 
 namespace birdie::hud {
 namespace {
@@ -838,6 +839,21 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
   }
 
   // conformal (screen space)
+  if (const TerrainFrame* tf = terrain_frame(); tf && tf->lines) {  // terrain, from the runway's eye (model.cpp)
+    const Vec3 eye{eye_lateral_m(p.cp_eye_x, p.cp_off_x), p.cp_eye_y, p.cp_eye_z};
+    const Vec3 cam_pos = Vec3{0.0, 0.0, p.alt_ft * kFt} + aircraft_rotation(p) * eye;
+    const CamProj cp{p.lat, p.lon, cam_pos, fr.R, fr.f, W, H, ox, oy};
+    scene.terrain_fill = terrain_fill_cmd(cp);
+    Batch TB(B.homography(), sc);
+    TB.set_finish(set.line_w, set.text_size);
+    draw_terrain_lines(TB, cp, sc);
+    scene.terrain_lines = std::move(TB);
+    if (tf->border.size() >= 3) {  // its own border: may reach past the combiner (the whole windscreen, say)
+      auto sp = project_border(fr, tf->border);
+      if (!sp) sp = Polyline{{-10, -10}, {-9, -10}, {-10, -9}};  // all behind the camera: nothing
+      scene.terrain_border = std::make_pair(std::move(*sp), fr.f * std::tan(rad(kBorderFeatherDeg)));
+    }
+  }
   if (rp && !rp->empty() && set.show_runway) {
     B.line(*rp, w, false, true);
     for (const auto& m : geo.tdz_marks) B.line(sh(m), std::max(1.2, 1.8 * sc), false, true);
@@ -1019,13 +1035,28 @@ void append_commands(CommandList& out, const Scene& scene, double opacity) {
     c.insert(c.end(), {4.0, static_cast<double>(pts.size())});
     for (const auto& q : pts) c.insert(c.end(), {q.x, q.y});
   };
-  if (scene.has_main) {
-    if (scene.clip) clip(*scene.clip);
-    if (scene.border) {  // 7 feathered polygon clip: feather px, n, points
-      const auto& [pts, feather] = *scene.border;
-      c.insert(c.end(), {7.0, feather, static_cast<double>(pts.size())});
-      for (const auto& q : pts) c.insert(c.end(), {q.x, q.y});
+  auto feathered = [&](const std::pair<Polyline, double>& b) {  // 7 feathered polygon clip: feather px, n, points
+    c.insert(c.end(), {7.0, b.second, static_cast<double>(b.first.size())});
+    for (const auto& q : b.first) c.insert(c.end(), {q.x, q.y});
+  };
+  auto terrain = [&] {  // under the symbols: the fill, then the skyline / ridges
+    if (scene.terrain_fill.size() == 20) {
+      const size_t at = c.size();
+      c.insert(c.end(), scene.terrain_fill.begin(), scene.terrain_fill.end());
+      c[at + 1] *= a;
     }
+    if (scene.terrain_lines) scene.terrain_lines->emit(c, out.text);
+  };
+  if (scene.has_main) {
+    const bool own = scene.terrain_border.has_value();
+    if (own) {  // the terrain inside its own border, before (under) the HUD and its clips
+      feathered(*scene.terrain_border);
+      terrain();
+      c.push_back(5.0);
+    }
+    if (scene.clip) clip(*scene.clip);
+    if (scene.border) feathered(*scene.border);
+    if (!own) terrain();
     scene.main.emit(c, out.text);
     if (scene.drum) {
       clip(scene.drum->first);

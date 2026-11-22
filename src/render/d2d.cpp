@@ -18,6 +18,8 @@
 #include <cstring>
 #include <map>
 
+#include "terrain/terrain_gpu.h"
+
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -96,6 +98,8 @@ struct D2DRenderer::Impl {
   };
   std::vector<Mask> masks;  // one per feathered clip (op 7) of the frame being drawn, in order
   InputHook input;
+  terrain::TerrainGpu terrain;       // op 11: the terrain fill, drawn by Direct3D before the frame
+  ID2D1Bitmap1* fill_bmp = nullptr;  // ... its opacity, for this frame
   std::wstring family = L"Bahnschrift";
   bool blank = false;  // last frame presented was empty
   std::wstring err;
@@ -223,6 +227,8 @@ struct D2DRenderer::Impl {
   }
 
   void release_device() {
+    terrain.release();
+    fill_bmp = nullptr;
     fonts.clear();
     masks.clear();
     blurs.clear();
@@ -341,6 +347,7 @@ struct D2DRenderer::Impl {
   // feather width, Gaussian-blurred (sigma = feather / 4): about 2 % at the border, 98 % one feather inside.
   void prepare(const float* cm, int n, int tw, int th) {
     masks.clear();
+    fill_bmp = nullptr;
     int i = 0;
     auto skip_pts = [&](int k) { i += 2 * std::max(0, k); };
     while (i < n) {
@@ -351,6 +358,7 @@ struct D2DRenderer::Impl {
       else if (op == 3) i += 8;
       else if (op == 5 || op == 6) continue;
       else if (op == 8 && i + 5 <= n) { const int k = static_cast<int>(cm[i + 4]); i += 5; skip_pts(k); }
+      else if (op == 11 && i + 19 <= n) { fill_bmp = terrain.render(d3d.Get(), dc.Get(), cm + i, tw, th); i += 19; }
       else if (op == 7 && i + 2 <= n) {
         const float feather = cm[i];
         const int k = static_cast<int>(cm[i + 1]);
@@ -489,6 +497,17 @@ struct D2DRenderer::Impl {
         } else if (all) {
           dc->FillGeometry(all.Get(), brush.Get());
         }
+      } else if (op == 11 && i + 19 <= n) {  // terrain fill: the HUD colour through the opacity Direct3D drew
+        flush(lines, fills, texts, st, str, nstr);
+        if (fill_bmp) {
+          D2D1_COLOR_F col = st.green;
+          col.a *= std::clamp(cm[i], 0.0f, 1.0f);
+          brush->SetColor(col);
+          dc->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);  // FillOpacityMask needs it
+          dc->FillOpacityMask(fill_bmp, brush.Get(), nullptr, nullptr);
+          dc->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        }
+        i += 19;
       } else if (op == 5) {
         if (clips > 0) {
           dc->PopLayer();

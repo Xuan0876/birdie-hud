@@ -28,6 +28,10 @@ enum class S {
   SimConnectMissing, AlreadyRunning, HotkeyFailedFmt, TooltipFmt, ChasePlaneMissing, FirstRunHello,
   // in-sim panel (app/ingame.h)
   IngameUpdated, PickCommunity, PickExport,
+  // terrain
+  TerrainStreamStartFmt, TerrainStreamDoneFmt, TerrainDownloadingFmt, TerrainNoNetwork, TerrainDiskFull,
+  TerrainMovedFmt, TerrainMoveFailed, PickTerrainFolder, TerrainPackDoneFmt, TerrainImportFmt,
+  FlashTerrainBorderSaved, FlashTerrainBorderCleared, TerrainBorderHint1,
   // test builds: on the HUD, above the altitude tape
   Watermark,
   kCount

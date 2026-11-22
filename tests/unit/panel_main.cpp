@@ -128,8 +128,25 @@ void test_settings() {
   CHECK(apply_panel_set(s, "auto_hide_ft", 2500) && s.auto_hide_ft == 2500);
   CHECK(apply_panel_set(s, "auto_hide_s", -5) && s.auto_hide_s == 0);
   CHECK(birdie::settings_from_json(birdie::settings_to_json(s)).ui_style == "dusk");
+  // terrain: off by default, strings and the resolution only from their lists, numbers clamped
+  CHECK(!s.terrain_on && s.terrain_look == "fill" && s.terrain_res == 30 && s.terrain_cache_gb == 2.0);
+  CHECK(apply_panel_set(s, "terrain_on", true) && s.terrain_on);
+  CHECK(apply_panel_set(s, "terrain_look", "ridges") && s.terrain_look == "ridges");
+  CHECK(!apply_panel_set(s, "terrain_look", "mesh") && s.terrain_look == "ridges");
+  CHECK(apply_panel_set(s, "terrain_res", 90) && s.terrain_res == 90 && !apply_panel_set(s, "terrain_res", 60));
+  CHECK(apply_panel_set(s, "terrain_cache_gb", 0.1) && s.terrain_cache_gb == 0.5);
+  CHECK(apply_panel_set(s, "terrain_strength", 1.234) && s.terrain_strength == 1.25);
+  CHECK(!apply_panel_set(s, "terrain_dir", "D:/x"));  // the folder changes only through the move action
+  {
+    const auto r = birdie::settings_from_json(birdie::settings_to_json(s));
+    CHECK(r.terrain_on && r.terrain_look == "ridges" && r.terrain_res == 90 && r.terrain_cache_gb == 0.5);
+    nlohmann::json bad = {{"terrain_look", "x"}, {"terrain_res", 45}, {"terrain_cache_gb", 1e9}, {"terrain_strength", -1}};
+    const auto b = birdie::settings_from_json(bad);
+    CHECK(b.terrain_look == "fill" && b.terrain_res == 30 && b.terrain_cache_gb == 64 && b.terrain_strength == 0.2);
+  }
   const auto j = birdie::app::panel_settings(s);
-  CHECK(j.size() == 79 && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
+  CHECK(j["terrain_look"] == "ridges" && j["terrain_res"] == 90 && j["terrain_on"] == true && !j.contains("terrain_dir"));
+  CHECK(j.size() == 86 && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
   CHECK(!j.contains("box_w") && !j.contains("ra_by_aircraft"));
 }
 

@@ -103,6 +103,10 @@ struct Scene {
   double rgb[3] = {0.0, 1.0, 0.0};
   double outline = 1.0, glow = 0.0;
   OptVec2 bore;  // the boresight on the screen (the openings grow from it)
+  std::vector<double> terrain_fill;  // render op 11 (terrain fill under the HUD symbols), empty = none
+  std::optional<Batch> terrain_lines;  // skyline / ridges
+  // The terrain's own border (screen px) + feather; none = the terrain is drawn inside the HUD's clips instead.
+  std::optional<std::pair<Polyline, double>> terrain_border;
 };
 
 struct CommandList {

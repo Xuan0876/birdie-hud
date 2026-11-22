@@ -42,6 +42,7 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
   1. 装过游戏内面板的话：设置 → 细调 → 游戏内面板 → 移除。
   2. 开过"随 Windows 启动"的话先关掉，然后退出 Birdie。
   3. 删除 Birdie 所在的文件夹。设置和日志在 %APPDATA%\Birdie，也可以一起删掉。
+     开过地形的话，下载的高程数据在 %LOCALAPPDATA%\Birdie\dem（设置里可以改位置），也可以删掉。
 
 出问题时
   - 日志：%APPDATA%\Birdie\birdie.log（设置 → 细调 → 日志 可以直接打开）。反馈问题时请附上它。
@@ -54,6 +55,10 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
   Birdie 是自由软件，按 GNU 通用公共许可证第 3 版（GPL-3.0）发布，见 LICENSE.txt；不提供任何担保。
   源代码：{repo}
   第三方组件的许可见 THIRD_PARTY_NOTICES.md 和 licenses 文件夹。
+  地形（默认关）用的高程数据由 Birdie 在你的电脑上下载，不随软件分发：
+  produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH
+  2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
+  Copernicus 计划的主管机构对这些数据的任何使用均不承担责任。只用于模拟飞行，不能用于真实导航。
   Microsoft Flight Simulator、ChasePlane、FlyByWire、FSLabs、Fenix、Airbus 是各自所有者的商标；
   Birdie 与它们没有关联，也没有得到它们的认可。
 
@@ -98,6 +103,7 @@ Uninstall
   1. If you installed the in-sim panel: Settings > Fine tuning > In-sim panel > Remove.
   2. Turn off "Start with Windows" if you turned it on, then quit Birdie.
   3. Delete Birdie's folder. Settings and the log live in %APPDATA%\Birdie; delete that too if you like.
+     If you used terrain, the downloaded heights are in %LOCALAPPDATA%\Birdie\dem (unless you moved them).
 
 When something goes wrong
   - Log: %APPDATA%\Birdie\birdie.log (Settings > Fine tuning > Log opens it). Please attach it to reports.
@@ -110,5 +116,10 @@ License
   Birdie is free software under the GNU General Public License, version 3 (GPL-3.0), see LICENSE.txt;
   it comes with no warranty. Source code: {repo}
   Third-party licenses: THIRD_PARTY_NOTICES.md and the licenses folder.
+  Terrain (off by default) uses heights that Birdie downloads on your computer; none ship with it:
+  produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH
+  2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
+  The organisations in charge of the Copernicus programme by law or by delegation do not incur any
+  liability for any use of the Copernicus WorldDEM-30. For flight simulation only, not for navigation.
   Microsoft Flight Simulator, ChasePlane, FlyByWire, FSLabs, Fenix and Airbus are trademarks of their
   owners. Birdie is not affiliated with or endorsed by any of them.

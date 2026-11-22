@@ -29,6 +29,8 @@
            sty_roll: 'airbus', show_accel: false, hud_font: 'bahnschrift', hud_color: '#00ff00', hud_outline: 1, hud_glow: 0,
            anim_in: 'fade', anim_out: 'fade', anim_time: 1, hud_preset: 'airbus',
            show_tdz: true, tdz_rule: 'icao', tdz_style: 'aim', flare_ra_ft: 50, flare_hi_ft: 40, flare_lo_ft: 10, flare_end_deg: -0.5,
+           terrain_on: false, terrain_look: 'fill', terrain_strength: 1, terrain_stream: true, terrain_res: 30, terrain_cache_gb: 2,
+           terrain_notes: true,
            hotkeys: { toggle: 'Ctrl+Alt+Insert', xwind: 'Ctrl+Alt+Shift+Insert', glide_up: 'Ctrl+Alt+PgUp', glide_down: 'Ctrl+Alt+PgDn',
                       lead_up: 'Ctrl+Alt+Home', lead_down: 'Ctrl+Alt+End', bright_up: '', bright_down: '', size_up: '', size_down: '',
                       preset_next: '', anim_test: '', panel: '', quit: 'Ctrl+Alt+Shift+End' } },
@@ -92,7 +94,31 @@
       wKey: '显示 / 隐藏 HUD：{key}', wTray: '这个窗口随时可以从托盘里的小鸟打开。',
       wIgNone: '要不要顺便装上游戏内面板？装上后，在模拟器的工具栏里也能调这些设置。',
       wIgNoFolder: '没找到 Community 文件夹；以后可以在“细调”里装游戏内面板。',
-      wDone: '游戏内面板装好了。重启模拟器后，小鸟出现在顶部工具栏。', wInstall: '装上游戏内面板', wOk: '知道了'
+      wDone: '游戏内面板装好了。重启模拟器后，小鸟出现在顶部工具栏。', wInstall: '装上游戏内面板', wOk: '知道了',
+      terrain: '地形', trOn: '在 HUD 上显示地形',
+      trIntro: '山坡铺一层淡淡的 HUD 绿，最上面一条天际线。平地不论多高都透明，跑道、城市和高原机场不会被盖住。高程数据来自 Copernicus，需要联网下载，所以默认关着。',
+      trLook: '画法', tl_fill: '坡面 + 天际线', tl_sky: '只要天际线', tl_ridges: '坡面 + 天际线 + 前方山脊', trStrength: '浓淡',
+      trStream: '飞到哪，自动下载到哪', trRes: '精度（每块 1°×1°）', r_30: '30 m · 约 26 MB/块', r_90: '90 m · 约 3 MB/块',
+      trCap: '缓存最多占用', trNotes: '在 HUD 上提示下载进度',
+      trsOn: '只在 HUD 打开时下载飞机周围 100 km 的地形，存进缓存；超过上限时，先删最久没用到的。',
+      trsBusy: '正在下载 {tile}（{i}/{n}）{rate}', trsHudOff: 'HUD 关着，不下载。', trsNoSim: '连上模拟器、HUD 打开后才开始下载。',
+      trsManual: '不自动下载：只用下面装好的离线包，没装的地方没有地形。',
+      trDisk: '占用的磁盘', trUseCache: '缓存 {n} 块 · {size}（上限 {cap}）', trUsePkg: '离线包 {n} 块 · {size}',
+      trUseFree: '这个盘还剩 {free}', trUseNone: '还没有下载任何地形。',
+      trOpen: '打开文件夹', trMove: '换个位置…', trMoveDef: '搬回默认位置', trMoving: '正在搬到新位置… {done}/{total}',
+      trClear: '清空缓存', trClearAsk: '再点一次清空缓存', trDelAll: '删除全部离线包', trDelAllAsk: '再点一次全部删除',
+      trDiskNote: '这些都是普通文件，放在上面这个文件夹里，随时可以删。卸载 Birdie 不会自动删掉它们，不用了请先在这里清空。',
+      trPkg: '离线包', trPkgDesc: '把常飞的地方提前下好：飞行时不用等，也不会被缓存清理掉。在下面选地区。',
+      trGet: '下载', trDel: '删除', trDelAsk: '再点一次删除', trHave: '已装好', trTiles: '{have}/{n} 块 · {size}',
+      trJob: '正在下载 {label}：{done}/{total} {rate}', trStop: '停止', trJobFail: '，{n} 块失败',
+      trImpDesc: '也可以自己下载：Copernicus 的 .tif（或整包 .zip / .tar）放进 import 文件夹，再点“导入”。导入成功的原文件会删掉。',
+      trImpHas: '现在里面有 {n} 个文件。', trOpenImp: '打开 import 文件夹', trImport: '导入', trImporting: '正在导入… {done}/{total}',
+      e_network: '连不上下载服务器（网络？），过一会儿自动再试', e_disk_full: '磁盘空间不够了（要留至少 1 GB）', e_other: '有一块没成功：{e}',
+      trInSim: '下载位置、导入在 Birdie 的设置窗口里管理（托盘里的小鸟）。',
+      trBorder: '地形边框', tbNone: '· 跟着 HUD 边框', tbDrawn: '· 单独描好了', tbMirrored: '· 按另一座镜像',
+      tbNote: '地形可以有自己的范围：比如铺满整块风挡，HUD 符号仍留在合像镜里；也可以比 HUD 小。按机型和座位分别记住，没描时跟着 HUD 边框。',
+      tbOff: '打开地形后才能描。',
+      trCredit: '高程数据：produced using Copernicus WorldDEM-30 / -90 © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018 provided under COPERNICUS by the European Union and ESA; all rights reserved。Copernicus 计划的主管机构对这些数据的任何使用均不承担责任，也没有认可 Birdie。只用于模拟飞行，不能用于真实导航。'
     },
     en: {
       sym: 'Symbols', symCount: '{n} / {all} shown', fine: 'Fine tuning', path: 'Flight path', world: 'Sky & ground', inst: 'Instruments',
@@ -153,7 +179,31 @@
       wKey: 'Show / hide the HUD: {key}', wTray: 'Open this window any time from the bird in the tray.',
       wIgNone: 'Install the in-sim panel too? Then the same settings sit in the sim’s toolbar.',
       wIgNoFolder: 'No Community folder found; you can install the in-sim panel later under Fine tuning.',
-      wDone: 'In-sim panel installed. Restart the sim and the bird is in the top toolbar.', wInstall: 'Install the in-sim panel', wOk: 'Got it'
+      wDone: 'In-sim panel installed. Restart the sim and the bird is in the top toolbar.', wInstall: 'Install the in-sim panel', wOk: 'Got it',
+      terrain: 'Terrain', trOn: 'Show terrain on the HUD',
+      trIntro: 'A faint HUD-green shade on the slopes and a skyline on top. Flat ground stays clear at any height, so runways, cities and high airports are never covered. The heights come from Copernicus and are downloaded, so it starts switched off.',
+      trLook: 'Drawing', tl_fill: 'Slopes + skyline', tl_sky: 'Skyline only', tl_ridges: 'Slopes + skyline + ridges', trStrength: 'Strength',
+      trStream: 'Download where I fly, by itself', trRes: 'Detail (per 1°×1° tile)', r_30: '30 m · about 26 MB a tile', r_90: '90 m · about 3 MB a tile',
+      trCap: 'Cache uses at most', trNotes: 'Show download progress on the HUD',
+      trsOn: 'Only while the HUD is on, the terrain 100 km around the aircraft is downloaded into the cache; above the limit, the tiles used longest ago go first.',
+      trsBusy: 'Downloading {tile} ({i}/{n}) {rate}', trsHudOff: 'The HUD is off: nothing is downloaded.', trsNoSim: 'Downloads start once the sim is connected and the HUD is on.',
+      trsManual: 'No downloads by itself: only the packages below are used; elsewhere there is no terrain.',
+      trDisk: 'Disk use', trUseCache: 'Cache {n} tiles · {size} (limit {cap})', trUsePkg: 'Packages {n} tiles · {size}',
+      trUseFree: '{free} free on this drive', trUseNone: 'No terrain downloaded yet.',
+      trOpen: 'Open folder', trMove: 'Move elsewhere…', trMoveDef: 'Move back to the default', trMoving: 'Moving to the new place… {done}/{total}',
+      trClear: 'Clear the cache', trClearAsk: 'Once more to clear the cache', trDelAll: 'Delete all packages', trDelAllAsk: 'Once more to delete them all',
+      trDiskNote: 'These are plain files in the folder above and can be deleted any time. Uninstalling Birdie does not remove them: clear them here first if you stop using terrain.',
+      trPkg: 'Packages', trPkgDesc: 'Download the places you fly ahead of time: no waiting in flight, and the cache never trims them. Pick a region below.',
+      trGet: 'Download', trDel: 'Delete', trDelAsk: 'Once more to delete', trHave: 'installed', trTiles: '{have}/{n} tiles · {size}',
+      trJob: 'Downloading {label}: {done}/{total} {rate}', trStop: 'Stop', trJobFail: ', {n} failed',
+      trImpDesc: 'Or download them yourself: put Copernicus .tif files (or the .zip / .tar they come in) into the import folder and press Import. Imported files are deleted.',
+      trImpHas: '{n} files in it now.', trOpenImp: 'Open the import folder', trImport: 'Import', trImporting: 'Importing… {done}/{total}',
+      e_network: 'Cannot reach the download server (network?); trying again shortly', e_disk_full: 'Not enough disk space (at least 1 GB stays free)', e_other: 'A tile did not work: {e}',
+      trInSim: 'Where the data goes, and importing, live in Birdie’s settings window (the bird in the tray).',
+      trBorder: 'Terrain border', tbNone: '· follows the HUD border', tbDrawn: '· traced', tbMirrored: '· mirrored from the other seat',
+      tbNote: 'The terrain can have a reach of its own: the whole windscreen, say, while the HUD symbols stay in the combiner, or smaller than the HUD. Kept per aircraft and seat; until traced it follows the HUD border.',
+      tbOff: 'Switch the terrain on to trace it.',
+      trCredit: 'Heights: produced using Copernicus WorldDEM-30 / -90 © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability for any use of the Copernicus WorldDEM-30, and do not endorse Birdie. For flight simulation only, not for real-world navigation.'
     }
   };
   // the dusk look says some words its own way
@@ -835,7 +885,8 @@
     bright: { key: 'opacity', min: 25, max: 100, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
     size:   { key: 'hud_scale', min: 60, max: 115, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
     glide:  { key: 'glide_deg', min: 2.0, max: 5.9, step: 0.1, get: function (v) { return v; }, put: function (x) { return Math.round(x * 10) / 10; }, out: function (x) { return x.toFixed(1) + '°'; } },
-    outline: pct('hud_outline', 0, 1.5), glow: pct('hud_glow', 0, 1)
+    outline: pct('hud_outline', 0, 1.5), glow: pct('hud_glow', 0, 1),
+    trStrength: { key: 'terrain_strength', min: 20, max: 200, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } }
   };
   function pct(key, min, max) {
     return { key: key, min: min, max: max, step: 0.05, get: function (v) { return v; }, put: function (x) { return Math.round(x * 100) / 100; },
@@ -1034,7 +1085,11 @@
     flareRa: { key: 'flare_ra_ft', vals: [30, 40, 50, 70, 100], label: function (v) { return String(v); }, unit: ' ft' },
     flareHi: { key: 'flare_hi_ft', vals: [20, 30, 40, 50, 60], label: function (v) { return String(v); }, unit: ' ft' },
     flareLo: { key: 'flare_lo_ft', vals: [0, 5, 10, 15, 20], label: function (v) { return String(v); }, unit: ' ft' },
-    flareEnd: { key: 'flare_end_deg', vals: [-1, -0.5, 0, 0.5], label: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; }, unit: '' }
+    flareEnd: { key: 'flare_end_deg', vals: [-1, -0.5, 0, 0.5], label: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; }, unit: '' },
+    // terrain
+    trLook: { key: 'terrain_look', vals: ['fill', 'sky', 'ridges'], label: word('tl_'), unit: '', str: true },
+    trRes: { key: 'terrain_res', vals: [30, 90], label: function (v) { return L()['r_' + v]; }, unit: '', word: true },
+    trCap: { key: 'terrain_cache_gb', vals: [1, 2, 4, 8, 16], label: function (v) { return String(v); }, unit: ' GB' }
   };
   function word(prefix) { return function (v) { return L()[prefix + v] || v; }; }
   function swatch(v) {
@@ -1050,7 +1105,7 @@
       if (id === 'color' && vals.indexOf(cur) < 0 && cur) vals.push(cur);  // a colour typed into settings.json
       var box = $('p-' + id);
       box.innerHTML = vals.map(function (v, i) {
-        return '<span class="pick' + (v === cur ? ' sel' : '') + ((id === 'ladder' && !v) || c.str ? ' word' : '') + '" role="button" tabindex="0" data-v="' + v + '">' +
+        return '<span class="pick' + (v === cur ? ' sel' : '') + ((id === 'ladder' && !v) || c.str || c.word ? ' word' : '') + '" role="button" tabindex="0" data-v="' + v + '">' +
           c.label(v) + (i === vals.length - 1 ? c.unit : '') + '</span>';
       }).join('');
       var ps = box.querySelectorAll('.pick');
@@ -1084,6 +1139,8 @@
     var n = 0;
     ALL.forEach(function (g) { if (s[g[1]]) n++; });
     $('n-sym').textContent = fmt(l.symCount, { n: n, all: ALL.length });
+    $('n-terrain').textContent = s.terrain_on ? (l['tl_' + s.terrain_look] || '') : l.off;
+    cls($('tr-more'), 'idle', !s.terrain_on);
   }
 
   // ---------------------------------------------------------------- the voice
@@ -1159,7 +1216,8 @@
     $('ra-clear').style.display = st.ra && st.ra.ft ? '' : 'none';
     cls($('auto'), 'sel', !!st.autostart);
     $('auto').setAttribute('aria-pressed', st.autostart ? 'true' : 'false');
-    each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'], ['tdz', 'show_tdz']], function (t) {
+    each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'], ['tdz', 'show_tdz'],
+          ['tr-on', 'terrain_on'], ['tr-stream', 'terrain_stream'], ['tr-notes', 'terrain_notes']], function (t) {
       cls($(t[0]), 'sel', !!s[t[1]]);
       $(t[0]).setAttribute('aria-pressed', s[t[1]] ? 'true' : 'false');
     });
@@ -1167,6 +1225,7 @@
     paintKeys();
     paintBorder();
     paintIngame();
+    paintTerrain();
     paintWelcome();
     render();
     voice();
@@ -1223,6 +1282,99 @@
     $('ig-more').style.display = COUI ? 'none' : '';
   }
 
+  // ---------------------------------------------------------------- terrain (src/terrain): what it draws, and the data on disk
+  var trAsked = {};  // button id -> when it asked "once more?"
+  function bytes(b) { return b >= 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : Math.max(1, Math.round(b / 1048576)) + ' MB'; }
+  function rate(r) { return r > 0 ? '· ' + (r >= 1048576 ? (r / 1048576).toFixed(1) + ' MB/s' : Math.round(r / 1024) + ' KB/s') : ''; }
+  function errText(e) { var l = L(); return !e ? '' : e === 'network' ? l.e_network : e === 'disk_full' ? l.e_disk_full : fmt(l.e_other, { e: e }); }
+  function twoStep(el, ask, fn) {  // the first click asks, a second one within 3.5 s does it
+    var id = el.id || el.getAttribute('data-ask');
+    if (Date.now() - (trAsked[id] || 0) < 3500) { trAsked[id] = 0; fn(); paintTerrain(); return; }
+    trAsked[id] = Date.now();
+    el.textContent = ask; cls(el, 'ask', true);
+    setTimeout(paintTerrain, 3600);
+  }
+  function asking(id) { return Date.now() - (trAsked[id] || 0) < 3500; }
+  function paintTerrain() {
+    var l = L(), s = S.set, st = S.st || {}, t = st.terrain || null;
+    var job = (t && t.job) || {}, streaming = job.kind === 'stream';
+    $('tr-intro').textContent = l.trIntro;
+    // streaming: what it does now, in words
+    var sn = !t ? '' : streaming ? fmt(l.trsBusy, { tile: job.tile, i: Math.min(job.done + 1, job.total), n: job.total, rate: rate(job.rate) })
+      : t.stream === 'hud_off' ? l.trsHudOff : t.stream === 'no_sim' ? l.trsNoSim : t.stream === 'manual' ? l.trsManual : l.trsOn;
+    if (t && job.error && !streaming && s.terrain_stream) sn += ' ' + errText(job.error);
+    $('tr-stream-note').textContent = sn;
+    cls($('tr-stream-note'), 'busy', streaming);
+    // disk
+    if (t) {
+      var lines = [];
+      if (!t.cache_tiles && !t.pkg_tiles) lines.push(l.trUseNone);
+      else {
+        lines.push(fmt(l.trUseCache, { n: t.cache_tiles, size: bytes(t.cache_bytes), cap: s.terrain_cache_gb + ' GB' }));
+        if (t.pkg_tiles) lines.push(fmt(l.trUsePkg, { n: t.pkg_tiles, size: bytes(t.pkg_bytes) }));
+      }
+      if (t.disk_free) lines.push(fmt(l.trUseFree, { free: bytes(t.disk_free) }));
+      if (t.moving) lines.push(fmt(l.trMoving, { done: job.done || 0, total: job.total || 0 }));
+      $('tr-use').innerHTML = lines.map(function (x) { return '<div>' + x + '</div>'; }).join('');
+      $('tr-path').textContent = t.dir;
+    }
+    $('tr-dir-acts').style.display = COUI ? 'none' : '';
+    $('tr-open').textContent = l.trOpen;
+    $('tr-move').textContent = l.trMove;
+    $('tr-move-def').textContent = l.trMoveDef;
+    $('tr-move-def').style.display = t && !t.is_default ? '' : 'none';
+    if (!asking('tr-clear')) { $('tr-clear').textContent = l.trClear; cls($('tr-clear'), 'ask', false); }
+    if (!asking('tr-del-all')) { $('tr-del-all').textContent = l.trDelAll; cls($('tr-del-all'), 'ask', false); }
+    $('tr-clear').style.display = t && t.cache_tiles ? '' : 'none';
+    $('tr-del-all').style.display = t && t.pkg_tiles ? '' : 'none';
+    $('tr-disk-note').textContent = COUI ? l.trDiskNote + ' ' + l.trInSim : l.trDiskNote;
+    // packages
+    $('tr-pkg-desc').textContent = l.trPkgDesc;
+    $('tr-job').style.display = job.kind === 'package' ? '' : 'none';
+    var lbl = job.label;
+    ((t && t.regions) || []).forEach(function (r) { if (r.id === job.label) lbl = r.name; });
+    $('tr-job-t').textContent = job.kind === 'package' ? fmt(l.trJob, { label: lbl, done: job.done, total: job.total, rate: rate(job.rate) }) +
+      (job.failed ? fmt(l.trJobFail, { n: job.failed }) : '') + (job.error ? ' · ' + errText(job.error) : '') : '';
+    $('tr-stop').textContent = l.trStop;
+    var html = '';
+    ((t && t.regions) || []).forEach(function (r) {
+      var full = r.have >= r.tiles && r.tiles > 0, delId = 'trdel-' + r.id;
+      html += '<div class="tr-rg"><span class="nm">' + r.name + '</span><span class="sz num">' +
+        fmt(l.trTiles, { have: r.have, n: r.tiles, size: bytes(r.bytes) }) + '</span><span class="acts">' +
+        (full ? '<span class="have">' + l.trHave + '</span>' : '<span class="act quiet" role="button" tabindex="0" data-get="' + r.id + '">' + l.trGet + '</span>') +
+        (r.have ? '<span class="act plain' + (asking(delId) ? ' ask' : '') + '" role="button" tabindex="0" data-del="' + r.id + '" data-ask="' + delId + '">' +
+          (asking(delId) ? l.trDelAsk : l.trDel) + '</span>' : '') + '</span></div>';
+    });
+    if ($('tr-regions').getAttribute('data-h') !== html) {  // rebuilt only when it changed (keeps the hover)
+      $('tr-regions').setAttribute('data-h', html);
+      $('tr-regions').innerHTML = html;
+      each($('tr-regions').querySelectorAll('[data-get]'), function (b) { press(b, function () { act2('terrain_install', { region: b.getAttribute('data-get') }); }); });
+      each($('tr-regions').querySelectorAll('[data-del]'), function (b) {
+        press(b, function () { twoStep(b, L().trDelAsk, function () { act2('terrain_delete', { region: b.getAttribute('data-del') }); }); });
+      });
+    }
+    // import
+    $('tr-imp').style.display = COUI ? 'none' : '';
+    $('tr-imp-desc').textContent = job.kind === 'import' ? fmt(l.trImporting, { done: job.done, total: job.total })
+      : l.trImpDesc + (t && t.import_files ? ' ' + fmt(l.trImpHas, { n: t.import_files }) : '');
+    $('tr-open-import').textContent = l.trOpenImp;
+    $('tr-import').textContent = l.trImport;
+    cls($('tr-import'), 'dim', !(t && t.import_files));
+    $('tr-credit').textContent = l.trCredit;
+    // the terrain's own border
+    var bd = (st.border && st.border.terrain) || { state: 'none' }, can = !!(st.border && st.border.can_edit), ed = !!bd.editing;
+    $('t-trBorder').textContent = l.trBorder;
+    $('tr-bd-state').textContent = bd.state === 'drawn' ? l.tbDrawn : bd.state === 'mirrored' ? l.tbMirrored : l.tbNone;
+    $('tr-bd-edit').textContent = ed ? l.bdEditing : !s.terrain_on ? l.tbOff : can ? l.bdEdit : l.bdEditNo;
+    cls($('tr-bd-edit'), 'dim', !can || ed || !s.terrain_on);
+    $('tr-bd-mirror').textContent = l.bdMirror;
+    $('tr-bd-mirror').style.display = bd.other_own ? '' : 'none';
+    if (!asking('tr-bd-clear')) { $('tr-bd-clear').textContent = l.bdClear; cls($('tr-bd-clear'), 'ask', false); }
+    $('tr-bd-clear').style.display = bd.state !== 'none' ? '' : 'none';
+    $('tr-bd-note').textContent = l.tbNote;
+  }
+  function act2(name, extra) { var m = { type: 'action', name: name }; for (var k in extra) m[k] = extra[k]; send(m); }
+
   function paintWelcome() {
     var on = WELCOME && !welcomeOff;
     cls(document.documentElement, 'w-on', on);
@@ -1255,7 +1407,9 @@
       'try-in': 'tryIn', 'try-out': 'tryOut', 'anim-desc': 'animDesc', 't-appr': 'appr', 't-appr2': 'appr', 't-tdz': 'tdz',
       't-tdzRule': 'tdzRule', 't-tdzStyle': 'tdzStyle', 't-flareG': 'flareG', 't-flareRa': 'flareRa', 't-flareHi': 'flareHi',
       't-flareLo': 'flareLo', 't-flareEnd': 'flareEnd', 'appr-desc': 'apprDesc', 't-keys': 'keys', 't-keys2': 'keys',
-      'hk-reset': 'hkReset', 'hk-desc': 'hkDesc' };
+      'hk-reset': 'hkReset', 'hk-desc': 'hkDesc', 't-terrain': 'terrain', 't-terrain2': 'terrain', 't-trOn': 'trOn',
+      't-trLook': 'trLook', 't-trStrength': 'trStrength', 't-trStream': 'trStream', 't-trRes': 'trRes', 't-trCap': 'trCap',
+      't-trNotes': 'trNotes', 't-trDisk': 'trDisk', 't-trPkg': 'trPkg' };
     layoutWords(); keysWords();
     for (var id in map) $(id).textContent = l[map[id]];
     document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : 'en';
@@ -1276,6 +1430,23 @@
     press($('ah'), function () { set('auto_hide', !S.set.auto_hide); paint(); });
     press($('accel'), function () { set('show_accel', !S.set.show_accel); paint(); });
     press($('tdz'), function () { set('show_tdz', !S.set.show_tdz); paint(); });
+    press($('tr-on'), function () { set('terrain_on', !S.set.terrain_on); paint(); });
+    press($('tr-stream'), function () { set('terrain_stream', !S.set.terrain_stream); paint(); });
+    press($('tr-notes'), function () { set('terrain_notes', !S.set.terrain_notes); paint(); });
+    press($('tr-open'), function () { act('terrain_open'); });
+    press($('tr-move'), function () { act('terrain_move'); });
+    press($('tr-move-def'), function () { act('terrain_move_default'); });
+    press($('tr-clear'), function () { twoStep($('tr-clear'), L().trClearAsk, function () { act('terrain_clear_cache'); }); });
+    press($('tr-del-all'), function () { twoStep($('tr-del-all'), L().trDelAllAsk, function () { act2('terrain_delete', { region: 'all' }); }); });
+    press($('tr-stop'), function () { act('terrain_stop'); });
+    press($('tr-bd-edit'), function () {
+      var b = S.st && S.st.border;
+      if (S.set.terrain_on && b && b.can_edit && !(b.terrain && b.terrain.editing)) act('terrain_border_edit');
+    });
+    press($('tr-bd-mirror'), function () { act('terrain_border_mirror'); });
+    press($('tr-bd-clear'), function () { twoStep($('tr-bd-clear'), L().bdClearAsk, function () { act('terrain_border_clear'); }); });
+    press($('tr-open-import'), function () { act('terrain_open_import'); });
+    press($('tr-import'), function () { act('terrain_import'); });
     press($('lay-reset'), function () { act('reset_layout'); });
     press($('try-in'), function () { act('anim_test', 'in'); });
     press($('try-out'), function () { act('anim_test', 'out'); });
@@ -1327,7 +1498,7 @@
     document.addEventListener('keydown', function (e) {
       if (onListenKey(e)) return;  // recording a hotkey: every key is for it
       if (COUI || e.keyCode !== 27) return;  // Esc: back, then away (Birdie's own window only; the sim keeps its keys)
-      if (S.page >= 3) go(2); else if (S.page) go(0); else host({ host: 'close' });
+      if (S.page === 10) go(0); else if (S.page >= 3) go(2); else if (S.page) go(0); else host({ host: 'close' });
     });
     if (PEEK) {  // a click anywhere but the switch opens the window; the strip lifts its line in each time it shows
       $('peekcard').addEventListener('click', function (e) {
@@ -1383,7 +1554,7 @@
     layoutPages(); buildLayout(); buildKeys();
     lights(); scales(); controls();
     words();
-    go(location.hash === '#border' ? 3 : 0);  // #border: back from tracing the border in Birdie's own window
+    go(location.hash === '#border' ? 3 : location.hash === '#terrain' ? 10 : 0);  // #border: back from tracing the border in Birdie's own window
     fit();
     window.addEventListener('resize', fit);
     if (COUI) setInterval(fit, 500);  // the sim resizes panels without a resize event

@@ -25,6 +25,8 @@ const BoolKey kBools[] = {
     {"show_bird_ra", &Settings::show_bird_ra},  {"xwind_mode", &Settings::xwind_mode},
     {"auto_show", &Settings::auto_show},      {"auto_hide", &Settings::auto_hide},
     {"show_tdz", &Settings::show_tdz},
+    {"terrain_on", &Settings::terrain_on},    {"terrain_stream", &Settings::terrain_stream},
+    {"terrain_notes", &Settings::terrain_notes},
 };
 
 struct NumKey {
@@ -42,6 +44,8 @@ const NumKey kNums[] = {
     {"auto_show_kt", &Settings::auto_show_kt, 5.0, 150.0, 1.0},
     {"auto_hide_ft", &Settings::auto_hide_ft, 200.0, 20000.0, 50.0},
     {"auto_hide_s", &Settings::auto_hide_s, 0.0, 600.0, 1.0},
+    {"terrain_strength", &Settings::terrain_strength, 0.2, 2.0, 0.05},
+    {"terrain_cache_gb", &Settings::terrain_cache_gb, 0.5, 64.0, 0.5},
 };
 
 double snap(double v, double lo, double hi, double step) {
@@ -60,6 +64,8 @@ nlohmann::json panel_settings(const Settings& s) {
   j["language"] = s.language;
   j["ui_style"] = s.ui_style;
   j["hotkeys"] = s.hotkeys;
+  j["terrain_look"] = s.terrain_look;
+  j["terrain_res"] = s.terrain_res;
   look_to_json(s, j);
   return j;
 }
@@ -107,6 +113,18 @@ bool apply_panel_set(Settings& s, const std::string& key, const nlohmann::json& 
       for (auto& [other, combo] : s.hotkeys)  // one combo, one action: the one it had loses it
         if (other != it->first && canonical_combo(combo) == c) combo.clear();
     it->second = c;
+    return true;
+  }
+  if (key == "terrain_look") {
+    if (!v.is_string()) return false;
+    const auto l = v.get<std::string>();
+    if (l != "fill" && l != "sky" && l != "ridges") return false;
+    s.terrain_look = l;
+    return true;
+  }
+  if (key == "terrain_res") {
+    if (!v.is_number() || (v.get<double>() != 30 && v.get<double>() != 90)) return false;
+    s.terrain_res = static_cast<int>(v.get<double>());
     return true;
   }
   if (key == "ui_style") {

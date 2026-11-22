@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Birdie VERSION 1.0.0 LANGUAGES CXX RC)
+project(Birdie VERSION 1.0.0 LANGUAGES C CXX RC)
 set(BIRDIE_VERSION_SUFFIX "")  # "" for a stable release; shown in the app and in the zip name
 
 if(NOT WIN32 OR NOT MSVC)
@@ -12,12 +12,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # One self-contained exe: static CRT everywhere.
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-add_compile_options(/W4 /permissive- /utf-8 /Zc:__cplusplus)
+add_compile_options(/W4 /permissive- /utf-8 "$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>")
 add_compile_definitions(UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
 
 # --- third party (header-only) ---------------------------------------------
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json SYSTEM INTERFACE ${CMAKE_SOURCE_DIR}/third_party)
+
+# miniz 3.0.2 (MIT): inflate for the Copernicus GeoTIFFs and reading the .zip files they come in (terrain/)
+add_library(miniz STATIC third_party/miniz/miniz.c)
+target_include_directories(miniz SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/third_party/miniz)
+set_property(TARGET miniz PROPERTY COMPILE_OPTIONS /W0 /utf-8)  # replaces the project-wide /W4: not our code
+target_compile_definitions(miniz PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 # WebView2 (Birdie's settings window): headers + the static loader, so Birdie.exe stays a single file. The runtime
 # itself is part of Windows 11; without it the panel opens in the browser.
@@ -37,14 +43,19 @@ add_library(birdie_core STATIC
   src/core/version.cpp
   src/hud/scene.cpp
   src/hud/anim.cpp
+  src/hud/terrain_draw.cpp
+  src/terrain/terrain.cpp
+  src/terrain/geotiff.cpp
+  src/terrain/store.cpp
 )
 target_include_directories(birdie_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(birdie_core PUBLIC nlohmann_json)
+target_link_libraries(birdie_core PUBLIC nlohmann_json miniz)
 target_compile_definitions(birdie_core PUBLIC BIRDIE_VERSION="${PROJECT_VERSION}${BIRDIE_VERSION_SUFFIX}")
 
 # --- render: Direct2D / DirectComposition overlay + off-screen rendering ----
 add_library(birdie_render STATIC
   src/render/d2d.cpp
+  src/terrain/terrain_gpu.cpp
 )
 target_link_libraries(birdie_render PUBLIC birdie_core)
 

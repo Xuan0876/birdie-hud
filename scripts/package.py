@@ -88,6 +88,8 @@ def main():
         ("licenses/WebView2-LICENSE.txt", ROOT / "third_party" / "webview2" / "LICENSE.txt"),
         ("licenses/WebView2-NOTICE.txt", ROOT / "third_party" / "webview2" / "NOTICE.txt"),
         ("licenses/nlohmann-json-MIT.txt", ROOT / "third_party" / "nlohmann" / "LICENSE.MIT"),
+        ("licenses/miniz-MIT.txt", ROOT / "third_party" / "miniz" / "LICENSE"),
+        ("licenses/Copernicus-DEM-License-GLO-30.pdf", ROOT / "third_party" / "copernicus-dem" / "License-COPDEM-30.pdf"),
     ]
     files += [(f"licenses/{p.name}", p) for p in sorted(FONTS.glob("OFL-*.txt"))]
 

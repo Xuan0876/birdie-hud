@@ -626,6 +626,7 @@ nlohmann::json App::panel_status() const {
   st["version"] = version();
   st["border"] = border_status();
   st["ingame"] = ingame_status();
+  st["terrain"] = terrain_status();
   return st;
 }
 
@@ -664,7 +665,8 @@ void App::on_panel_message(const std::string& text) {
     if (key == "language") set_language(resolve_language(set_.language));
     if (key == "ui_style") win_.set_look(set_.ui_style), peek_.set_look(set_.ui_style);
     if (key == "hud_font") apply_look();
-    if (key == "visible") say(set_.visible ? tr(S::FlashOn) : tr(S::FlashOff));
+    if (key == "visible") say(set_.visible ? tr(S::FlashOn) + terrain_suffix() : std::wstring(tr(S::FlashOff)));
+    if (key == "terrain_cache_gb") store_.trim_cache(static_cast<uint64_t>(set_.terrain_cache_gb * double(1ull << 30)));
     if (key.rfind("hotkey.", 0) == 0 && hk_capture_until_ == 0) register_hotkeys(false);
     changed();
   } else if (type == "focus") {
@@ -726,6 +728,8 @@ void App::on_panel_message(const std::string& text) {
       border_fit();
     } else if (name.rfind("ingame_", 0) == 0) {
       ingame_action(name);
+    } else if (name.rfind("terrain_", 0) == 0) {
+      terrain_action(name, m);
     }
   }
 }
@@ -783,7 +787,7 @@ void App::on_hotkey(int id) {
     return;
   } else if (a == "toggle") {
     set_.visible = !set_.visible;
-    say(set_.visible ? tr(S::FlashOn) : tr(S::FlashOff));
+    say(set_.visible ? tr(S::FlashOn) + terrain_suffix() : std::wstring(tr(S::FlashOff)));
   } else if (a == "xwind") {
     set_.xwind_mode = !set_.xwind_mode;
     say(set_.xwind_mode ? tr(S::FlashXwindOn) : tr(S::FlashXwindOff));
@@ -907,6 +911,7 @@ void App::on_state(SimState s) {
   t_state_ = now_s();
   state_ = s;
   model_.update(s, t_state_);
+  terrain_feed(s);
   n_msgs_ += std::max(1, sim_.take_samples());  // data/s above Hz = the paint could not keep up (stale samples skipped)
   ++n_frames_;
   redraw();
@@ -923,6 +928,7 @@ void App::replay_step() {
     t_state_ = now;
     state_ = s;
     model_.update(s, now);
+    terrain_feed(s);
     ++n_msgs_;
   }
   ++n_frames_;
@@ -990,6 +996,238 @@ void App::say(const std::wstring& text) {
   if (panel_.running()) panel_.broadcast(nlohmann::json{{"type", "notice"}, {"text", to_utf8(text)}}.dump());
 }
 
+
+// ---------------------------------------------------------------- terrain (terrain/)
+namespace {
+std::wstring size_text(uint64_t bytes) {
+  wchar_t b[32];
+  if (bytes >= (1ull << 30)) swprintf_s(b, L"%.1f GB", bytes / double(1ull << 30));
+  else swprintf_s(b, L"%.0f MB", std::max(1.0, bytes / double(1ull << 20)));
+  return b;
+}
+constexpr double kTerrainReachKm = 100.0;  // skyline range; the fill reaches 60 km
+}  // namespace
+
+std::filesystem::path App::terrain_dir() const {
+  return set_.terrain_dir.empty() ? terrain::default_dir() : std::filesystem::path(from_utf8(set_.terrain_dir));
+}
+
+terrain::RidgeParams App::terrain_params() const {
+  terrain::RidgeParams rp;
+  rp.d_max = kTerrainReachKm * 1000.0;
+  rp.fill = set_.terrain_look != "sky";
+  rp.lines = true;
+  rp.sky_only = set_.terrain_look != "ridges";
+  return rp;
+}
+
+void App::terrain_feed(const SimState& s) {
+  if (!terrain_.running()) return;
+  const double alt_m = s.alt_ft * 0.3048;
+  terrain_.update(s.lat, s.lon, alt_m, s.hdg_true, alt_m - s.agl_ft * 0.3048, terrain_params());
+}
+
+void App::terrain_note(const std::wstring& text) {
+  if (!set_.terrain_notes) return;
+  // a caption still up (HUD on, another setting) keeps its words and gets the terrain news after them
+  if (!flash_.empty() && now_s() < flash_until_ && flash_.find(text) == std::wstring::npos)
+    say(flash_ + L"  ·  " + text);
+  else
+    say(text);
+}
+
+std::wstring App::terrain_suffix() {
+  if (!set_.terrain_on || !set_.terrain_notes) return L"";
+  const auto p = store_.progress();
+  if (p.kind != "stream" || p.total <= 0) return L"";
+  return L"  ·  " + trf(S::TerrainDownloadingFmt, std::min(p.done + 1, p.total), p.total);
+}
+
+void App::terrain_tick() {
+  const auto dir = terrain_dir();
+  if (!terrain_moving_ && store_.dir() != dir) store_.set_dir(dir);
+  const bool on = set_.terrain_on && !terrain_moving_;
+  if (on && !terrain_.running()) {
+    terrain_.start(dir);
+    logf("[terrain] on: %s (data in %s)", set_.terrain_look.c_str(), to_utf8(dir.wstring()).c_str());
+  } else if (!on && terrain_.running()) {
+    terrain_.stop();
+    log_line("[terrain] off");
+  }
+  // Streaming: only while the user has the HUD switched on (not while it is toggled off), with live data. Waiting
+  // for the take-off roll or an ESC pause still counts as on, so the tiles around the airport come in at the gate.
+  const bool live = state_ && now_s() - t_state_ < 5.0 && opt_.replay.empty();
+  if (on && set_.terrain_stream && set_.visible && live)
+    store_.stream(terrain_.nearby(), kTerrainReachKm, set_.terrain_res,
+                  static_cast<uint64_t>(set_.terrain_cache_gb * double(1ull << 30)));
+  else
+    store_.stop_stream();
+  for (const auto& e : store_.take_events()) {
+    using E = terrain::StoreEvent;
+    switch (e.kind) {
+      case E::kStreamStart:
+        logf("[terrain] streaming %d tiles (%s)", e.n, to_utf8(size_text(e.bytes)).c_str());
+        terrain_note(trf(S::TerrainStreamStartFmt, e.n, size_text(e.bytes).c_str()));
+        break;
+      case E::kStreamDone:
+        logf("[terrain] streamed %d tiles", e.n);
+        terrain_note(trf(S::TerrainStreamDoneFmt, e.n));
+        terrain_warned_.clear();
+        break;
+      case E::kStreamFailed:
+        logf("[terrain] download failed: %s", e.text.c_str());
+        if (e.text != terrain_warned_ && (e.text == "network" || e.text == "disk_full")) {
+          terrain_warned_ = e.text;
+          terrain_note(tr(e.text == "network" ? S::TerrainNoNetwork : S::TerrainDiskFull));
+        }
+        break;
+      case E::kPackageDone:
+        logf("[terrain] packages %s: %d installed", e.text.c_str(), e.n);
+        if (e.n > 0) terrain_note(trf(S::TerrainPackDoneFmt, e.n));
+        t_regions_ = -1e9;
+        break;
+      case E::kImportDone:
+        logf("[terrain] imported %d tiles%s", e.n, e.text.empty() ? "" : (", " + e.text + " files not readable").c_str());
+        say(trf(S::TerrainImportFmt, e.n));
+        t_regions_ = -1e9;
+        break;
+      case E::kMoveDone: {
+        const auto to = store_.dir();
+        set_.terrain_dir = to == terrain::default_dir() ? "" : to_utf8(to.wstring());
+        terrain_moving_ = false;
+        logf("[terrain] data moved to %s (%d files)", to_utf8(to.wstring()).c_str(), e.n);
+        say(trf(S::TerrainMovedFmt, e.n));
+        changed();
+        break;
+      }
+      case E::kMoveFailed:
+        terrain_moving_ = false;
+        log_line("[terrain] moving the data failed: it stays where it was");
+        say(tr(S::TerrainMoveFailed));
+        break;
+    }
+  }
+  if (store_.take_changed()) t_regions_ = -1e9;
+  const double now = now_s();
+  if (terrain_.running() && now - t_terrain_log_ > 5) {
+    t_terrain_log_ = now;
+    const auto st = terrain_.status();
+    if (!st.empty()) log_line("[terrain] " + st);
+  }
+}
+
+void App::terrain_action(const std::string& name, const nlohmann::json& m) {
+  const std::string region = m.value("region", std::string());
+  auto region_list = [&]() -> std::optional<std::vector<std::string>> {
+    for (const auto& r : terrain::regions())
+      if (region == r.id) return terrain::region_tiles(r);
+    if (region == "around" && state_) return terrain::tiles_around(state_->lat, state_->lon, m.value("km", 150.0));
+    return std::nullopt;
+  };
+  if (name == "terrain_border_edit") {
+    border_edit_begin(true);
+  } else if (name == "terrain_border_clear") {
+    border_clear(true);
+  } else if (name == "terrain_border_mirror") {
+    border_mirror(true);
+  } else if (name == "terrain_install") {
+    if (const auto tiles = region_list()) {
+      logf("[terrain] install %s: %zu tiles at %d m", region.c_str(), tiles->size(), set_.terrain_res);
+      store_.install(region, *tiles, set_.terrain_res);
+    }
+  } else if (name == "terrain_stop") {
+    store_.stop_packages();
+  } else if (name == "terrain_delete") {
+    if (region == "all") {
+      logf("[terrain] deleted all packages: %d files", store_.delete_packages({}));
+    } else if (const auto tiles = region_list()) {
+      logf("[terrain] deleted %s: %d files", region.c_str(), store_.delete_packages(*tiles));
+    }
+    t_regions_ = -1e9;
+  } else if (name == "terrain_clear_cache") {
+    logf("[terrain] cache cleared: %d files", store_.clear_cache());
+  } else if (name == "terrain_open" || name == "terrain_open_import") {
+    std::error_code ec;
+    auto d = terrain_dir();
+    if (name == "terrain_open_import") d /= L"import";
+    std::filesystem::create_directories(d, ec);
+    ShellExecuteW(nullptr, L"open", d.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+  } else if (name == "terrain_import") {
+    store_.import_folder();
+  } else if (name == "terrain_move" || name == "terrain_move_default") {
+    std::optional<std::filesystem::path> to;
+    if (name == "terrain_move") {
+      to = pick_folder(tr(S::PickTerrainFolder));
+      // a folder of its own inside the one picked (picking D:\ must not scatter tiles over the drive)
+      if (to && to->filename() != L"Birdie terrain") to = *to / L"Birdie terrain";
+    } else {
+      to = terrain::default_dir();
+    }
+    if (!to) return;
+    std::string err;
+    terrain_.stop();  // nothing may hold the tiles while they move
+    if (store_.move_to(*to, &err)) {
+      terrain_moving_ = true;
+      logf("[terrain] moving the data to %s", to_utf8(to->wstring()).c_str());
+    } else {
+      logf("[terrain] cannot move the data to %s: %s", to_utf8(to->wstring()).c_str(), err.c_str());
+    }
+  }
+  panel_push(true);
+}
+
+nlohmann::json App::terrain_status() const {
+  nlohmann::json j;
+  const auto st = store_.stats();
+  const auto dir = terrain_dir();
+  j["dir"] = to_utf8(dir.wstring());
+  j["is_default"] = set_.terrain_dir.empty();
+  j["pkg_tiles"] = st.pkg_tiles;
+  j["pkg_bytes"] = st.pkg_bytes;
+  j["cache_tiles"] = st.cache_tiles;
+  j["cache_bytes"] = st.cache_bytes;
+  j["import_files"] = st.import_files;
+  j["disk_free"] = st.disk_free;
+  j["moving"] = terrain_moving_;
+  const auto p = store_.progress();
+  j["job"] = {{"kind", p.kind}, {"label", p.label}, {"done", p.done}, {"total", p.total}, {"failed", p.failed},
+              {"tile", p.tile}, {"got", p.got}, {"size", p.size}, {"rate", std::round(p.rate)}, {"error", p.error}};
+  const bool live = state_ && now_s() - t_state_ < 5.0;
+  j["stream"] = !set_.terrain_on       ? "off"
+                : !set_.terrain_stream ? "manual"
+                : !set_.visible        ? "hud_off"
+                : !live                ? "no_sim"
+                                       : "on";
+  const double now = now_s();
+  if (now - t_regions_ > 5) {  // counting packages touches the disk: not on every push
+    t_regions_ = now;
+    const bool zh = language() == Lang::kZh;
+    terrain_regions_ = nlohmann::json::array();
+    for (const auto& r : terrain::regions()) {
+      const auto tiles = terrain::region_tiles(r);
+      uint64_t bytes = 0;
+      for (const auto& t : tiles) {
+        int la = 0, lo = 0;
+        if (terrain::parse_tile_name(t, &la, &lo)) bytes += terrain::tile_bytes(la, set_.terrain_res);
+      }
+      terrain_regions_.push_back({{"id", r.id}, {"name", zh ? r.zh : r.en}, {"tiles", tiles.size()},
+                                  {"have", store_.count_packages(tiles)}, {"bytes", bytes}});
+    }
+    if (state_) {
+      const auto tiles = terrain::tiles_around(state_->lat, state_->lon, 150.0);
+      uint64_t bytes = 0;
+      for (const auto& t : tiles) {
+        int la = 0, lo = 0;
+        if (terrain::parse_tile_name(t, &la, &lo)) bytes += terrain::tile_bytes(la, set_.terrain_res);
+      }
+      terrain_regions_.push_back({{"id", "around"}, {"name", zh ? "飞机附近 150 km" : "150 km around the aircraft"},
+                                  {"tiles", tiles.size()}, {"have", store_.count_packages(tiles)}, {"bytes", bytes}});
+    }
+  }
+  j["regions"] = terrain_regions_;
+  return j;
+}
+
 // ---------------------------------------------------------------- window placement and drawing
 void App::place() {
   if (!box_) return;
@@ -1025,6 +1263,14 @@ void App::housekeeping() {
     if (hwnd_sim_ && client_rect_screen(hwnd_sim_, r)) cr = r;
   }
   update_runway();
+  terrain_tick();
+  if (client_ && box_ && !edit_.on) {  // terrain on / off, its border traced or cleared, another aircraft: resize
+    const RECT want = overlay_box(*client_);
+    if (std::memcmp(&want, &*box_, sizeof(RECT)) != 0) {
+      relayout();
+      logf("[win] overlay %ldx%ld", want.right - want.left, want.bottom - want.top);
+    }
+  }
   if (cr && cr->right - cr->left > 100 &&
       (!client_ || std::memcmp(&*client_, &*cr, sizeof(RECT)) != 0)) {
     client_ = cr;
@@ -1207,6 +1453,11 @@ void App::redraw() {
   }
   const double t0 = now_s();
   if (!flash_.empty() && t0 > flash_until_) flash_.clear();
+  terrain_frame_.lines = set_.terrain_on ? terrain_.latest() : nullptr;
+  terrain_frame_.fill_opacity = set_.terrain_strength;
+  if (auto tb = set_.terrain_on ? terrain_border() : std::nullopt) terrain_frame_.border = std::move(*tb);
+  else terrain_frame_.border.clear();
+  hud::set_terrain(&terrain_frame_);
   hud::CommandList cl;
   if (edit_.on && !can_edit_border()) {  // left the cockpit view, lost the sim...: nothing is saved
     PostMessageW(hwnd_, WM_BORDER_END, 0, 0);  // (redraw may run inside the overlay's input hook)
@@ -1228,7 +1479,7 @@ void App::redraw() {
     e.alpha = std::min(1.0, (t0 - edit_.t0) / 0.35);  // fades in
     e.W = box_->right - box_->left;
     e.H = box_->bottom - box_->top;
-    e.line1 = tr(S::BorderHint1);
+    e.line1 = tr(edit_.terrain ? S::TerrainBorderHint1 : S::BorderHint1);
     e.line2 = tr(S::BorderHint2);
     hud::append_edit(cl, e);
   } else if (const bool want = compute_why() && t0 >= anim_hide_until_; anim_step(want, t0) < 1.0) {
@@ -1259,6 +1510,7 @@ void App::redraw() {
     if (!focus_key_.empty() && t0 < focus_until_ && panel_.ws_clients() > 0) {
       // the panel points at one symbol: everything else steps back, that one stays (half strength if it is off)
       cl = hud::commands(scene, set_.opacity * 0.2);
+      hud::set_terrain(nullptr);  // the symbol on its own, without the terrain again on top
       bool on = false;
       for (const auto& sym : kSymbols)
         if (focus_key_ == sym.key) on = set_.*sym.field;
@@ -1295,9 +1547,18 @@ std::string App::border_key() const { return ac_title_.empty() ? std::string("(u
 Seat App::seat() const { return state_ ? seat_of(eye_lateral_m(state_->cp_eye_x, state_->cp_off_x)) : Seat::kLeft; }
 
 std::optional<std::vector<Vec2>> App::active_border() const {
-  if (edit_.on) return edit_.pts;
+  if (edit_.on && !edit_.terrain) return edit_.pts;
   const auto it = set_.border_by_aircraft.find(border_key());
   if (it == set_.border_by_aircraft.end()) return std::nullopt;
+  auto b = border_for(it->second, seat());
+  if (!b) return std::nullopt;
+  return std::move(b->pts);
+}
+
+std::optional<std::vector<Vec2>> App::terrain_border() const {
+  if (edit_.on && edit_.terrain) return edit_.pts;
+  const auto it = set_.terrain_border_by_aircraft.find(border_key());
+  if (it == set_.terrain_border_by_aircraft.end()) return std::nullopt;
   auto b = border_for(it->second, seat());
   if (!b) return std::nullopt;
   return std::move(b->pts);
@@ -1313,6 +1574,9 @@ bool App::can_edit_border() const {
 
 RECT App::overlay_box(const RECT& cr) const {
   if (edit_.on) return cr;  // the editor takes the whole client: the window frame can be anywhere
+  // The terrain's own border may reach the whole windscreen: the overlay window must cover it, or its edges cut the
+  // terrain back to the middle (11/22: a terrain border larger than the HUD's showed only the HUD-sized box).
+  if (set_.terrain_on && terrain_border()) return cr;
   const int x = cr.left, y = cr.top, w = cr.right - cr.left, h = cr.bottom - cr.top;
   const int bw = static_cast<int>(w * set_.box_w), bh = static_cast<int>(h * set_.box_h);
   return RECT{x + (w - bw) / 2, y + (h - bh) / 2, x + (w - bw) / 2 + bw, y + (h - bh) / 2 + bh};
@@ -1324,17 +1588,21 @@ void App::relayout() {
   place();
 }
 
-void App::border_edit_begin() {
+void App::border_edit_begin(bool terrain) {
   if (edit_.on) return;
   if (!can_edit_border()) {
     say(tr(S::FlashBorderNeedCockpit));
     return;
   }
   std::vector<Vec2> start = default_border();  // the HUD canvas: dragging its corners is the simple way
-  if (const auto it = set_.border_by_aircraft.find(border_key()); it != set_.border_by_aircraft.end())
+  if (const auto it = borders(terrain).find(border_key()); it != borders(terrain).end()) {
     if (auto b = border_for(it->second, seat())) start = b->pts;
+  } else if (terrain) {  // no terrain border yet: from where the terrain is cut now, the HUD's
+    if (auto b = active_border()) start = *b;
+  }
   edit_ = BorderEdit{};
   edit_.on = true;
+  edit_.terrain = terrain;
   edit_.pts = std::move(start);
   edit_.t0 = now_s();
   edit_.reopen_window = win_.shown();
@@ -1349,7 +1617,8 @@ void App::border_edit_begin() {
   if (!RegisterHotKey(hwnd_, kHkEditSave, MOD_NOREPEAT, VK_RETURN)) log_line("[border] Enter not available as a key");
   if (!RegisterHotKey(hwnd_, kHkEditCancel, MOD_NOREPEAT, VK_ESCAPE)) log_line("[border] Esc not available as a key");
   SetForegroundWindow(gfx_.hwnd());  // works when Birdie's window had the focus; otherwise the first click takes it
-  logf("[border] editing %s, %s seat, %zu points", border_key().c_str(), seat_key(seat()), edit_.pts.size());
+  logf("[border] editing the %s border of %s, %s seat, %zu points", terrain ? "terrain" : "HUD", border_key().c_str(),
+       seat_key(seat()), edit_.pts.size());
   redraw();
   panel_push(true);
 }
@@ -1362,37 +1631,38 @@ void App::border_edit_end(bool save) {
   gfx_.set_input({});
   const bool had_focus = GetForegroundWindow() == gfx_.hwnd();
   std::vector<Vec2> pts = std::move(edit_.pts);
-  const bool reopen = edit_.reopen_window;
+  const bool reopen = edit_.reopen_window, terrain = edit_.terrain;
   edit_ = BorderEdit{};
   if (save && state_ && sanitize_border(pts)) {
     Settings::BorderPoly b;
     b.pts = std::move(pts);
     b.eye = {eye_lateral_m(state_->cp_eye_x, state_->cp_off_x), state_->cp_eye_y, state_->cp_eye_z};
-    auto& seats = set_.border_by_aircraft[border_key()];
+    auto& seats = borders(terrain)[border_key()];
     (seat() == Seat::kLeft ? seats.left : seats.right) = b;
-    logf("[border] %s %s seat: %zu points saved", border_key().c_str(), seat_key(seat()), b.pts.size());
-    say(tr(S::FlashBorderSaved));
+    logf("[border] %s %s %s seat: %zu points saved", terrain ? "terrain" : "HUD", border_key().c_str(),
+         seat_key(seat()), b.pts.size());
+    say(tr(terrain ? S::FlashTerrainBorderSaved : S::FlashBorderSaved));
   } else {
     log_line(save ? "[border] not saved (no data / bad polygon)" : "[border] editing cancelled");
     say(tr(S::FlashBorderCancelled));
   }
   relayout();
   if (had_focus && hwnd_sim_) SetForegroundWindow(hwnd_sim_);
-  if (reopen) open_panel(L"#border");
+  if (reopen) open_panel(terrain ? L"#terrain" : L"#border");
   changed();
 }
 
-void App::border_clear() {
-  if (set_.border_by_aircraft.erase(border_key())) {
-    logf("[border] %s: cleared", border_key().c_str());
-    say(tr(S::FlashBorderCleared));
+void App::border_clear(bool terrain) {
+  if (borders(terrain).erase(border_key())) {
+    logf("[border] %s %s: cleared", terrain ? "terrain" : "HUD", border_key().c_str());
+    say(tr(terrain ? S::FlashTerrainBorderCleared : S::FlashBorderCleared));
   }
   changed();
 }
 
-void App::border_mirror() {
-  const auto it = set_.border_by_aircraft.find(border_key());
-  if (it == set_.border_by_aircraft.end()) return;
+void App::border_mirror(bool terrain) {
+  const auto it = borders(terrain).find(border_key());
+  if (it == borders(terrain).end()) return;
   const bool left = seat() == Seat::kLeft;
   const auto& own = left ? it->second.left : it->second.right;
   if (!own) return;
@@ -1527,6 +1797,15 @@ nlohmann::json App::border_status() const {
   }
   b["state"] = how;
   b["other_own"] = how == "drawn" && other_own;  // "mirror to the other seat" replaces that seat's own trace
+  {  // the terrain's own border
+    std::string th = "none";
+    bool t_other = false;
+    if (const auto it = set_.terrain_border_by_aircraft.find(border_key()); it != set_.terrain_border_by_aircraft.end()) {
+      border_for(it->second, seat(), &th);
+      t_other = (seat() == Seat::kLeft ? it->second.right : it->second.left).has_value();
+    }
+    b["terrain"] = {{"state", th}, {"other_own", th == "drawn" && t_other}, {"editing", edit_.on && edit_.terrain}};
+  }
   b["eye_moved"] = false;
   b["cuts_fixed"] = false;
   b["fit_scale"] = nullptr;

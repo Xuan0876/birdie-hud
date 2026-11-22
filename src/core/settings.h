@@ -106,6 +106,21 @@ struct Settings {
   double anim_time = 1.0;
   // The whole-HUD preset last applied (airbus boeing fighter minimal), "custom" once something is changed by hand.
   std::string hud_preset = "airbus";
+  // Terrain (terrain/, the panel's Terrain page): a see-through HUD-green surface on the slopes and the skyline, from
+  // the Copernicus DEM. Off by default: it needs data from the internet. terrain_look: "fill" (slopes + skyline),
+  // "sky" (the skyline only), "ridges" (slopes + skyline + the ridges in front of it). terrain_strength scales the
+  // fill. Streaming fetches the tiles around the aircraft while the HUD is switched on, into a cache of at most
+  // terrain_cache_gb (the least recently used go first); terrain_res 30 or 90 m. terrain_dir "" = the default folder
+  // (%LOCALAPPDATA%\Birdie\dem). terrain_notes: say on the HUD when streaming starts and is done.
+  bool terrain_on = false;
+  std::string terrain_look = "fill";
+  double terrain_strength = 1.0;
+  bool terrain_stream = true;
+  int terrain_res = 30;
+  double terrain_cache_gb = 2.0;
+  std::string terrain_dir;
+  bool terrain_notes = true;
+
   // Birdie's settings window (tray: Open panel): top-left in physical screen px, kNoPos = not placed yet.
   static constexpr int kNoPos = -100000;
   int panel_win_x = kNoPos, panel_win_y = kNoPos;
@@ -132,6 +147,9 @@ struct Settings {
     std::optional<BorderPoly> left, right;
   };
   std::map<std::string, BorderSeats> border_by_aircraft;
+  // The terrain's own border (the panel's Terrain page): the same kind of trace, kept the same way. Where an aircraft
+  // has none, the terrain stays inside the HUD border (or the combiner).
+  std::map<std::string, BorderSeats> terrain_border_by_aircraft;
 };
 
 // The whole-HUD presets: element styles, layout, colour (not the symbol switches, except "minimal"). False if unknown.

@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include <deque>
+#include <map>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -18,8 +19,11 @@
 #include "core/runway.h"
 #include "core/settings.h"
 #include "core/state.h"
+#include "hud/terrain_draw.h"
 #include "render/d2d.h"
 #include "sim/sim_client.h"
+#include "terrain/store.h"
+#include "terrain/terrain.h"
 
 namespace birdie::app {
 
@@ -73,11 +77,17 @@ class App {
   std::string border_key() const;  // settings key: the aircraft TITLE
   Seat seat() const;               // from the eye's lateral offset
   std::optional<std::vector<Vec2>> active_border() const;  // what clips the HUD now (the editor's while editing)
+  // The terrain's own border now (the editor's while tracing it); nullopt = none (the terrain follows the HUD's).
+  std::optional<std::vector<Vec2>> terrain_border() const;
+  // The borders of one kind: the HUD's or the terrain's.
+  std::map<std::string, Settings::BorderSeats>& borders(bool terrain) {
+    return terrain ? set_.terrain_border_by_aircraft : set_.border_by_aircraft;
+  }
   bool can_edit_border() const;
-  void border_edit_begin();
+  void border_edit_begin(bool terrain = false);
   void border_edit_end(bool save);
-  void border_clear();
-  void border_mirror();
+  void border_clear(bool terrain = false);
+  void border_mirror(bool terrain = false);
   void border_fit();
   bool border_input(unsigned msg, std::uintptr_t wp, std::intptr_t lp, std::intptr_t& result);
   void border_hover(Vec2 p);
@@ -108,6 +118,16 @@ class App {
   // "Birdie beta" on the HUD while the version is a pre-release ("0.9.0-beta"), empty for a stable one
   static std::wstring watermark();
   std::optional<std::filesystem::path> pick_folder(const wchar_t* title);  // the Windows folder picker
+
+  // terrain (terrain/, docs: the panel's Terrain page)
+  std::filesystem::path terrain_dir() const;  // the setting, or the default folder
+  terrain::RidgeParams terrain_params() const;
+  void terrain_feed(const SimState& s);       // every sample: the position for the worker
+  void terrain_tick();                        // housekeeping: worker on / off, streaming or not, the store's news
+  void terrain_action(const std::string& name, const nlohmann::json& m);  // the panel's terrain_* actions
+  void terrain_note(const std::wstring& text);  // a terrain caption on the HUD (joins one already showing)
+  std::wstring terrain_suffix();              // " · terrain downloading 3/9" for the HUD on/off caption
+  nlohmann::json terrain_status() const;
 
   // tray
   void tray_add();
@@ -189,6 +209,7 @@ class App {
     OptVec2 add_at;  // screen px of a point to insert after vertex add_edge
     double t0 = 0;
     bool reopen_window = false;  // the settings window was open: back to its border page afterwards
+    bool terrain = false;        // tracing the terrain's border, not the HUD's
   } edit_;
   std::string focus_key_;  // show_* key the panel points at, "" = none
   double focus_until_ = 0;
@@ -197,6 +218,16 @@ class App {
   int n_frames_ = 0, n_msgs_ = 0;
   double build_ms_ = 0, paint_ms_ = 0, t_stat_ = 0, last_print_ = 0;
   int gfx_err_reported_ = 0;
+
+  // terrain
+  terrain::TerrainWorker terrain_;  // skyline + fill for the latest position (background thread)
+  mutable terrain::Store store_;    // the data on disk, downloads (background thread)
+  hud::TerrainFrame terrain_frame_;  // what build_scene draws this frame
+  bool terrain_moving_ = false;     // the data is being moved to another folder: no worker meanwhile
+  std::string terrain_warned_;      // the last download problem said on the HUD (said once)
+  mutable nlohmann::json terrain_regions_;  // the packages list for the panel (recounted now and then)
+  mutable double t_regions_ = -1e9;
+  double t_terrain_log_ = 0;
 };
 
 }  // namespace birdie::app

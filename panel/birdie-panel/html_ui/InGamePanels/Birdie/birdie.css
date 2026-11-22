@@ -298,6 +298,30 @@ html.w-on .welcome { display: block; }
 .scale.wide .out { width: 3.6rem; font-size: 1rem; }
 #lay-list .gh { margin-top: .57rem; }
 .lay-reset, .anim-try { margin: .86rem 0 .57rem; }
+/* terrain page: what it does, and the data on disk said plainly */
+.tr-intro { font-size: .86rem; color: var(--ink2); line-height: 1.55; margin: -.29rem 0 .86rem; }
+.tr-note { font-size: .82rem; color: var(--ink3); line-height: 1.5; margin: -.57rem 0 .86rem; }
+.tr-note.busy { color: var(--acc); }
+.ra.tr { margin-bottom: .86rem; }
+.tr-use { color: var(--ink); }
+.tr-path { font-size: .79rem; color: var(--ink3); word-break: break-all; user-select: text; -webkit-user-select: text; }
+.ra.tr .tr-acts .act, .tr-imp .tr-acts .act { margin: 0 .86rem 0 0; }
+.ra.tr .tr-note { margin: .21rem 0 0; }
+.tr-pkg-desc { font-size: .82rem; color: var(--ink3); line-height: 1.5; margin-bottom: .43rem; }
+.tr-job { font-size: .86rem; color: var(--acc); margin-bottom: .43rem; }
+.tr-job .act { margin-left: .71rem; }
+.tr-rg { display: flex; align-items: baseline; flex-wrap: wrap; padding: .29rem 0; border-top: 1px solid var(--line2); font-size: .89rem; }
+.tr-rg .nm { color: var(--ink); margin-right: .57rem; }
+.tr-rg .sz { color: var(--ink3); font-size: .82rem; flex: 1; }
+.tr-rg .acts .act { margin: 0 0 0 .71rem; }
+.tr-rg .have { color: var(--ink3); font-size: .82rem; }
+.tr-imp { margin: .86rem 0 .57rem; padding-top: .57rem; border-top: 1px solid var(--line2); }
+.tr-imp .tr-note { margin: 0 0 .29rem; }
+.tr-credit { font-size: .75rem; color: var(--ink3); margin-top: .57rem; }
+.tr-bd { margin: .14rem 0 .86rem; }
+.tr-bd .ac { color: var(--ink3); margin-left: .43rem; }
+.tr-bd .tr-acts .act { margin: 0 .86rem 0 0; }
+.tr-bd .tr-note { margin: .14rem 0 0; }
 /* hotkeys: the action, and its combo underlined like a pick; listening = the accent, breathing */
 .hkrow { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .5rem; font-size: .89rem; color: var(--ink2); }
 .hkrow .key { position: relative; margin-left: .71rem; padding-bottom: 2px; font-family: var(--f-num); font-style: var(--num-style);

@@ -87,6 +87,7 @@
                   <div class="scale rise" id="s-glide"></div>
                   <div class="nav first rise" role="button" tabindex="0" data-go="1"><b id="t-sym"></b><span id="n-sym"></span><span class="ar">›</span></div>
                   <div class="nav rise" role="button" tabindex="0" data-go="5"><b id="t-hudlook"></b><span id="n-hudlook"></span><span class="ar">›</span></div>
+                  <div class="nav rise" role="button" tabindex="0" data-go="10"><b id="t-terrain"></b><span id="n-terrain"></span><span class="ar">›</span></div>
                   <div class="nav rise" role="button" tabindex="0" data-go="2"><b id="t-fine"></b><span id="n-fine"></span><span class="ar">›</span></div>
                 </div>
                 <div class="foot rise">
@@ -230,6 +231,48 @@
                   <div id="hk-list"></div>
                   <div class="lay-reset"><span class="act" id="hk-reset" role="button" tabindex="0"></span></div>
                   <div class="gdesc" id="hk-desc"></div>
+                </div>
+              </div>
+
+              <!-- terrain: the green slopes and the skyline (src/terrain), and the data on disk, told plainly -->
+              <div class="page p10" id="page10">
+                <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif" id="t-terrain2"></span></div>
+                <div class="dimmable">
+                  <div class="toggle" id="tr-on" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-trOn"></span></div>
+                  <div class="tr-intro" id="tr-intro"></div>
+                  <div class="more" id="tr-more">
+                    <div class="row"><div class="k" id="t-trLook"></div><div class="picks" id="p-trLook"></div></div>
+                    <div class="scale" id="s-trStrength"></div>
+                    <!-- its own border: the terrain may reach further than the HUD (the whole windscreen) or stay smaller -->
+                    <div class="bd tr-bd">
+                      <div><span id="t-trBorder"></span><span class="ac" id="tr-bd-state"></span></div>
+                      <div class="tr-acts"><span class="act" id="tr-bd-edit" role="button" tabindex="0"></span><span class="act quiet" id="tr-bd-mirror" role="button" tabindex="0"></span><span class="act quiet" id="tr-bd-clear" role="button" tabindex="0"></span></div>
+                      <div class="tr-note" id="tr-bd-note"></div>
+                    </div>
+                    <div class="toggle" id="tr-stream" role="button" tabindex="0" aria-pressed="true"><span class="dot"></span><span id="t-trStream"></span></div>
+                    <div class="tr-note" id="tr-stream-note"></div>
+                    <div class="row"><div class="k" id="t-trRes"></div><div class="picks" id="p-trRes"></div></div>
+                    <div class="row"><div class="k" id="t-trCap"></div><div class="picks" id="p-trCap"></div></div>
+                    <div class="toggle" id="tr-notes" role="button" tabindex="0" aria-pressed="true"><span class="dot"></span><span id="t-trNotes"></span></div>
+                  </div>
+                  <!-- on disk: always shown, so the space can be given back even with terrain off -->
+                  <div class="gh"><span id="t-trDisk"></span><i></i></div>
+                  <div class="ra tr">
+                    <div class="tr-use" id="tr-use"></div>
+                    <div class="tr-path" id="tr-path"></div>
+                    <div class="tr-acts" id="tr-dir-acts"><span class="act quiet" id="tr-open" role="button" tabindex="0"></span><span class="act quiet" id="tr-move" role="button" tabindex="0"></span><span class="act plain" id="tr-move-def" role="button" tabindex="0"></span></div>
+                    <div class="tr-acts"><span class="act quiet" id="tr-clear" role="button" tabindex="0"></span><span class="act quiet" id="tr-del-all" role="button" tabindex="0"></span></div>
+                    <div class="tr-note" id="tr-disk-note"></div>
+                  </div>
+                  <div class="gh"><span id="t-trPkg"></span><i></i></div>
+                  <div class="tr-pkg-desc" id="tr-pkg-desc"></div>
+                  <div class="tr-job" id="tr-job"><span id="tr-job-t"></span><span class="act plain" id="tr-stop" role="button" tabindex="0"></span></div>
+                  <div id="tr-regions"></div>
+                  <div class="tr-imp" id="tr-imp">
+                    <div class="tr-note" id="tr-imp-desc"></div>
+                    <div class="tr-acts"><span class="act quiet" id="tr-open-import" role="button" tabindex="0"></span><span class="act quiet" id="tr-import" role="button" tabindex="0"></span></div>
+                  </div>
+                  <div class="gdesc tr-credit" id="tr-credit"></div>
                 </div>
               </div>
 

@@ -111,6 +111,14 @@ void each_field(Settings& s, F&& f) {
   f("panel_win_x", s.panel_win_x);
   f("panel_win_y", s.panel_win_y);
   f("community_dir", s.community_dir);
+  f("terrain_on", s.terrain_on);
+  f("terrain_look", s.terrain_look);
+  f("terrain_strength", s.terrain_strength);
+  f("terrain_stream", s.terrain_stream);
+  f("terrain_res", s.terrain_res);
+  f("terrain_cache_gb", s.terrain_cache_gb);
+  f("terrain_dir", s.terrain_dir);
+  f("terrain_notes", s.terrain_notes);
 }
 
 void read(const nlohmann::json& v, double& out) {
@@ -300,6 +308,12 @@ Settings settings_from_json(const nlohmann::json& j) {
     auto it = j.find(key);
     if (it != j.end()) read(*it, field);
   });
+  if (s.terrain_look != "fill" && s.terrain_look != "sky" && s.terrain_look != "ridges") s.terrain_look = "fill";
+  if (s.terrain_res != 90) s.terrain_res = 30;
+  if (!std::isfinite(s.terrain_strength)) s.terrain_strength = 1.0;
+  s.terrain_strength = std::clamp(s.terrain_strength, 0.2, 2.0);
+  if (!std::isfinite(s.terrain_cache_gb)) s.terrain_cache_gb = 2.0;
+  s.terrain_cache_gb = std::clamp(s.terrain_cache_gb, 0.5, 64.0);
   auto ra = j.find("ra_by_aircraft");
   if (ra != j.end() && ra->is_object()) {
     for (const auto& [title, v] : ra->items()) {
@@ -316,8 +330,9 @@ Settings settings_from_json(const nlohmann::json& j) {
       if (it != s.hotkeys.end() && v.is_string() && v.get<std::string>().size() <= 40) it->second = v.get<std::string>();
     }
   }
-  auto bd = j.find("border_by_aircraft");
-  if (bd != j.end() && bd->is_object()) {
+  auto borders = [&](const char* name, std::map<std::string, Settings::BorderSeats>& out) {
+    auto bd = j.find(name);
+    if (bd == j.end() || !bd->is_object()) return;
     for (const auto& [title, v] : bd->items()) {
       if (!v.is_object()) continue;
       Settings::BorderSeats seats;
@@ -326,9 +341,11 @@ Settings settings_from_json(const nlohmann::json& j) {
         if (it == v.end()) continue;
         if (auto b = border_from_json(*it)) (key[0] == 'L' ? seats.left : seats.right) = std::move(*b);
       }
-      if (seats.left || seats.right) s.border_by_aircraft[title] = std::move(seats);
+      if (seats.left || seats.right) out[title] = std::move(seats);
     }
-  }
+  };
+  borders("border_by_aircraft", s.border_by_aircraft);
+  borders("terrain_border_by_aircraft", s.terrain_border_by_aircraft);
   sanitize_look(s);
   return s;
 }
@@ -366,16 +383,19 @@ nlohmann::json settings_to_json(const Settings& s0) {
   for (const auto& [title, c] : s.ra_by_aircraft) ra[title] = {{"ft", c.ft}, {"note", c.note}};
   j["ra_by_aircraft"] = ra;
   j["hotkeys"] = s.hotkeys;
-  if (!s.border_by_aircraft.empty()) {  // absent until the first border: settings files stay as they were
+  auto borders = [&](const char* name, const std::map<std::string, Settings::BorderSeats>& in) {
+    if (in.empty()) return;  // absent until the first border: settings files stay as they were
     nlohmann::json bd = nlohmann::json::object();
-    for (const auto& [title, seats] : s.border_by_aircraft) {
+    for (const auto& [title, seats] : in) {
       nlohmann::json e = nlohmann::json::object();
       if (seats.left) e["L"] = border_to_json(*seats.left);
       if (seats.right) e["R"] = border_to_json(*seats.right);
       if (!e.empty()) bd[title] = e;
     }
-    j["border_by_aircraft"] = bd;
-  }
+    j[name] = bd;
+  };
+  borders("border_by_aircraft", s.border_by_aircraft);
+  borders("terrain_border_by_aircraft", s.terrain_border_by_aircraft);
   return j;
 }
 
