@@ -23,6 +23,9 @@ struct Runway {
   // over the pavement (anchor_from_ground); facility_alt_m keeps the original value for the log.
   double facility_alt_m = 0;
   bool anchored = false;
+  // Where alt_m comes from (core/runway_heights.h AltSrc): 0 facility, 1 DEM, 2 another runway of the airport,
+  // 3 measured on an earlier flight, 4 measured now (anchored).
+  int alt_src = 0;
 
   struct Corner {
     double lat, lon, alt_m;

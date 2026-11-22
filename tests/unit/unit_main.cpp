@@ -1,6 +1,9 @@
 // Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
 // Small unit tests for what the parity fixtures do not exercise (runway records and selection, settings JSON).
+#include <windows.h>
+
 #include <cmath>
+#include <filesystem>
 #include <cstdio>
 #include <string>
 
@@ -9,6 +12,7 @@
 #include "core/model.h"
 #include "core/pause.h"
 #include "core/runway.h"
+#include "core/runway_heights.h"
 #include "core/settings.h"
 #include "hud/scene.h"
 
@@ -123,6 +127,53 @@ void test_pick() {
   const auto mid = birdie::offset_latlon(pos.x, pos.y, 530 * std::cos(h), -530 * std::sin(h));
   CHECK(birdie::pick_runway(two, mid.x, mid.y, 83.0, &ends[0]) == &ends[0]);
   CHECK(birdie::pick_runway(two, mid.x, mid.y, 83.0, &r) == &r);
+}
+
+// Runway heights before touchdown (core/runway_heights.h): two parallel runways, facility heights 12 / 17 m too high.
+void test_heights() {
+  using namespace birdie;
+  std::vector<Runway> rw;
+  for (auto& e : ends_from_record("ZULS", {29.30, 90.90, 3581.7, 89.0f, 4000, 50, 10, 1, 28, 2, 0.0f})) rw.push_back(e);
+  for (auto& e : ends_from_record("ZULS", {29.29, 90.90, 3585.5, 89.0f, 4000, 50, 10, 2, 28, 1, 0.0f})) rw.push_back(e);
+  std::vector<Runway*> ap;
+  for (auto& r : rw) ap.push_back(&r);
+  CHECK(rw.size() == 4 && rw[0].name == "10L" && rw[2].name == "10R" && rw[0].alt_src == kAltFacility);
+  RunwayHeights none;
+  // nothing measured, no DEM: as MSFS says
+  CHECK(refine_heights(ap, none, {}).empty() && rw[2].alt_m == 3585.5);
+  // the DEM says 3569 everywhere: taken
+  DemFn flat = [](double, double) -> std::optional<double> { return 3569.0; };
+  CHECK(refine_heights(ap, none, flat).size() == 4 && rw[2].alt_src == kAltDem && std::abs(rw[2].alt_m - 3569) < 1e-9);
+  // over 10R's pavement: measured 3568.2; the DEM was 0.8 m off there, so 10L = DEM - 0.8 (better than borrowing
+  // 10R's -17.3 m offset, which would put 10L at 3564.4)
+  CHECK(anchor_from_ground(rw[2], rw[2].lat, rw[2].lon, 3568.2) && anchor_from_ground(rw[3], rw[3].lat, rw[3].lon, 3568.2));
+  refine_heights(ap, none, flat);
+  CHECK(rw[2].alt_src == kAltGround && rw[0].alt_src == kAltAirport && std::abs(rw[0].alt_m - 3568.2) < 1e-6);
+  // a flattened third-party airport: the DEM 9 m off at the measured runway -> the offset is borrowed instead
+  std::vector<Runway> rw2 = rw;
+  std::vector<Runway*> ap2;
+  for (auto& r : rw2) ap2.push_back(&r), r.alt_src = r.anchored ? kAltGround : kAltFacility;
+  DemFn hilly = [](double, double) -> std::optional<double> { return 3577.2; };
+  refine_heights(ap2, none, hilly);
+  CHECK(rw2[0].alt_src == kAltAirport && std::abs(rw2[0].alt_m - (3581.7 + (3568.2 - 3585.5))) < 1e-6);
+  // remembered for the next flight, only while the facility height is the same
+  wchar_t tmp[MAX_PATH];
+  GetTempPathW(MAX_PATH, tmp);
+  const auto file = std::filesystem::path(tmp) / L"birdie_test_runway_heights.json";
+  std::filesystem::remove(file);
+  {
+    RunwayHeights h(file);
+    CHECK(h.put(rw[2]) && !h.put(rw[2]) && h.save());
+  }
+  RunwayHeights h(file);
+  std::vector<Runway> fresh = ends_from_record("ZULS", {29.29, 90.90, 3585.5, 89.0f, 4000, 50, 10, 2, 28, 1, 0.0f});
+  CHECK(h.size() == 1 && h.get(fresh[0]) && std::abs(*h.get(fresh[0]) - 3568.2) < 0.06 && !h.get(fresh[1]));
+  std::vector<Runway*> ap3{&fresh[0], &fresh[1]};
+  refine_heights(ap3, h, flat);
+  CHECK(fresh[0].alt_src == kAltSaved && fresh[1].alt_src == kAltAirport);
+  fresh[0].facility_alt_m = 3590;  // other scenery: the measurement no longer counts
+  CHECK(!h.get(fresh[0]));
+  std::filesystem::remove(file);
 }
 
 void test_settings() {
@@ -319,6 +370,7 @@ int main() {
   test_slope_corners();
   test_anchor();
   test_pick();
+  test_heights();
   test_settings();
   test_ground_ra();
   test_focal();

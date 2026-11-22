@@ -880,12 +880,41 @@ void App::update_runway() {
   // the ground under the aircraft fixes the height of a runway we are over (takeoff roll, crossing the threshold)
   sim_.anchor_runways(nearby_icaos, state_->lat, state_->lon, (state_->alt_ft - state_->agl_ft) * 0.3048,
                       [](const std::string& m) { log_line(m); });
+  refine_runway_heights(nearby_icaos);
   const Runway* rw = pick_runway(sim_.all_ends(nearby_icaos), state_->lat, state_->lon, state_->trk_true, runway_);
   if (rw != runway_) {
     if (rw) logf("[rwy] selected %s %s hdg %.1f %.0fx%.0f m slope %+.2f", rw->icao.c_str(), rw->name.c_str(), rw->hdg,
                  rw->length, rw->width, rw->slope);
     else log_line("[rwy] no runway lined up");
     runway_ = rw;
+  }
+}
+
+// The facility height can be metres off the scenery (ZULS 10R +17.3 m): measured runways are remembered, the others
+// borrow from a measured one of the airport or from the DEM until the aircraft is over their pavement.
+void App::refine_runway_heights(const std::vector<std::string>& icaos) {
+  const double now = now_s();
+  if (now - t_heights_ < 3.0) return;
+  t_heights_ = now;
+  if (heights_.size() == 0 && t_heights_saved_ < 0) {  // first time: the file of earlier flights
+    heights_ = RunwayHeights(settings_path().parent_path() / L"runway_heights.json");
+    t_heights_saved_ = now;
+  }
+  const auto dir = terrain_dir();
+  if (terrain_moving_) rwy_dem_.reset();  // the tiles are on their way to another folder
+  else if (!rwy_dem_ || rwy_dem_->dir() != dir) rwy_dem_ = std::make_unique<terrain::Dem>(dir);
+  const DemFn dem = [this](double la, double lo) -> std::optional<double> {
+    return rwy_dem_ ? rwy_dem_->height(la, lo) : std::nullopt;
+  };
+  for (const auto& icao : icaos) {
+    const auto ends = sim_.airport_ends(icao);
+    for (const Runway* r : ends) heights_dirty_ = heights_.put(*r) || heights_dirty_;
+    for (const auto& line : refine_heights(ends, heights_, dem)) log_line(line);
+  }
+  if (heights_dirty_ && now - t_heights_saved_ > 10.0) {
+    heights_dirty_ = false;
+    t_heights_saved_ = now;
+    if (!heights_.save()) log_line("[rwy] runway_heights.json could not be written");
   }
 }
 
@@ -1918,6 +1947,7 @@ int App::run() {
     if (opt_.replay_seconds > 0 && now_s() - t_start > opt_.replay_seconds) running_ = false;
   }
   if (!replay_rows_.empty()) timeEndPeriod(1);
+  if (heights_dirty_) heights_.save();
   log_line("[app] exit");
   return 0;
 }

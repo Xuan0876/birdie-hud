@@ -39,6 +39,7 @@ add_library(birdie_core STATIC
   src/core/geo.cpp
   src/core/model.cpp
   src/core/runway.cpp
+  src/core/runway_heights.cpp
   src/core/settings.cpp
   src/core/version.cpp
   src/hud/scene.cpp

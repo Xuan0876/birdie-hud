@@ -53,6 +53,8 @@ class SimClient {
   void request_runways(const std::string& icao);
   std::vector<std::string> nearby(double lat, double lon, double radius_m = 30000.0) const;
   std::vector<const Runway*> all_ends(const std::vector<std::string>& icaos) const;
+  // One airport's ends, to correct their heights (core/runway_heights.h); empty until its runways have arrived.
+  std::vector<Runway*> airport_ends(const std::string& icao);
   // Re-anchors the altitude of every runway end whose pavement is under (lat, lon); ground_m = terrain/pavement
   // altitude there (PLANE ALTITUDE - PLANE ALT ABOVE GROUND). Logs the first anchoring of each end.
   void anchor_runways(const std::vector<std::string>& icaos, double lat, double lon, double ground_m,

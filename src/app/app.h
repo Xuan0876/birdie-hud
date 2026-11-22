@@ -17,6 +17,7 @@
 #include "core/border.h"
 #include "core/model.h"
 #include "core/runway.h"
+#include "core/runway_heights.h"
 #include "core/settings.h"
 #include "core/state.h"
 #include "hud/terrain_draw.h"
@@ -228,6 +229,13 @@ class App {
   mutable nlohmann::json terrain_regions_;  // the packages list for the panel (recounted now and then)
   mutable double t_regions_ = -1e9;
   double t_terrain_log_ = 0;
+
+  // runway heights before touchdown (core/runway_heights.h)
+  void refine_runway_heights(const std::vector<std::string>& icaos);
+  RunwayHeights heights_;
+  std::unique_ptr<terrain::Dem> rwy_dem_;  // the terrain tiles on disk, read for the runway heights (main thread)
+  double t_heights_ = -1e9, t_heights_saved_ = -1e9;
+  bool heights_dirty_ = false;
 };
 
 }  // namespace birdie::app

@@ -39,6 +39,7 @@ bool anchor_from_ground(Runway& rw, double lat, double lon, double ground_m) {
   // first reading: take it; then follow gently (the real surface is not a perfect plane; called at 2 Hz -> ~1.5 s)
   rw.alt_m = rw.anchored ? rw.alt_m + 0.3 * (centre - rw.alt_m) : centre;
   rw.anchored = true;
+  rw.alt_src = 4;  // kAltGround
   return true;
 }
 

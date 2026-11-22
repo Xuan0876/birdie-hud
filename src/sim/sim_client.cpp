@@ -261,6 +261,13 @@ std::vector<const Runway*> SimClient::all_ends(const std::vector<std::string>& i
   return out;
 }
 
+std::vector<Runway*> SimClient::airport_ends(const std::string& icao) {
+  std::vector<Runway*> out;
+  if (auto it = ends_.find(icao); it != ends_.end())
+    for (auto& r : it->second) out.push_back(&r);
+  return out;
+}
+
 void SimClient::anchor_runways(const std::vector<std::string>& icaos, double lat, double lon, double ground_m,
                                const std::function<void(const std::string&)>& log) {
   for (const auto& i : icaos) {
