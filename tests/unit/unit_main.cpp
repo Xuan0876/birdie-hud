@@ -109,8 +109,20 @@ void test_pick() {
   // 4 km to the side of the centreline: nothing
   const auto side = birdie::offset_latlon(pos.x, pos.y, 4000 * std::cos(h), -4000 * std::sin(h));
   CHECK(birdie::pick_runway(ptrs, side.x, side.y, 83.0, nullptr) == nullptr);
-  // current stays while valid even if another would score better
+  // current stays while it is the best
   CHECK(birdie::pick_runway(ptrs, pos.x, pos.y, 83.0, &ends[0]) == &ends[0]);
+  // a parallel runway 1 km to the right ("07R"): lined up with it, it takes over from the current 07L (ZULS 10L/10R)
+  birdie::Runway r = ends[0];
+  r.name = "07R";
+  const auto rc = birdie::offset_latlon(r.lat, r.lon, 1000 * std::cos(h), -1000 * std::sin(h));
+  r.lat = rc.x, r.lon = rc.y;
+  std::vector<const birdie::Runway*> two{&ends[0], &r};
+  const auto on_r = birdie::offset_latlon(pos.x, pos.y, 1000 * std::cos(h), -1000 * std::sin(h));
+  CHECK(birdie::pick_runway(two, on_r.x, on_r.y, 83.0, &ends[0]) == &r);
+  // half-way between the two (a few metres either way): whichever was picked stays
+  const auto mid = birdie::offset_latlon(pos.x, pos.y, 530 * std::cos(h), -530 * std::sin(h));
+  CHECK(birdie::pick_runway(two, mid.x, mid.y, 83.0, &ends[0]) == &ends[0]);
+  CHECK(birdie::pick_runway(two, mid.x, mid.y, 83.0, &r) == &r);
 }
 
 void test_settings() {

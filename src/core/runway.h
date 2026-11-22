@@ -66,7 +66,8 @@ std::string runway_name(int number, int designator);
 std::vector<Runway> ends_from_record(const std::string& icao, const RunwayRecord& r);
 
 // The end we are lined up for (see runways.py pick): within 30° of track, ahead, within max_dist of the threshold,
-// within 3 km of the extended centreline. Keeps `current` while it is still valid. nullptr = none.
+// within 3 km of the extended centreline. Keeps `current` while it is still valid, unless another lines up clearly
+// better (a parallel runway the aircraft has lined up with). nullptr = none.
 const Runway* pick_runway(const std::vector<const Runway*>& ends, double lat, double lon, double trk,
                           const Runway* current, double max_dist = 25000.0);
 

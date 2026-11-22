@@ -172,8 +172,8 @@ const Runway* pick_runway(const std::vector<const Runway*>& ends, double lat, do
     out = std::abs(cross_) + 60 * dang;
     return true;
   };
-  double sc = 0;
-  if (current && score(*current, sc)) return current;
+  double sc = 0, cur_sc = 0;
+  const bool keep = current && score(*current, cur_sc);
   const Runway* best = nullptr;
   double best_sc = 0;
   for (const Runway* rw : ends) {
@@ -182,6 +182,12 @@ const Runway* pick_runway(const std::vector<const Runway*>& ends, double lat, do
       best_sc = sc;
     }
   }
+  // The current one stays unless another lines up clearly better. (It used to stay as long as it was valid at all, as
+  // in the reference: picked while intercepting from the side, 10L at ZULS kept the outline although the aircraft
+  // then lined up with the parallel 10R, user 11/22.) The margin keeps the outline from hopping between two that
+  // score alike: 120 m of offset, or 2 deg of heading.
+  constexpr double kSwitch = 120.0;
+  if (keep && (!best || best == current || best_sc > cur_sc - kSwitch)) return current;
   return best;
 }
 
