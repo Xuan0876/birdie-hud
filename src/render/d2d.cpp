@@ -87,7 +87,9 @@ struct D2DRenderer::Impl {
   ComPtr<ID2D1SolidColorBrush> brush;
   ComPtr<ID2D1StrokeStyle1> solid, dashed;
   std::map<int, ComPtr<IDWriteTextFormat>> fonts;
-  ComPtr<ID2D1Effect> blur;  // HUD border feather
+  // Feathered clips (op 7): one blur effect per mask of a frame. A mask's brush draws from its effect's output, so
+  // a shared effect left every mask with the last one's shape (11/22: the terrain border came out as the HUD's).
+  std::vector<ComPtr<ID2D1Effect>> blurs;
   struct Mask {
     ComPtr<ID2D1PathGeometry> geo;  // the border itself (hard edge)
     ComPtr<ID2D1ImageBrush> brush;  // blurred, inset by half the feather: the fade
@@ -223,7 +225,7 @@ struct D2DRenderer::Impl {
   void release_device() {
     fonts.clear();
     masks.clear();
-    blur.Reset();
+    blurs.clear();
     brush.Reset();
     solid.Reset();
     dashed.Reset();
@@ -366,6 +368,9 @@ struct D2DRenderer::Impl {
     m.geo = geometry(p, true, true);
     if (!m.geo || feather < 0.5f) return m;
     HRESULT hr = S_OK;
+    const size_t ix = masks.size();  // this mask's own effect (make_mask runs once per op 7, in order)
+    if (blurs.size() <= ix) blurs.resize(ix + 1);
+    ComPtr<ID2D1Effect>& blur = blurs[ix];
     if (!blur) hr = dc->CreateEffect(CLSID_D2D1GaussianBlur, &blur);
     if (FAILED(hr)) return m;
     // inset = polygon minus its own outline stroked at the feather width
