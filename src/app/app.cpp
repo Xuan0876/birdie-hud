@@ -1,9 +1,6 @@
 // Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
 #include "app/app.h"
 
-#include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
-
 #include <mmsystem.h>
 #include <objidl.h>
 #include <shellapi.h>
@@ -956,26 +953,8 @@ void App::on_state(SimState s) {
   model_.update(s, t_state_);
   terrain_feed(s);
   n_msgs_ += std::max(1, sim_.take_samples());  // data/s above Hz = the paint could not keep up (stale samples skipped)
-  if (!paced()) {  // paced: the frame timer paints, with this state moved on to that moment
-    ++n_frames_;
-    redraw();
-  }
-}
-
-bool App::paced() const {
-  // only while the HUD is up (hidden, a repaint on each sim frame keeps the reasons current, as before)
-  return set_.hud_max_hz > 0 && opt_.replay.empty() && gfx_ok_ && hud_on_ && why_.empty() && state_ &&
-         now_s() - t_state_ < 0.5;
-}
-
-void App::update_frame_period() {
-  DWM_TIMING_INFO ti{};
-  ti.cbSize = sizeof ti;
-  double hz = 60;
-  if (SUCCEEDED(DwmGetCompositionTimingInfo(nullptr, &ti)) && ti.rateRefresh.uiDenominator && ti.rateRefresh.uiNumerator)
-    hz = static_cast<double>(ti.rateRefresh.uiNumerator) / ti.rateRefresh.uiDenominator;
-  if (set_.hud_max_hz > 0) hz = std::min(hz, static_cast<double>(set_.hud_max_hz));
-  frame_period_ = 1.0 / std::clamp(hz, 20.0, 240.0);
+  ++n_frames_;
+  redraw();
 }
 
 void App::replay_step() {
@@ -1564,8 +1543,6 @@ void App::redraw() {
     return;
   }
   const double t0 = now_s();
-  t_painted_ = t0;
-  model_.set_predict(set_.hud_max_hz > 0 && opt_.replay.empty() ? t0 - t_state_ : 0.0);
   if (!flash_.empty() && t0 > flash_until_) flash_.clear();
   terrain_frame_.lines = set_.terrain_on ? terrain_.latest() : nullptr;
   terrain_frame_.fill_opacity = set_.terrain_strength;
@@ -2009,9 +1986,6 @@ int App::run() {
   t_stat_ = t_start;
   replay_t0_ = replay_next_ = t_start;
   double next_house = t_start;
-  frame_timer_ = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-  if (!frame_timer_) timeBeginPeriod(1);  // older Windows: plain waits at 1 ms resolution instead
-  update_frame_period();
   const sim::SimClient::Events ev{[this](const SimState& s) { on_state(s); },
                                   [this] {
                                     log_line("[sim] simulator closed");
@@ -2033,7 +2007,6 @@ int App::run() {
     const double now = now_s();
     if (now >= next_house) {
       housekeeping();
-      update_frame_period();
       next_house = now + 0.5;
     }
     double next = next_house;
@@ -2041,24 +2014,11 @@ int App::run() {
     if (!flash_.empty()) next = std::min(next, flash_until_ + 0.01);
     if (edit_.on && now - edit_.t0 < 0.4) next = std::min(next, now + 0.016);
     if (anim_busy(now)) next = std::min(next, now + 0.016);  // openings / closings run even when the sim is quiet
-    const bool pace = paced();
-    if (pace) {
-      const double due = t_painted_ + frame_period_;
-      next = std::min(next, due);
-      if (frame_timer_) {
-        LARGE_INTEGER li;
-        li.QuadPart = -static_cast<LONGLONG>(std::max(0.0, due - now_s()) * 1e7);  // relative, 100 ns units
-        SetWaitableTimer(frame_timer_, &li, 0, nullptr, nullptr, FALSE);
-      }
-    }
-    const DWORD timeout = static_cast<DWORD>(std::clamp(std::ceil((next - now_s()) * 1000.0), 0.0, 500.0));
-    HANDLE waits[3] = {sim_event_, nullptr, nullptr};
-    DWORD nw = 1, w_panel = MAXDWORD;
-    if (panel_.running()) w_panel = nw, waits[nw++] = panel_.event();
-    if (pace && frame_timer_) waits[nw++] = frame_timer_;
-    // the timer wakes the loop on time; the millisecond timeout stays as the fallback
-    const DWORD r = MsgWaitForMultipleObjectsEx(nw, waits, timeout, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
-    if (w_panel != MAXDWORD && r == WAIT_OBJECT_0 + w_panel) panel_.poll(panel_events_);
+    const DWORD timeout = static_cast<DWORD>(std::clamp((next - now_s()) * 1000.0, 0.0, 500.0));
+    const HANDLE waits[2] = {sim_event_, panel_.event()};
+    const DWORD r =
+        MsgWaitForMultipleObjectsEx(panel_.running() ? 2 : 1, waits, timeout, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+    if (r == WAIT_OBJECT_0 + 1) panel_.poll(panel_events_);
     if (r == WAIT_OBJECT_0 && sim_.connected()) {
       if (!sim_.dispatch(ev) && !sim_.connected()) {
         state_.reset();
@@ -2071,10 +2031,6 @@ int App::run() {
       TranslateMessage(&msg);
       DispatchMessageW(&msg);
     }
-    if (paced() && now_s() >= t_painted_ + frame_period_ - 0.0005) {
-      ++n_frames_;
-      redraw();
-    }
     if (!replay_rows_.empty() && now_s() >= replay_next_) replay_step();
     if (!flash_.empty() && now_s() > flash_until_) redraw();
     if (edit_.on && now_s() - edit_.t0 < 0.4) redraw();  // the editor's fade-in, even when the sim sends nothing
@@ -2082,8 +2038,6 @@ int App::run() {
     if (opt_.replay_seconds > 0 && now_s() - t_start > opt_.replay_seconds) running_ = false;
   }
   if (!replay_rows_.empty()) timeEndPeriod(1);
-  if (frame_timer_) CloseHandle(frame_timer_);
-  else timeEndPeriod(1);
   if (heights_dirty_) heights_.save();
   log_line("[app] exit");
   return 0;

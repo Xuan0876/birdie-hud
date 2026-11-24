@@ -70,7 +70,6 @@ void each_field(Settings& s, F&& f) {
   f("auto_hide", s.auto_hide);
   f("auto_hide_ft", s.auto_hide_ft);
   f("auto_hide_s", s.auto_hide_s);
-  f("hud_max_hz", s.hud_max_hz);
   f("lay_spread", s.lay_spread);
   f("spd_dx", s.spd_dx);
   f("spd_dy", s.spd_dy);
@@ -312,7 +311,6 @@ Settings settings_from_json(const nlohmann::json& j) {
   });
   if (s.terrain_look != "fill" && s.terrain_look != "sky" && s.terrain_look != "ridges") s.terrain_look = "fill";
   if (s.terrain_res != 90) s.terrain_res = 30;
-  s.hud_max_hz = std::clamp(s.hud_max_hz, 0, 240);
   if (s.camera_source != "msfs") s.camera_source = "chaseplane";
   if (!std::isfinite(s.terrain_strength)) s.terrain_strength = 1.0;
   s.terrain_strength = std::clamp(s.terrain_strength, 0.2, 2.0);

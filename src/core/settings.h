@@ -74,9 +74,6 @@ struct Settings {
   bool auto_hide = false;
   double auto_hide_ft = 2500.0;
   double auto_hide_s = 30.0;
-  // The HUD repaints with the display (at most this often, Hz) and moves the last sim state on to the moment of
-  // painting (core/model.h set_predict); 0 = repaint only when the sim sends a frame (before 11/24).
-  int hud_max_hz = 120;
 
   // ---- the HUD's look, all of it adjustable (the Fine tuning page of the panel). Defaults = the Airbus HUD as drawn
   // before these existed (the parity tests rely on that).
