@@ -95,7 +95,7 @@ bool SimClient::open(HANDLE signal, std::wstring* err) {
   SimConnect_SubscribeToSystemEvent(h_, kEvtPause, "Pause_EX1");
   cam_pending_ = false;
   cam_.reset();
-  if (cam_on_) SimConnect_SubscribeToCameraStatusUpdate(h_);
+  if (cam_on_) SimConnect_SubscribeToCameraStatusUpdate(h_), SimConnect_CameraGetStatus(h_);  // updates come on change only
 
   SimConnect_AddToFacilityDefinition(h_, kDefRunway, "OPEN AIRPORT");
   SimConnect_AddToFacilityDefinition(h_, kDefRunway, "OPEN RUNWAY");
@@ -147,7 +147,7 @@ void SimClient::set_camera_polling(bool on) {
   cam_info_ = CameraInfo{};
   if (!h_) return;
   if (on)
-    SimConnect_SubscribeToCameraStatusUpdate(h_);
+    SimConnect_SubscribeToCameraStatusUpdate(h_), SimConnect_CameraGetStatus(h_);  // updates come on change only
   else
     SimConnect_UnsubscribeToCameraStatusUpdate(h_);
 }
