@@ -165,6 +165,13 @@ class App {
 
   std::optional<SimState> state_;
   double t_state_ = 0;
+  // Frame pacing (settings hud_max_hz): while the HUD is up with live data it repaints at the display's rate, the
+  // state moved on to the moment of painting (Model::set_predict), from a high-resolution waitable timer.
+  bool paced() const;
+  void update_frame_period();
+  HANDLE frame_timer_ = nullptr;
+  double frame_period_ = 1.0 / 60;
+  double t_painted_ = 0;
   double high_since_ = -1;  // since when the radio altitude is above auto_hide_ft (-1 = not above)
   double hold_until_ = 0;   // the panel's "hold" (look pages open), renewed by the panel
   bool hud_on_ = false;     // where the animation is heading: shown or hidden

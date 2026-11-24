@@ -44,6 +44,8 @@ void Model::reset() {
   filt_ = HudFilters{};
 }
 
+void Model::set_predict(double seconds) { predict_s_ = std::clamp(seconds, 0.0, kMaxPredictS); }
+
 void Model::update(const SimState& s, double t) {
   filt_.update(s, t);
   const double trk = rad(s.trk_true);
@@ -79,9 +81,16 @@ std::optional<double> Model::vs_fpm() const {
 Geometry Model::geometry(const SimState& s, double W, double H, const Runway* runway) const {
   Geometry g;
   const double lead = set_->lead_ms / 1000.0;
+  const double ahead = lead + predict_s_;
   SimState p = s;
-  if (lead != 0) {
-    for (int k = 0; k < 6; ++k) p.*kAngleKeys[k] = s.*kAngleKeys[k] + rates_[k] * lead;
+  if (ahead != 0) {
+    for (int k = 0; k < 6; ++k) p.*kAngleKeys[k] = s.*kAngleKeys[k] + rates_[k] * ahead;
+  }
+  if (predict_s_ > 0 && s.gs_kt > 1) {  // the position moves on too (the track is noise when nearly standing still)
+    const double d = s.gs_kt * kKt * predict_s_, trk = rad(s.trk_true);
+    const Vec2 ll = offset_latlon(s.lat, s.lon, d * std::sin(trk), d * std::cos(trk));
+    p.lat = ll.x, p.lon = ll.y;
+    p.alt_ft = s.alt_ft + s.vy_fps * predict_s_;
   }
   const Mat3 R_ac = aircraft_rotation(p);
   const Mat3 R = R_ac * camera_to_body(p.cam_yaw, p.cam_pitch, p.cam_roll);

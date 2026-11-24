@@ -47,11 +47,18 @@ class Model {
   const HudFilters& filters() const { return filt_; }
   const std::optional<Vec3>& velocity() const { return v_; }
   void reset();
+  // Draw the state as it will be `seconds` after it arrived (0 = as it came). The HUD repaints with the display, not
+  // only when the sim sends a frame: in between, the attitude moves on with its rates and the position with the
+  // ground speed / track / vertical speed, so the runway outline glides like the picture instead of stepping at the
+  // sim's frame rate. Clamped to kMaxPredictS; the parity tests never set it.
+  void set_predict(double seconds);
+  static constexpr double kMaxPredictS = 0.1;
 
  private:
   const Settings* set_;
   std::optional<Vec3> v_;  // smoothed ENU velocity, m/s
   std::optional<double> prev_t_;
+  double predict_s_ = 0;
   SimState prev_{};
   double rates_[6] = {};  // hdg_true, pitch_deg, bank_deg, cam_pitch, cam_yaw, cam_roll (deg/s)
   HudFilters filt_;

@@ -257,6 +257,42 @@ void test_hide() {
   CHECK(is(birdie::hide_reason(m), "not_forward"));
 }
 
+void test_predict() {
+  using namespace birdie;
+  Settings set;
+  Model m(set);
+  SimState s;
+  s.lat = 31.0, s.lon = 121.0, s.alt_ft = 1000, s.hdg_true = 90, s.trk_true = 90, s.gs_kt = 100, s.vy_fps = -10,
+  s.bank_deg = 0, s.cp_zoom = 0.5;
+  camera_from_chaseplane(s);
+  m.update(s, 0.0);
+  SimState s2 = s;
+  s2.bank_deg = -2;  // rolling right at 20 deg/s (SimConnect: - = right wing down)
+  m.update(s2, 0.1);
+  // nothing asked: the state as it came
+  const Geometry g0 = m.geometry(s2, 1600, 900, nullptr);
+  CHECK(g0.p.lat == s2.lat && g0.p.lon == s2.lon && g0.p.alt_ft == s2.alt_ft && g0.p.bank_deg == s2.bank_deg);
+  // 50 ms on: 2.57 m east, 0.5 ft down, the roll moved on by the (smoothed) rate
+  m.set_predict(0.05);
+  const Geometry g = m.geometry(s2, 1600, 900, nullptr);
+  const Vec2 moved = enu(s2.lat, s2.lon, g.p.lat, g.p.lon);
+  CHECK(std::abs(moved.x - 100 * kKt * 0.05) < 1e-3 && std::abs(moved.y) < 1e-3);
+  CHECK(std::abs(g.p.alt_ft - (1000 - 0.5)) < 1e-9);
+  CHECK(g.p.bank_deg < s2.bank_deg && g.p.bank_deg > s2.bank_deg - 1.0);
+  // clamped: a stalled sim does not run away
+  m.set_predict(5.0);
+  const Vec2 capped = enu(s2.lat, s2.lon, m.geometry(s2, 1600, 900, nullptr).p.lat, m.geometry(s2, 1600, 900, nullptr).p.lon);
+  CHECK(std::abs(capped.x - 100 * kKt * Model::kMaxPredictS) < 1e-3);
+  // standing still: the position stays (the track is noise)
+  SimState slow = s2;
+  slow.gs_kt = 0.5;
+  m.set_predict(0.05);
+  const Geometry gs = m.geometry(slow, 1600, 900, nullptr);
+  CHECK(gs.p.lat == slow.lat && gs.p.lon == slow.lon);
+  CHECK(Settings{}.hud_max_hz == 120);
+  CHECK(settings_from_json(nlohmann::json{{"hud_max_hz", 999}}).hud_max_hz == 240);
+}
+
 void test_camera_sources() {
   using namespace birdie;
   // ChasePlane: the same numbers Birdie used before the sources existed
@@ -472,6 +508,7 @@ int main() {
   test_focal();
   test_hide();
   test_camera_sources();
+  test_predict();
   test_pause();
   test_border();
   test_border_projection();
