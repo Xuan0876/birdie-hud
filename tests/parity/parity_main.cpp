@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 
+#include "core/camera.h"
 #include "core/geo.h"
 #include "core/model.h"
 #include "core/runway.h"
@@ -50,6 +51,7 @@ birdie::SimState state_from_row(const Fixture& fx, size_t row) {
   for (const auto& v : birdie::kVars)
     if (!birdie::not_in_reference(v.key)) s.*v.field = fx.at(row, v.key);
   s.ra_raw_ft = fx.at(row, "ra_raw_ft");
+  birdie::camera_from_chaseplane(s);
   return s;
 }
 
@@ -58,6 +60,7 @@ birdie::SimState state_from_json(const json& j) {
   for (const auto& v : birdie::kVars)
     if (!birdie::not_in_reference(v.key)) s.*v.field = j.at(v.key).get<double>();
   s.ra_raw_ft = j.value("ra_raw_ft", s.radio_alt_ft);
+  birdie::camera_from_chaseplane(s);
   return s;
 }
 

@@ -36,6 +36,7 @@ target_link_libraries(webview2 INTERFACE "${WEBVIEW2_DIR}/x64/WebView2LoaderStat
 # Everything the parity tests check lives here, so they run without the sim.
 add_library(birdie_core STATIC
   src/core/border.cpp
+  src/core/camera.cpp
   src/core/geo.cpp
   src/core/model.cpp
   src/core/runway.cpp

@@ -62,6 +62,9 @@ struct Settings {
   std::string tdz_rule = "icao", tdz_style = "aim";
   std::string language;  // "" = follow Windows, "zh-CN", "en"
   std::string ui_style = "tool";  // the panel's look: "tool", "light", "dusk" (birdie.css)
+  // Where the HUD's camera comes from (core/camera.h): "chaseplane" (ChasePlane's L-vars) or "msfs" (the sim's own
+  // Camera API, beta: if an MSFS update breaks it, the user switches back).
+  std::string camera_source = "chaseplane";
   std::map<std::string, std::string> hotkeys = default_hotkeys();
   // Showing and hiding by itself. On the ground the HUD waits until the ground speed passes auto_show_kt (the
   // take-off roll); up high it hides once the radio altitude has stayed above auto_hide_ft for auto_hide_s, and comes

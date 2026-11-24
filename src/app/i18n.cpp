@@ -34,6 +34,7 @@ const Pair kStrings[] = {
     {S::WhySimNotRunning, L"模拟器没开", L"simulator not running"},
     {S::WhyWaitData, L"等数据", L"waiting for data"},
     {S::WhyNoChasePlane, L"没检测到 ChasePlane", L"ChasePlane not detected"},
+    {S::WhyNoCamera, L"读不到 MSFS 镜头", L"No MSFS camera data"},
     {S::WhyExternalView, L"外部视角", L"external view"},
     {S::WhyNotForward, L"没在看前方", L"not looking ahead"},
     {S::WhyGroundSlow, L"地面低速", L"slow on the ground"},
@@ -141,6 +142,7 @@ std::wstring trf(S id, ...) {
 const wchar_t* tr_why(const char* id) {
   if (!id) return L"";
   if (!std::strcmp(id, "no_chaseplane")) return tr(S::WhyNoChasePlane);
+  if (!std::strcmp(id, "no_camera")) return tr(S::WhyNoCamera);
   if (!std::strcmp(id, "external_view")) return tr(S::WhyExternalView);
   if (!std::strcmp(id, "not_forward")) return tr(S::WhyNotForward);
   if (!std::strcmp(id, "ground_slow")) return tr(S::WhyGroundSlow);

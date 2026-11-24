@@ -15,6 +15,7 @@
 #include "app/panel_server.h"
 #include "app/settings_window.h"
 #include "core/border.h"
+#include "core/camera.h"
 #include "core/model.h"
 #include "core/runway.h"
 #include "core/runway_heights.h"
@@ -77,6 +78,7 @@ class App {
   // HUD border (core/border.h, docs/HUD_BORDER.md)
   std::string border_key() const;  // settings key: the aircraft TITLE
   Seat seat() const;               // from the eye's lateral offset
+  CameraSource camera_source() const;  // settings camera_source (core/camera.h)
   std::optional<std::vector<Vec2>> active_border() const;  // what clips the HUD now (the editor's while editing)
   // The terrain's own border now (the editor's while tracing it); nullopt = none (the terrain follows the HUD's).
   std::optional<std::vector<Vec2>> terrain_border() const;

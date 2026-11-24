@@ -53,7 +53,7 @@ class Model {
   std::optional<Vec3> v_;  // smoothed ENU velocity, m/s
   std::optional<double> prev_t_;
   SimState prev_{};
-  double rates_[6] = {};  // hdg_true, pitch_deg, bank_deg, cp_pitch, cp_yaw, cp_roll (deg/s)
+  double rates_[6] = {};  // hdg_true, pitch_deg, bank_deg, cam_pitch, cam_yaw, cam_roll (deg/s)
   HudFilters filt_;
 };
 

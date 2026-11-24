@@ -21,6 +21,7 @@
 #include "app/i18n.h"
 #include "app/panel_proto.h"
 #include "app/platform.h"
+#include "core/camera.h"
 #include "core/geo.h"
 #include "core/pause.h"
 #include "core/version.h"
@@ -129,6 +130,7 @@ bool load_replay(const std::filesystem::path& dir, std::vector<SimState>& rows, 
     for (size_t i = 0; i < cells.size() && i < map.size(); ++i)
       if (map[i] >= 0) s.*kVars[map[i]].field = std::strtod(cells[i].c_str(), nullptr);
     s.ra_raw_ft = s.radio_alt_ft;
+    camera_from_chaseplane(s);  // recordings carry ChasePlane's L-vars
     rows.push_back(s);
   }
   if (rows.empty()) {
@@ -937,6 +939,7 @@ void App::on_state(SimState s) {
   } else {
     ra_ground_.clear();
   }
+  apply_camera(s, camera_source(), nullptr);
   t_state_ = now_s();
   state_ = s;
   model_.update(s, t_state_);
@@ -1322,9 +1325,11 @@ void App::housekeeping() {
   if (now - last_print_ > 5 && state_) {
     const SimState& s = *state_;
     const double dt = std::max(now - t_stat_, 1e-3);
-    logf("[live] %4.0f Hz  data %4.1f/s  build %4.1f ms  paint %4.1f ms  gs %5.1f kt  agl %6.0f  cp y/p %+.1f/%+.1f "
-         "z %.3f  runway %s  %s",
-         n_frames_ / dt, n_msgs_ / dt, build_ms_, paint_ms_, s.gs_kt, s.agl_ft, s.cp_yaw, s.cp_pitch, s.cp_zoom,
+    logf("[live] %4.0f Hz  data %4.1f/s  build %4.1f ms  paint %4.1f ms  gs %5.1f kt  agl %6.0f  cam %s%s y/p %+.1f/%+.1f "
+         "vfov %.1f  runway %s  %s",
+         n_frames_ / dt, n_msgs_ / dt, build_ms_, paint_ms_, s.gs_kt, s.agl_ft,
+         camera_source_name(static_cast<CameraSource>(s.cam_source)), s.cam_ok ? "" : "(none)", s.cam_yaw, s.cam_pitch,
+         s.cam_vfov,
          runway_ ? (runway_->icao + " " + runway_->name).c_str() : "-",
          why_.empty() ? "showing" : ("hidden: " + to_utf8(why_)).c_str());
     n_frames_ = n_msgs_ = 0;
@@ -1349,7 +1354,7 @@ bool chaseplane_process_running() {
 void App::check_chaseplane() {
   // Tell the user once per run when ChasePlane is missing: its L-vars read nothing for 15 s while MSFS is in front
   // and sending data, and its helper process is not running (the process check keeps menus/loading quiet).
-  if (!opt_.replay.empty() || cp_warned_) return;
+  if (!opt_.replay.empty() || cp_warned_ || camera_source() != CameraSource::kChasePlane) return;
   const double now = now_s();
   const bool live = state_ && now - t_state_ < 1.0 && hwnd_sim_ && GetForegroundWindow() == hwnd_sim_;
   if (!live || state_->cp_zoom > 0.05) {
@@ -1405,6 +1410,7 @@ bool App::compute_why() {
   } else if (const char* r = hide_reason(*state_, holding() ? 0.0 : show_above_kt())) {
     why_ = tr_why(r);
     why_key_ = !std::strcmp(r, "no_chaseplane")   ? "nocp"
+               : !std::strcmp(r, "no_camera")     ? "nocam"
                : !std::strcmp(r, "external_view") ? "ext"
                : !std::strcmp(r, "not_forward")   ? "look"
                : !std::strcmp(r, "ground_slow")   ? "taxi"
@@ -1516,6 +1522,7 @@ void App::redraw() {
     // cockpit view, with data (an outside view or a lost sim ends it at once)
     const double p = anim_progress(t0);
     const bool can = state_ && client_ && box_ && gfx_ok_ && std::strcmp(why_key_, "ext") && std::strcmp(why_key_, "nocp") &&
+                     std::strcmp(why_key_, "nocam") &&
                      std::strcmp(why_key_, "nosim") && std::strcmp(why_key_, "wait");
     if (p > 0 && can) {
       const auto kind = hud::anim_kind(hud_on_ ? set_.anim_in : set_.anim_out);
@@ -1573,7 +1580,9 @@ constexpr double kEyeMovedM = 0.10;   // the eye moved this far since tracing: t
 
 std::string App::border_key() const { return ac_title_.empty() ? std::string("(unknown aircraft)") : ac_title_; }
 
-Seat App::seat() const { return state_ ? seat_of(eye_lateral_m(state_->cp_eye_x, state_->cp_off_x)) : Seat::kLeft; }
+CameraSource App::camera_source() const { return camera_source_from(set_.camera_source); }
+
+Seat App::seat() const { return state_ ? seat_of(state_->cam_eye_x) : Seat::kLeft; }
 
 std::optional<std::vector<Vec2>> App::active_border() const {
   if (edit_.on && !edit_.terrain) return edit_.pts;
@@ -1665,7 +1674,7 @@ void App::border_edit_end(bool save) {
   if (save && state_ && sanitize_border(pts)) {
     Settings::BorderPoly b;
     b.pts = std::move(pts);
-    b.eye = {eye_lateral_m(state_->cp_eye_x, state_->cp_off_x), state_->cp_eye_y, state_->cp_eye_z};
+    b.eye = {state_->cam_eye_x, state_->cam_eye_y, state_->cam_eye_z};
     auto& seats = borders(terrain)[border_key()];
     (seat() == Seat::kLeft ? seats.left : seats.right) = b;
     logf("[border] %s %s %s seat: %zu points saved", terrain ? "terrain" : "HUD", border_key().c_str(),
@@ -1839,9 +1848,9 @@ nlohmann::json App::border_status() const {
   b["cuts_fixed"] = false;
   b["fit_scale"] = nullptr;
   if (poly && state_ && !edit_.on) {
-    const Vec3 eye{eye_lateral_m(state_->cp_eye_x, state_->cp_off_x), state_->cp_eye_y, state_->cp_eye_z};
+    const Vec3 eye{state_->cam_eye_x, state_->cam_eye_y, state_->cam_eye_z};
     const Vec3 d = eye - poly->eye;
-    b["eye_moved"] = state_->cp_zoom > 0.05 && std::sqrt(dot(d, d)) > kEyeMovedM;
+    b["eye_moved"] = state_->cam_ok && std::sqrt(dot(d, d)) > kEyeMovedM;
     const auto pts = hud::fixed_symbol_points(model_, *state_, set_);
     std::vector<Vec2> now;
     now.reserve(pts.size());

@@ -128,6 +128,13 @@ void test_settings() {
   CHECK(apply_panel_set(s, "auto_hide_ft", 2500) && s.auto_hide_ft == 2500);
   CHECK(apply_panel_set(s, "auto_hide_s", -5) && s.auto_hide_s == 0);
   CHECK(birdie::settings_from_json(birdie::settings_to_json(s)).ui_style == "dusk");
+  // the camera source (core/camera.h): two names only
+  {
+    birdie::Settings c;
+    CHECK(c.camera_source == "chaseplane" && apply_panel_set(c, "camera_source", "msfs") && c.camera_source == "msfs");
+    CHECK(!apply_panel_set(c, "camera_source", "webcam") && !apply_panel_set(c, "camera_source", 1) && c.camera_source == "msfs");
+    CHECK(birdie::settings_from_json(birdie::settings_to_json(c)).camera_source == "msfs");
+  }
   // terrain: off by default, strings and the resolution only from their lists, numbers clamped
   CHECK(!s.terrain_on && s.terrain_look == "fill" && s.terrain_res == 30 && s.terrain_cache_gb == 2.0);
   CHECK(apply_panel_set(s, "terrain_on", true) && s.terrain_on);
@@ -146,7 +153,7 @@ void test_settings() {
   }
   const auto j = birdie::app::panel_settings(s);
   CHECK(j["terrain_look"] == "ridges" && j["terrain_res"] == 90 && j["terrain_on"] == true && !j.contains("terrain_dir"));
-  CHECK(j.size() == 86 && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
+  CHECK(j.size() == 87 && j["camera_source"] == "chaseplane" && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
   CHECK(!j.contains("box_w") && !j.contains("ra_by_aircraft"));
 }
 

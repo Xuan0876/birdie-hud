@@ -64,6 +64,7 @@ void each_field(Settings& s, F&& f) {
   f("tdz_style", s.tdz_style);
   f("language", s.language);
   f("ui_style", s.ui_style);
+  f("camera_source", s.camera_source);
   f("auto_show", s.auto_show);
   f("auto_show_kt", s.auto_show_kt);
   f("auto_hide", s.auto_hide);
@@ -310,6 +311,7 @@ Settings settings_from_json(const nlohmann::json& j) {
   });
   if (s.terrain_look != "fill" && s.terrain_look != "sky" && s.terrain_look != "ridges") s.terrain_look = "fill";
   if (s.terrain_res != 90) s.terrain_res = 30;
+  if (s.camera_source != "msfs") s.camera_source = "chaseplane";
   if (!std::isfinite(s.terrain_strength)) s.terrain_strength = 1.0;
   s.terrain_strength = std::clamp(s.terrain_strength, 0.2, 2.0);
   if (!std::isfinite(s.terrain_cache_gb)) s.terrain_cache_gb = 2.0;

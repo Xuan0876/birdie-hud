@@ -8,6 +8,7 @@
 #include <string>
 
 #include "core/border.h"
+#include "core/camera.h"
 #include "core/geo.h"
 #include "core/model.h"
 #include "core/pause.h"
@@ -210,26 +211,85 @@ void test_ground_ra() {
 
 void test_hide() {
   birdie::SimState s;
+  // the ChasePlane source, as hide_reason sees it after camera_from_chaseplane
+  auto why = [&](double kt = 40.0) {
+    birdie::camera_from_chaseplane(s);
+    return birdie::hide_reason(s, kt);
+  };
+  auto is = [](const char* r, const char* id) { return r && std::string(r) == id; };
   s.cp_zoom = 0.5;
   s.gs_kt = 150;
-  CHECK(birdie::hide_reason(s) == nullptr);
+  CHECK(why() == nullptr);
   s.cp_yaw = 60;
-  CHECK(std::string(birdie::hide_reason(s)) == "not_forward");
+  CHECK(is(why(), "not_forward"));
   s.cp_yaw = 0;
   s.cp_mode = 1;
-  CHECK(std::string(birdie::hide_reason(s)) == "external_view");
+  CHECK(is(why(), "external_view"));
   s.cp_mode = 0;
   s.cp_zoom = 0;
-  CHECK(std::string(birdie::hide_reason(s)) == "no_chaseplane");
+  CHECK(is(why(), "no_chaseplane"));
   s.cp_zoom = 0.5;
   s.on_ground = 1;
   s.gs_kt = 10;
-  CHECK(std::string(birdie::hide_reason(s)) == "ground_slow");
+  CHECK(is(why(), "ground_slow"));
   s.gs_kt = 45;
-  CHECK(birdie::hide_reason(s) == nullptr);                                   // the default: shown above 40 kt
-  CHECK(std::string(birdie::hide_reason(s, 60)) == "ground_slow");            // auto_show_kt = 60
+  CHECK(why() == nullptr);                 // the default: shown above 40 kt
+  CHECK(is(why(60), "ground_slow"));       // auto_show_kt = 60
   s.gs_kt = 0;
-  CHECK(birdie::hide_reason(s, 0) == nullptr);                                // auto_show off: shown standing still
+  CHECK(why(0) == nullptr);                // auto_show off: shown standing still
+
+  // the MSFS source: nothing read = no_camera; CAMERA STATE decides cockpit or not
+  birdie::SimState m;
+  m.gs_kt = 150;
+  m.cam_state = 2;
+  birdie::camera_from_msfs(m, nullptr);
+  CHECK(is(birdie::hide_reason(m), "no_camera"));
+  birdie::MsfsCamera c;
+  c.fov_rad = 1.0;
+  birdie::camera_from_msfs(m, &c);
+  CHECK(birdie::hide_reason(m) == nullptr);
+  m.cam_state = 3;
+  birdie::camera_from_msfs(m, &c);
+  CHECK(is(birdie::hide_reason(m), "external_view"));
+  m.cam_state = 2;
+  c.bank = 60;  // the head turned right (the field named Bank carries the yaw)
+  birdie::camera_from_msfs(m, &c);
+  CHECK(is(birdie::hide_reason(m), "not_forward"));
+}
+
+void test_camera_sources() {
+  using namespace birdie;
+  // ChasePlane: the same numbers Birdie used before the sources existed
+  SimState s;
+  s.cp_zoom = 0.43, s.cp_yaw = -12, s.cp_pitch = 4, s.cp_roll = 1.5, s.cp_eye_x = 0.548, s.cp_off_x = -0.0195,
+  s.cp_eye_y = 2.1, s.cp_eye_z = 18.3;
+  camera_from_chaseplane(s);
+  CHECK(s.cam_ok && s.cam_cockpit && s.cam_source == static_cast<int>(CameraSource::kChasePlane));
+  CHECK(s.cam_yaw == -12 && s.cam_pitch == 4 && s.cam_roll == 1.5);
+  CHECK(s.cam_vfov == vfov_deg(0.43));
+  CHECK(focal_from_vfov(s.cam_vfov, 1440) == focal_px(0.43, 1440));  // bit for bit: the parity images rely on it
+  CHECK(s.cam_eye_x == eye_lateral_m(0.548, -0.0195) && s.cam_eye_y == 2.1 && s.cam_eye_z == 18.3);
+  // MSFS: x + = left flipped to + = right, Bank = yaw, Pitch + = down flipped, Fov in radians
+  SimState m;
+  m.cam_state = 2;
+  MsfsCamera c;
+  c.x = 0.53, c.y = 0.23, c.z = -5.07, c.pitch = 6.5, c.bank = -25, c.heading = 0.1, c.fov_rad = rad(58.18);
+  camera_from_msfs(m, &c);
+  CHECK(m.cam_ok && m.cam_cockpit && m.cam_source == static_cast<int>(CameraSource::kMsfs));
+  CHECK(m.cam_eye_x == -0.53 && m.cam_eye_y == 0.23 && m.cam_eye_z == -5.07);
+  CHECK(m.cam_yaw == -25 && m.cam_pitch == -6.5 && m.cam_roll == 0.1);
+  CHECK(std::abs(m.cam_vfov - 58.18) < 1e-9);
+  c.fov_rad = 0;  // a reply without a field of view is not a camera
+  camera_from_msfs(m, &c);
+  CHECK(!m.cam_ok && std::isfinite(m.cam_vfov) && m.cam_vfov > 0);
+  // the setting
+  CHECK(camera_source_from("msfs") == CameraSource::kMsfs);
+  CHECK(camera_source_from("chaseplane") == CameraSource::kChasePlane);
+  CHECK(camera_source_from("") == CameraSource::kChasePlane);
+  CHECK(std::string(camera_source_name(CameraSource::kMsfs)) == "msfs");
+  CHECK(settings_from_json(nlohmann::json{{"camera_source", "msfs"}}).camera_source == "msfs");
+  CHECK(settings_from_json(nlohmann::json{{"camera_source", "webcam"}}).camera_source == "chaseplane");
+  CHECK(Settings{}.camera_source == "chaseplane");
 }
 
 }  // namespace
@@ -334,6 +394,7 @@ void test_border_projection() {
   Model model(set);
   SimState s;
   s.cp_zoom = 0.5, s.cp_yaw = 20, s.cp_pitch = -8, s.cp_roll = 3, s.pitch_deg = -4, s.bank_deg = 10, s.hdg_true = 70;
+  camera_from_chaseplane(s);
   const double W = 3440, H = 1440, ox = 100, oy = 50;
   const std::vector<Vec2> pts{{-12, 7}, {14, 8}, {15, -14}, {-13, -15}};
   const auto v = hud::border_vertices(model, s, W, H, ox, oy, pts);
@@ -357,6 +418,7 @@ void test_border_projection() {
   CHECK(!plain.border);
   // head turned far: the part behind the camera is cut off, the rest still clips
   s.cp_yaw = 80;
+  camera_from_chaseplane(s);
   const std::vector<Vec2> wide{{-60, 30}, {60, 30}, {60, -30}, {-60, -30}};
   const auto cut = hud::border_to_screen(model, s, W, H, ox, oy, wide);
   CHECK(cut && cut->size() >= 3);
@@ -375,6 +437,7 @@ int main() {
   test_ground_ra();
   test_focal();
   test_hide();
+  test_camera_sources();
   test_pause();
   test_border();
   test_border_projection();

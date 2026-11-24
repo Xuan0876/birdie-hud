@@ -63,6 +63,7 @@ nlohmann::json panel_settings(const Settings& s) {
   j["lead_ms"] = s.lead_ms;
   j["language"] = s.language;
   j["ui_style"] = s.ui_style;
+  j["camera_source"] = s.camera_source;
   j["hotkeys"] = s.hotkeys;
   j["terrain_look"] = s.terrain_look;
   j["terrain_res"] = s.terrain_res;
@@ -125,6 +126,13 @@ bool apply_panel_set(Settings& s, const std::string& key, const nlohmann::json& 
   if (key == "terrain_res") {
     if (!v.is_number() || (v.get<double>() != 30 && v.get<double>() != 90)) return false;
     s.terrain_res = static_cast<int>(v.get<double>());
+    return true;
+  }
+  if (key == "camera_source") {
+    if (!v.is_string()) return false;
+    const auto l = v.get<std::string>();
+    if (l != "chaseplane" && l != "msfs") return false;
+    s.camera_source = l;
     return true;
   }
   if (key == "ui_style") {

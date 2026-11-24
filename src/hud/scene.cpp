@@ -77,7 +77,7 @@ struct Frame {
 // The camera for helpers that need no runway (HUD border editing, fit check).
 Frame frame_for(const Model& model, const SimState& s, double W, double H, double ox, double oy, double k) {
   const Geometry geo = model.geometry(s, W, H, nullptr);
-  return Frame{geo.p, geo.R, camera_to_body(geo.p.cp_yaw, geo.p.cp_pitch, geo.p.cp_roll).transposed(), geo.f, W, H,
+  return Frame{geo.p, geo.R, camera_to_body(geo.p.cam_yaw, geo.p.cam_pitch, geo.p.cam_roll).transposed(), geo.f, W, H,
                ox, oy, k};
 }
 
@@ -750,7 +750,7 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
                   const std::vector<Vec2>* border, const std::wstring& watermark) {
   const Geometry geo = model.geometry(s, W, H, runway);
   const SimState& p = geo.p;
-  Frame fr{p, geo.R, camera_to_body(p.cp_yaw, p.cp_pitch, p.cp_roll).transposed(), geo.f, W, H, ox, oy,
+  Frame fr{p, geo.R, camera_to_body(p.cam_yaw, p.cam_pitch, p.cam_roll).transposed(), geo.f, W, H, ox, oy,
            set.hud_scale};
   Conformal conf = conformal(fr, set, p.hdg_true, p.hdg_mag);
   auto sh = [&](const Polyline& pts) {
@@ -840,7 +840,7 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
 
   // conformal (screen space)
   if (const TerrainFrame* tf = terrain_frame(); tf && tf->lines) {  // terrain, from the runway's eye (model.cpp)
-    const Vec3 eye{eye_lateral_m(p.cp_eye_x, p.cp_off_x), p.cp_eye_y, p.cp_eye_z};
+    const Vec3 eye{p.cam_eye_x, p.cam_eye_y, p.cam_eye_z};
     const Vec3 cam_pos = Vec3{0.0, 0.0, p.alt_ft * kFt} + aircraft_rotation(p) * eye;
     const CamProj cp{p.lat, p.lon, cam_pos, fr.R, fr.f, W, H, ox, oy};
     scene.terrain_fill = terrain_fill_cmd(cp);

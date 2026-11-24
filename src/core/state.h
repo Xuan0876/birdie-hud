@@ -36,6 +36,15 @@ struct SimState {
   double wind_kt = 0;
   double beta_deg = 0;
   double ra_raw_ft = 0;  // RADIO HEIGHT as read (not part of the SimConnect definition)
+  double cam_state = 0;  // CAMERA STATE (2 = cockpit), for the MSFS camera source
+
+  // ---- the HUD's camera, filled by the chosen source (core/camera.h); everything that projects reads only these
+  int cam_source = 0;        // CameraSource
+  bool cam_ok = false;       // the source gives a camera this sample
+  bool cam_cockpit = false;  // ... and it is a cockpit view
+  double cam_yaw = 0, cam_pitch = 0, cam_roll = 0;  // head angles in the aircraft, deg (yaw right, pitch up)
+  double cam_vfov = 0;                              // vertical field of view, deg
+  double cam_eye_x = 0, cam_eye_y = 0, cam_eye_z = 0;  // eye from the aircraft datum, body frame m (x right, y up, z fwd)
 };
 
 struct VarDef {
@@ -46,7 +55,7 @@ struct VarDef {
 };
 
 // Order = SimConnect data definition order (all FLOAT64). Keys the reference fixtures lack: not_in_reference().
-inline constexpr std::array<VarDef, 30> kVars{{
+inline constexpr std::array<VarDef, 31> kVars{{
     {"lat", "PLANE LATITUDE", "degrees", &SimState::lat},
     {"lon", "PLANE LONGITUDE", "degrees", &SimState::lon},
     {"hdg_true", "PLANE HEADING DEGREES TRUE", "degrees", &SimState::hdg_true},
@@ -77,9 +86,12 @@ inline constexpr std::array<VarDef, 30> kVars{{
     {"wind_kt", "AMBIENT WIND VELOCITY", "knots", &SimState::wind_kt},
     {"beta_deg", "INCIDENCE BETA", "degrees", &SimState::beta_deg},
     {"cp_off_x", "L:p42_cp_r_x", "number", &SimState::cp_off_x},
+    {"cam_state", "CAMERA STATE", "number", &SimState::cam_state},
 }};
 
 // Added after the Python reference froze: its fixtures have no such column (read as 0).
-inline bool not_in_reference(const char* key) { return std::string_view(key) == "cp_off_x"; }
+inline bool not_in_reference(const char* key) {
+  return std::string_view(key) == "cp_off_x" || std::string_view(key) == "cam_state";
+}
 
 }  // namespace birdie

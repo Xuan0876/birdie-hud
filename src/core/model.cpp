@@ -4,13 +4,14 @@
 #include <algorithm>
 #include <cmath>
 
+#include "core/camera.h"
 #include "core/geo.h"
 
 namespace birdie {
 namespace {
 
 constexpr double SimState::*kAngleKeys[6] = {&SimState::hdg_true, &SimState::pitch_deg, &SimState::bank_deg,
-                                             &SimState::cp_pitch, &SimState::cp_yaw,    &SimState::cp_roll};
+                                             &SimState::cam_pitch, &SimState::cam_yaw,   &SimState::cam_roll};
 
 Vec3 dir_vec(double az, double elev) {  // radians
   return {std::sin(az) * std::cos(elev), std::cos(az) * std::cos(elev), std::sin(elev)};
@@ -83,8 +84,8 @@ Geometry Model::geometry(const SimState& s, double W, double H, const Runway* ru
     for (int k = 0; k < 6; ++k) p.*kAngleKeys[k] = s.*kAngleKeys[k] + rates_[k] * lead;
   }
   const Mat3 R_ac = aircraft_rotation(p);
-  const Mat3 R = R_ac * camera_to_body(p.cp_yaw, p.cp_pitch, p.cp_roll);
-  const double f = focal_px(p.cp_zoom, H);
+  const Mat3 R = R_ac * camera_to_body(p.cam_yaw, p.cam_pitch, p.cam_roll);
+  const double f = focal_from_vfov(p.cam_vfov, H);
   g.R = R;
   g.p = p;
   g.f = f;
@@ -112,8 +113,8 @@ Geometry Model::geometry(const SimState& s, double W, double H, const Runway* ru
 
   const double span = std::min(set_->line_span_deg, 10.0 * set_->hud_scale);  // inside the HUD, clear of the tapes
   if (runway) {
-    // the runway is a real place: camera position = aircraft datum + ChasePlane eye offset (body frame)
-    const Vec3 eye{eye_lateral_m(p.cp_eye_x, p.cp_off_x), p.cp_eye_y, p.cp_eye_z};
+    // the runway is a real place: camera position = aircraft datum + the camera's eye offset (body frame)
+    const Vec3 eye{p.cam_eye_x, p.cam_eye_y, p.cam_eye_z};
     const Vec3 cam_pos = Vec3{0.0, 0.0, p.alt_ft * kFt} + R_ac * eye;
     const auto pts = world_points_cam(runway->corners(), p.lat, p.lon, cam_pos, R);
     const auto poly3 = clip_near(pts);
@@ -159,9 +160,9 @@ Geometry Model::geometry(const SimState& s, double W, double H, const Runway* ru
 
 // show_above_kt: on the ground the HUD waits until the ground speed passes it (0 = always shown on the ground)
 const char* hide_reason(const SimState& s, double show_above_kt) {
-  if (s.cp_zoom <= 0.05) return "no_chaseplane";
-  if (s.cp_mode >= 0.5) return "external_view";
-  if (std::abs(s.cp_yaw) > 45 || std::abs(s.cp_pitch) > 40) return "not_forward";
+  if (!s.cam_ok) return s.cam_source == static_cast<int>(CameraSource::kMsfs) ? "no_camera" : "no_chaseplane";
+  if (!s.cam_cockpit) return "external_view";
+  if (std::abs(s.cam_yaw) > 45 || std::abs(s.cam_pitch) > 40) return "not_forward";
   if (s.gs_kt < show_above_kt && s.on_ground >= 0.5) return "ground_slow";
   return nullptr;
 }
