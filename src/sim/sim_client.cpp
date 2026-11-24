@@ -93,6 +93,9 @@ bool SimClient::open(HANDLE signal, std::wstring* err) {
                                     SIMCONNECT_PERIOD_SECOND, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
   // the ESC menu pauses the sim but the per-frame data keeps coming: only this event tells
   SimConnect_SubscribeToSystemEvent(h_, kEvtPause, "Pause_EX1");
+  cam_pending_ = false;
+  cam_.reset();
+  if (cam_on_) SimConnect_SubscribeToCameraStatusUpdate(h_);
 
   SimConnect_AddToFacilityDefinition(h_, kDefRunway, "OPEN AIRPORT");
   SimConnect_AddToFacilityDefinition(h_, kDefRunway, "OPEN RUNWAY");
@@ -109,6 +112,8 @@ bool SimClient::open(HANDLE signal, std::wstring* err) {
 void SimClient::close() {
   if (h_) SimConnect_Close(h_);
   h_ = nullptr;
+  cam_pending_ = false;
+  cam_.reset();
   airports_.clear();
   ends_.clear();
   pending_.clear();
@@ -125,12 +130,54 @@ bool SimClient::dispatch(const Events& ev) {
     handle(msg, size, ev);
     if (!h_) return false;
   }
+  if (latest_ && cam_on_) poll_camera(ev);  // one camera request per state frame
   if (latest_ && ev.state) {
     const SimState s = *latest_;
     latest_.reset();
     ev.state(s);
   }
   return h_ != nullptr;
+}
+
+void SimClient::set_camera_polling(bool on) {
+  if (on == cam_on_) return;
+  cam_on_ = on;
+  cam_pending_ = false;
+  cam_.reset();
+  cam_info_ = CameraInfo{};
+  if (!h_) return;
+  if (on)
+    SimConnect_SubscribeToCameraStatusUpdate(h_);
+  else
+    SimConnect_UnsubscribeToCameraStatusUpdate(h_);
+}
+
+const MsfsCamera* SimClient::camera() const {
+  if (!cam_on_ || !cam_ || GetTickCount64() - cam_reply_ms_ > 500) return nullptr;
+  return &*cam_;
+}
+
+void SimClient::poll_camera(const Events& ev) {
+  const unsigned long long now = GetTickCount64();
+  if (cam_pending_) {
+    if (now - cam_sent_ms_ < 500) return;  // still waiting
+    cam_pending_ = false;                  // no answer: ask again (a reply after this is still taken)
+    ++cam_info_.errors;
+    cam_info_.last_error = "no reply";
+  }
+  if (now < cam_retry_ms_) return;
+  if (FAILED(SimConnect_CameraGet(h_, SIMCONNECT_POSITION_REFERENTIAL_SIMOBJECT))) {
+    ++cam_info_.errors;
+    cam_info_.last_error = "CameraGet failed";
+    cam_retry_ms_ = now + 1000;
+    if (ev.log && now - cam_logged_ms_ > 30000) ev.log("[cam] SimConnect_CameraGet failed"), cam_logged_ms_ = now;
+    return;
+  }
+  DWORD id = 0;
+  SimConnect_GetLastSentPacketID(h_, &id);
+  cam_send_id_ = id;
+  cam_sent_ms_ = now;
+  cam_pending_ = true;
 }
 
 void SimClient::handle(const void* p, DWORD size, const Events& ev) {
@@ -172,8 +219,52 @@ void SimClient::handle(const void* p, DWORD size, const Events& ev) {
       close();
       if (ev.quit) ev.quit();
       return;
+    case SIMCONNECT_RECV_ID_CAMERA_DATA: {
+      if (size < sizeof(SIMCONNECT_RECV_CAMERA_DATA)) return;
+      const auto* d = static_cast<const SIMCONNECT_RECV_CAMERA_DATA*>(p);
+      const SIMCONNECT_DATA_CAMERA& c = d->CameraData;
+      if (!cam_on_ || c.PositionReferential != SIMCONNECT_POSITION_REFERENTIAL_SIMOBJECT) return;
+      MsfsCamera m;
+      m.x = c.Position.x, m.y = c.Position.y, m.z = c.Position.z;
+      m.pitch = c.Pbh.Pitch, m.bank = c.Pbh.Bank, m.heading = c.Pbh.Heading;
+      m.fov_rad = c.Fov;
+      const bool first = cam_info_.replies == 0;
+      cam_ = m;
+      cam_reply_ms_ = GetTickCount64();
+      cam_pending_ = false;
+      ++cam_info_.replies;
+      cam_info_.last_error.clear();
+      if (first && ev.log)
+        ev.log(fmt("[cam] first camera reply: pos %.2f %.2f %.2f  pbh %.1f %.1f %.1f  fov %.2f deg", m.x, m.y, m.z,
+                   m.pitch, m.bank, m.heading, m.fov_rad * 57.29577951308232));
+      return;
+    }
+    case SIMCONNECT_RECV_ID_CAMERA_STATUS: {
+      if (size < sizeof(SIMCONNECT_RECV_CAMERA_STATUS)) return;
+      const auto* st = static_cast<const SIMCONNECT_RECV_CAMERA_STATUS*>(p);
+      const int a = static_cast<int>(st->acquiredState);
+      const bool g = st->bGameControlled != 0;
+      if (ev.log && (a != cam_info_.availability || g != cam_info_.game_controlled))
+        ev.log(fmt("[cam] status: availability %d, game controlled %d", a, g ? 1 : 0));
+      cam_info_.availability = a;
+      cam_info_.game_controlled = g;
+      return;
+    }
     case SIMCONNECT_RECV_ID_EXCEPTION: {
       const auto* e = static_cast<const SIMCONNECT_RECV_EXCEPTION*>(p);
+      if (cam_on_ && cam_pending_ && e->dwSendID == cam_send_id_) {
+        // the camera request failed (no Camera API in this sim, or it said no): try again in a second, log rarely
+        cam_pending_ = false;
+        ++cam_info_.errors;
+        cam_info_.last_error = fmt("exception %lu", e->dwException);
+        const unsigned long long now = GetTickCount64();
+        cam_retry_ms_ = now + 1000;
+        if (ev.log && now - cam_logged_ms_ > 30000) {
+          ev.log(fmt("[cam] CameraGet exception %lu (%u so far)", e->dwException, cam_info_.errors));
+          cam_logged_ms_ = now;
+        }
+        return;
+      }
       if (ev.log) ev.log(fmt("[sim] exception %lu (send %lu, index %lu)", e->dwException, e->dwSendID, e->dwIndex));
       return;
     }

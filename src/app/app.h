@@ -79,6 +79,7 @@ class App {
   std::string border_key() const;  // settings key: the aircraft TITLE
   Seat seat() const;               // from the eye's lateral offset
   CameraSource camera_source() const;  // settings camera_source (core/camera.h)
+  nlohmann::json camera_status() const;  // for the panel (status.camera)
   std::optional<std::vector<Vec2>> active_border() const;  // what clips the HUD now (the editor's while editing)
   // The terrain's own border now (the editor's while tracing it); nullopt = none (the terrain follows the HUD's).
   std::optional<std::vector<Vec2>> terrain_border() const;

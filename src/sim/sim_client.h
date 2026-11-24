@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "core/camera.h"
 #include "core/runway.h"
 #include "core/state.h"
 
@@ -60,6 +61,20 @@ class SimClient {
   void anchor_runways(const std::vector<std::string>& icaos, double lat, double lon, double ground_m,
                       const std::function<void(const std::string&)>& log);
 
+  // ---- the sim's own camera (core/camera.h, the MSFS source). Read only: never CameraAcquire / CameraSet.
+  // While on, SimConnect_CameraGet(SIMOBJECT) goes out once per state frame, one request at a time.
+  struct CameraInfo {
+    unsigned replies = 0, errors = 0;  // since it was switched on
+    int availability = -1;             // SIMCONNECT_CAMERA_AVAILABILITY from the status updates, -1 = none yet
+    bool game_controlled = false;
+    std::string last_error;            // "" = none
+  };
+  void set_camera_polling(bool on);
+  bool camera_polling() const { return cam_on_; }
+  // The newest reply, or nullptr: off, nothing yet, or no reply for 0.5 s (an error, a sim without the API).
+  const MsfsCamera* camera() const;
+  const CameraInfo& camera_info() const { return cam_info_; }
+
  private:
   void handle(const void* msg, DWORD size, const Events& ev);
   HANDLE h_ = nullptr;
@@ -72,6 +87,14 @@ class SimClient {
   std::map<std::string, std::deque<Runway>> ends_;  // deque: pointers stay valid while it grows
   std::map<unsigned long, std::string> pending_;    // request id -> icao
   unsigned long next_req_ = 0;
+
+  void poll_camera(const Events& ev);
+  bool cam_on_ = false;
+  bool cam_pending_ = false;      // a CameraGet is out
+  unsigned long cam_send_id_ = 0;  // its packet id (exceptions name it)
+  unsigned long long cam_sent_ms_ = 0, cam_reply_ms_ = 0, cam_retry_ms_ = 0, cam_logged_ms_ = 0;
+  std::optional<MsfsCamera> cam_;
+  CameraInfo cam_info_;
 };
 
 }  // namespace birdie::sim

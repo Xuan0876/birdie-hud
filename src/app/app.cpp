@@ -629,6 +629,7 @@ nlohmann::json App::panel_status() const {
   st["border"] = border_status();
   st["ingame"] = ingame_status();
   st["terrain"] = terrain_status();
+  st["camera"] = camera_status();
   return st;
 }
 
@@ -667,6 +668,7 @@ void App::on_panel_message(const std::string& text) {
     if (key == "language") set_language(resolve_language(set_.language));
     if (key == "ui_style") win_.set_look(set_.ui_style), peek_.set_look(set_.ui_style);
     if (key == "hud_font") apply_look();
+    if (key == "camera_source") sim_.set_camera_polling(camera_source() == CameraSource::kMsfs);
     if (key == "visible") say(set_.visible ? tr(S::FlashOn) + terrain_suffix() : std::wstring(tr(S::FlashOff)));
     if (key == "terrain_cache_gb") store_.trim_cache(static_cast<uint64_t>(set_.terrain_cache_gb * double(1ull << 30)));
     if (key.rfind("hotkey.", 0) == 0 && hk_capture_until_ == 0) register_hotkeys(false);
@@ -858,6 +860,7 @@ void App::connect_sim() {
   if (sim_.connected() || now - t_connect_ < 2.0) return;
   t_connect_ = now;
   std::wstring err;
+  sim_.set_camera_polling(camera_source() == CameraSource::kMsfs);
   if (sim_.open(sim_event_, &err)) {
     t_airports_ = -1e9;
     pause_flags_ = 0;
@@ -939,7 +942,7 @@ void App::on_state(SimState s) {
   } else {
     ra_ground_.clear();
   }
-  apply_camera(s, camera_source(), nullptr);
+  apply_camera(s, camera_source(), sim_.camera());
   t_state_ = now_s();
   state_ = s;
   model_.update(s, t_state_);
@@ -1581,6 +1584,28 @@ constexpr double kEyeMovedM = 0.10;   // the eye moved this far since tracing: t
 std::string App::border_key() const { return ac_title_.empty() ? std::string("(unknown aircraft)") : ac_title_; }
 
 CameraSource App::camera_source() const { return camera_source_from(set_.camera_source); }
+
+// The panel's Camera source page: which source, and whether it gives a camera right now.
+//   state: "replay" | "nosim" | "ok" (a cockpit camera) | "outside" (a camera, not the cockpit) | "none"
+nlohmann::json App::camera_status() const {
+  nlohmann::json c;
+  c["source"] = camera_source_name(camera_source());
+  const bool live = state_ && now_s() - t_state_ < 2.0;
+  if (!opt_.replay.empty())
+    c["state"] = "replay";
+  else if (!sim_.connected() || !live)
+    c["state"] = "nosim";
+  else
+    c["state"] = !state_->cam_ok ? "none" : state_->cam_cockpit ? "ok" : "outside";
+  c["vfov"] = live && state_->cam_ok ? nlohmann::json(std::round(state_->cam_vfov * 10) / 10) : nlohmann::json();
+  if (camera_source() == CameraSource::kMsfs) {
+    const auto& i = sim_.camera_info();
+    c["errors"] = i.errors;
+    c["error"] = i.last_error;
+    c["availability"] = i.availability;
+  }
+  return c;
+}
 
 Seat App::seat() const { return state_ ? seat_of(state_->cam_eye_x) : Seat::kLeft; }
 
