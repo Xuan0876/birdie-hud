@@ -277,7 +277,7 @@ void test_camera_sources() {
   camera_from_msfs(m, &c);
   CHECK(m.cam_ok && m.cam_cockpit && m.cam_source == static_cast<int>(CameraSource::kMsfs));
   CHECK(m.cam_eye_x == -0.53 && m.cam_eye_y == 0.23 && m.cam_eye_z == -5.07);
-  CHECK(m.cam_yaw == -25 && m.cam_pitch == -6.5 && m.cam_roll == 0.1);
+  CHECK(m.cam_yaw == -25 && m.cam_pitch == -6.5 && m.cam_roll == -0.1);
   CHECK(std::abs(m.cam_vfov - 58.18) < 1e-9);
   c.fov_rad = 0;  // a reply without a field of view is not a camera
   camera_from_msfs(m, &c);
@@ -303,6 +303,19 @@ void test_camera_sources() {
   CHECK(std::abs(off.x) < 0.03 && std::abs(off.y) < 0.03 && std::abs(off.z - 21.34) < 0.03);
   camera_from_msfs(ac, &rel, off);  // the eye lands where WORLD says: 0.53 m left of the reference, 16.27 m ahead
   CHECK(std::abs(ac.cam_eye_x + 0.53) < 0.03 && std::abs(ac.cam_eye_y - 0.23) < 0.03 && std::abs(ac.cam_eye_z - 16.27) < 0.03);
+  // roll: C152 probe tick, banked +23.8 (left wing down), the native camera leans back 3.24 (SIMOBJECT Heading -3.24,
+  // WORLD Heading +20.6): the camera's own roll in the world must come out as the WORLD one
+  {
+    SimState c152;
+    c152.hdg_true = 60, c152.pitch_deg = -1.9, c152.bank_deg = 23.8, c152.cam_state = 2;
+    MsfsCamera lean;
+    lean.pitch = 3.32, lean.bank = 0.27, lean.heading = -3.24, lean.fov_rad = 1.0;
+    camera_from_msfs(c152, &lean);
+    const Mat3 R = aircraft_rotation(c152) * camera_to_body(c152.cam_yaw, c152.cam_pitch, c152.cam_roll);  // camera -> ENU
+    const Vec3 right = R * Vec3{1, 0, 0}, up = R * Vec3{0, 1, 0};
+    const double world_roll = deg(std::atan2(-right.z, up.z));  // + = right side down
+    CHECK(std::abs(world_roll - (-20.6)) < 0.3);  // WORLD Heading +20.6 = left side down 20.6
+  }
   // kept per aircraft in settings.json
   Settings so;
   so.cam_origin_by_aircraft["FSLabs A321neo"] = off;

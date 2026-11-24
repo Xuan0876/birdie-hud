@@ -31,7 +31,10 @@ void camera_from_chaseplane(SimState& s) {
 //  - position: z forward, y up, x + = LEFT (Birdie's eye is + = right, so x is flipped). The origin is not the
 //    aircraft's reference point: see msfs_origin_offset (camera.h).
 //  - the field named Bank is the heading (WORLD: aircraft heading + Bank of SIMOBJECT to 0.01°), + = right; the one
-//    named Heading stays about 0 (taken as the roll); Pitch + = looking down (WORLD = SIMOBJECT + aircraft pitch).
+//    named Heading is the roll, + = left side down like SimConnect's bank (WORLD Heading = aircraft bank + SIMOBJECT
+//    Heading: C152 banked +23.8, SIMOBJECT -3.24, WORLD +20.6 - the native cockpit camera leans back towards level
+//    in a bank), so it is negated for Birdie's roll (+ = right); Pitch + = looking down (WORLD = SIMOBJECT + aircraft
+//    pitch). Taken as is, the HUD horizon leaned that much further than the picture's (11/24, C152 rolls).
 //  - Fov: the default cockpit view reads 58.18°, ChasePlane's default vertical field of view is 58.0° (zoom_calib,
 //    on a 21:9 screen, where the horizontal one would be about 105°): taken as vertical (to confirm: plan V1).
 void camera_from_msfs(SimState& s, const MsfsCamera* cam, const Vec3& origin) {
@@ -47,7 +50,7 @@ void camera_from_msfs(SimState& s, const MsfsCamera* cam, const Vec3& origin) {
   s.cam_ok = true;
   s.cam_yaw = cam->bank;
   s.cam_pitch = -cam->pitch;
-  s.cam_roll = cam->heading;
+  s.cam_roll = -cam->heading;
   s.cam_vfov = deg(cam->fov_rad);
   s.cam_eye_x = -cam->x + origin.x;
   s.cam_eye_y = cam->y + origin.y;
