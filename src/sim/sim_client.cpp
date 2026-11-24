@@ -152,6 +152,22 @@ void SimClient::set_camera_polling(bool on) {
     SimConnect_UnsubscribeToCameraStatusUpdate(h_);
 }
 
+void SimClient::set_camera_world(bool on) {
+  if (on == world_on_) return;
+  world_on_ = on;
+  world_pending_ = false;
+  world_.reset();
+}
+
+const MsfsWorld* SimClient::camera_world() const {
+  if (!cam_on_ || !world_on_ || !world_ || !cam_) return nullptr;
+  const unsigned long long now = GetTickCount64();
+  if (now - world_reply_ms_ > 500 || (world_reply_ms_ > cam_reply_ms_ ? world_reply_ms_ - cam_reply_ms_
+                                                                       : cam_reply_ms_ - world_reply_ms_) > 20)
+    return nullptr;
+  return &*world_;
+}
+
 const MsfsCamera* SimClient::camera() const {
   if (!cam_on_ || !cam_ || GetTickCount64() - cam_reply_ms_ > 500) return nullptr;
   return &*cam_;
@@ -178,6 +194,12 @@ void SimClient::poll_camera(const Events& ev) {
   cam_send_id_ = id;
   cam_sent_ms_ = now;
   cam_pending_ = true;
+  // right behind it, so both replies describe the same frame
+  if (world_on_ && SUCCEEDED(SimConnect_CameraGet(h_, SIMCONNECT_POSITION_REFERENTIAL_WORLD))) {
+    SimConnect_GetLastSentPacketID(h_, &id);
+    world_send_id_ = id;
+    world_pending_ = true;
+  }
 }
 
 void SimClient::handle(const void* p, DWORD size, const Events& ev) {
@@ -223,6 +245,12 @@ void SimClient::handle(const void* p, DWORD size, const Events& ev) {
       if (size < sizeof(SIMCONNECT_RECV_CAMERA_DATA)) return;
       const auto* d = static_cast<const SIMCONNECT_RECV_CAMERA_DATA*>(p);
       const SIMCONNECT_DATA_CAMERA& c = d->CameraData;
+      if (cam_on_ && world_on_ && c.PositionReferential == SIMCONNECT_POSITION_REFERENTIAL_WORLD) {
+        world_ = MsfsWorld{c.Position.x, c.Position.y, c.Position.z};  // latitude, longitude, altitude (m)
+        world_reply_ms_ = GetTickCount64();
+        world_pending_ = false;
+        return;
+      }
       if (!cam_on_ || c.PositionReferential != SIMCONNECT_POSITION_REFERENTIAL_SIMOBJECT) return;
       MsfsCamera m;
       m.x = c.Position.x, m.y = c.Position.y, m.z = c.Position.z;
@@ -252,6 +280,10 @@ void SimClient::handle(const void* p, DWORD size, const Events& ev) {
     }
     case SIMCONNECT_RECV_ID_EXCEPTION: {
       const auto* e = static_cast<const SIMCONNECT_RECV_EXCEPTION*>(p);
+      if (world_pending_ && e->dwSendID == world_send_id_) {
+        world_pending_ = false;
+        return;
+      }
       if (cam_on_ && cam_pending_ && e->dwSendID == cam_send_id_) {
         // the camera request failed (no Camera API in this sim, or it said no): try again in a second, log rarely
         cam_pending_ = false;

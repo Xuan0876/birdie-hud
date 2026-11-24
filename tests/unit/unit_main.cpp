@@ -290,6 +290,27 @@ void test_camera_sources() {
   CHECK(settings_from_json(nlohmann::json{{"camera_source", "msfs"}}).camera_source == "msfs");
   CHECK(settings_from_json(nlohmann::json{{"camera_source", "webcam"}}).camera_source == "chaseplane");
   CHECK(Settings{}.camera_source == "chaseplane");
+
+  // the SIMOBJECT origin, from one real probe tick (11/24, FSLabs A321neo parked at ZSWZ, default cockpit view): the
+  // WORLD reply puts the camera 16.27 m ahead of PLANE LATITUDE/LONGITUDE, SIMOBJECT says -5.07: offset +21.34 m
+  SimState ac;
+  ac.lat = 27.9204828, ac.lon = 120.8594239, ac.alt_ft = 6.306 / kFt, ac.pitch_deg = -0.182, ac.bank_deg = -0.016,
+  ac.hdg_true = 208.320, ac.cam_state = 2;
+  MsfsCamera rel;
+  rel.x = 0.5302468, rel.y = 0.2298127, rel.z = -5.0694, rel.pitch = 6.5, rel.fov_rad = 1.015436;
+  const MsfsWorld world{27.9203513, 120.8593502, 6.5878};
+  const Vec3 off = msfs_origin_offset(ac, rel, world);
+  CHECK(std::abs(off.x) < 0.03 && std::abs(off.y) < 0.03 && std::abs(off.z - 21.34) < 0.03);
+  camera_from_msfs(ac, &rel, off);  // the eye lands where WORLD says: 0.53 m left of the reference, 16.27 m ahead
+  CHECK(std::abs(ac.cam_eye_x + 0.53) < 0.03 && std::abs(ac.cam_eye_y - 0.23) < 0.03 && std::abs(ac.cam_eye_z - 16.27) < 0.03);
+  // kept per aircraft in settings.json
+  Settings so;
+  so.cam_origin_by_aircraft["FSLabs A321neo"] = off;
+  const Settings back = settings_from_json(settings_to_json(so));
+  CHECK(back.cam_origin_by_aircraft.count("FSLabs A321neo") && std::abs(back.cam_origin_by_aircraft.at("FSLabs A321neo").z - off.z) < 1e-9);
+  CHECK(!settings_to_json(Settings{}).contains("cam_origin_by_aircraft"));
+  CHECK(settings_from_json(nlohmann::json::parse(R"({"cam_origin_by_aircraft": {"a": [1, 2], "b": [0, 0, 1e9], "c": [0, 0.1, 20]}})"))
+            .cam_origin_by_aircraft.size() == 1);
 }
 
 }  // namespace

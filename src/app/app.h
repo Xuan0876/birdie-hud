@@ -80,6 +80,8 @@ class App {
   Seat seat() const;               // from the eye's lateral offset
   CameraSource camera_source() const;  // settings camera_source (core/camera.h)
   nlohmann::json camera_status() const;  // for the panel (status.camera)
+  void apply_msfs_camera(SimState& s);   // MSFS source + its origin offset, measured when standing still
+  void redo_cam_origin();
   std::optional<std::vector<Vec2>> active_border() const;  // what clips the HUD now (the editor's while editing)
   // The terrain's own border now (the editor's while tracing it); nullopt = none (the terrain follows the HUD's).
   std::optional<std::vector<Vec2>> terrain_border() const;
@@ -184,6 +186,7 @@ class App {
   std::wstring why_;
   const char* why_key_ = "starting";  // the same reason for the panel: starting, nosim, wait, nocp, ext, look, ...
   std::deque<double> ra_ground_;  // raw RA while standing still on the ground
+  std::vector<Vec3> origin_samples_;  // MSFS camera origin offsets measured while standing still (apply_msfs_camera)
   std::string ac_title_;          // SimConnect TITLE of the user aircraft
   double t_no_cp_ = -1;           // since when the ChasePlane L-vars read nothing (-1 = they do)
   bool cp_warned_ = false;

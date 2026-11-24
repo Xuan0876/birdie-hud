@@ -26,15 +26,15 @@ void camera_from_chaseplane(SimState& s) {
   s.cam_eye_z = s.cp_eye_z;
 }
 
-// The Camera API's frame, from the 11/24 read-only probe (birdie-notes tools/camera_api_probe; to be confirmed in
-// the sim, docs CAMERA_SOURCE_PLAN.md V1-V4):
-//  - position: z forward (the chase view sits at z -57 m), y up, x + = LEFT: the captain's default view reads
-//    x +0.53 m (ChasePlane's anchor is + = left too). Birdie's eye is + = right, so x is flipped.
-//  - the field named Bank turns with the head (+ = right: an orbit on the + x side looks back with Bank about +100°),
-//    the one named Heading stays about 0 (taken as the roll), Pitch + = looking down.
+// The Camera API's frame (11/24 read-only probe, birdie-notes tools/camera_api_probe; SIMOBJECT and WORLD replies of
+// the same tick compared against the aircraft's state):
+//  - position: z forward, y up, x + = LEFT (Birdie's eye is + = right, so x is flipped). The origin is not the
+//    aircraft's reference point: see msfs_origin_offset (camera.h).
+//  - the field named Bank is the heading (WORLD: aircraft heading + Bank of SIMOBJECT to 0.01°), + = right; the one
+//    named Heading stays about 0 (taken as the roll); Pitch + = looking down (WORLD = SIMOBJECT + aircraft pitch).
 //  - Fov: the default cockpit view reads 58.18°, ChasePlane's default vertical field of view is 58.0° (zoom_calib,
-//    on a 21:9 screen, where the horizontal one would be about 105°): taken as vertical.
-void camera_from_msfs(SimState& s, const MsfsCamera* cam) {
+//    on a 21:9 screen, where the horizontal one would be about 105°): taken as vertical (to confirm: plan V1).
+void camera_from_msfs(SimState& s, const MsfsCamera* cam, const Vec3& origin) {
   s.cam_source = static_cast<int>(CameraSource::kMsfs);
   s.cam_cockpit = std::lround(s.cam_state) == 2;
   if (!cam || !(cam->fov_rad > 0) || !std::isfinite(cam->fov_rad)) {
@@ -49,14 +49,21 @@ void camera_from_msfs(SimState& s, const MsfsCamera* cam) {
   s.cam_pitch = -cam->pitch;
   s.cam_roll = cam->heading;
   s.cam_vfov = deg(cam->fov_rad);
-  s.cam_eye_x = -cam->x;
-  s.cam_eye_y = cam->y;
-  s.cam_eye_z = cam->z;
+  s.cam_eye_x = -cam->x + origin.x;
+  s.cam_eye_y = cam->y + origin.y;
+  s.cam_eye_z = cam->z + origin.z;
 }
 
-void apply_camera(SimState& s, CameraSource src, const MsfsCamera* msfs) {
+Vec3 msfs_origin_offset(const SimState& s, const MsfsCamera& rel, const MsfsWorld& world) {
+  const Vec2 en = enu(s.lat, s.lon, world.lat, world.lon);
+  const Vec3 d{en.x, en.y, world.alt_m - s.alt_ft * kFt};  // reference point -> camera, ENU
+  const Vec3 body = aircraft_rotation(s).tmul(d);           // ... in the body frame
+  return body - Vec3{-rel.x, rel.y, rel.z};
+}
+
+void apply_camera(SimState& s, CameraSource src, const MsfsCamera* msfs, const Vec3& msfs_origin) {
   if (src == CameraSource::kMsfs)
-    camera_from_msfs(s, msfs);
+    camera_from_msfs(s, msfs, msfs_origin);
   else
     camera_from_chaseplane(s);
 }

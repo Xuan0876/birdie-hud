@@ -14,7 +14,7 @@ enum class S {
   // status
   Showing, Off, HiddenFmt,
   // hide reasons
-  WhyStarting, WhySimNotRunning, WhyWaitData, WhyNoChasePlane, WhyNoCamera, WhyExternalView, WhyNotForward, WhyGroundSlow,
+  WhyStarting, WhySimNotRunning, WhyWaitData, WhyNoChasePlane, WhyNoCamera, FlashCamOriginFmt, FlashCamOriginRedo, WhyExternalView, WhyNotForward, WhyGroundSlow,
   WhyNotForeground, WhyPaused, WhyDataStopped, WhyNoWindow, WhyHigh,
   // flash messages
   FlashOn, FlashOff, FlashXwindOn, FlashXwindOff, FlashGlideFmt, FlashLeadFmt, FlashRaNeedGround, FlashRaDoneFmt, FlashRaCleared,

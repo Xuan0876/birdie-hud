@@ -79,6 +79,8 @@
       camOk: ' · 读到驾驶舱镜头', camOutside: ' · 读到镜头，但不是驾驶舱视角', camNone: ' · 读不到镜头', camNoCp: ' · 没读到 ChasePlane',
       camNoSim: ' · 没连上模拟器', camReplay: ' · 回放中（用录下的 ChasePlane 数据）', camFov: '垂直视场角 {v}°', camErr: '最近一次出错：{e}',
       camUserOff: 'MSFS 设置里关掉了插件镜头', camWait: '等模拟器送来镜头数据',
+      camOrigin: '镜头原点（{ac}）：已标定，{v} m', camOriginNeed: '镜头原点（{ac}）还没标定：在地面停稳几秒，或在空中按一下暂停，会自己标定；标定前跑道框会偏',
+      camOriginNoAc: '镜头原点：等模拟器报出机型', camRedo: '重新标定',
       camDesc: 'ChasePlane：用 ChasePlane 的驾驶舱镜头定位 HUD（默认）。MSFS 原生：直接读模拟器自己的镜头，不需要 ChasePlane。它用的是 MSFS 还在测试的接口（Beta），模拟器更新后可能失效，那时切回 ChasePlane 就行。两种都只读镜头，不会动你的视角。',
       keys: '快捷键', keysN: '{n} 个已设', k_hud: 'HUD', k_tune: '微调', k_toggle: '显示 / 隐藏 HUD', k_xwind: '侧风模式',
       k_preset_next: '换下一套风格', k_anim_test: '播放开场', k_panel: '打开设置窗口', k_quit: '退出 Birdie',
@@ -167,6 +169,8 @@
       camOk: ' · cockpit camera read', camOutside: ' · camera read, not a cockpit view', camNone: ' · no camera data', camNoCp: ' · ChasePlane not read',
       camNoSim: ' · no simulator', camReplay: ' · replay (recorded ChasePlane data)', camFov: 'Vertical field of view {v}°', camErr: 'Last error: {e}',
       camUserOff: 'Add-on cameras are switched off in the MSFS settings', camWait: 'Waiting for camera data from the sim',
+      camOrigin: 'Camera origin ({ac}): measured, {v} m', camOriginNeed: 'Camera origin ({ac}) not measured yet: stand still on the ground a few seconds, or pause in the air, and it measures itself; until then the runway outline is off',
+      camOriginNoAc: 'Camera origin: waiting for the sim to name the aircraft', camRedo: 'Measure again',
       camDesc: 'ChasePlane: the HUD follows the ChasePlane cockpit camera (the default). MSFS native: reads the sim’s own camera, no ChasePlane needed. It uses an interface MSFS still calls beta: an update may break it, and then switching back to ChasePlane is all it takes. Either way Birdie only reads the camera and never moves your view.',
       keys: 'Hotkeys', keysN: '{n} set', k_hud: 'HUD', k_tune: 'Fine tuning', k_toggle: 'Show / hide the HUD', k_xwind: 'Crosswind mode',
       k_preset_next: 'Next preset', k_anim_test: 'Play the opening', k_panel: 'Open the settings window', k_quit: 'Quit Birdie',
@@ -1216,6 +1220,10 @@
       if (c.error) note.push(fmt(l.camErr, { e: c.error })); else note.push(l.camWait);
     }
     $('cam-note').textContent = note.join(' · ');
+    var o = msfs && S.online ? (!c.aircraft ? l.camOriginNoAc : c.origin == null ? fmt(l.camOriginNeed, { ac: c.aircraft })
+      : fmt(l.camOrigin, { ac: c.aircraft, v: (c.origin > 0 ? '+' : '') + c.origin.toFixed(2) })) : '';
+    $('cam-origin').textContent = o;
+    $('cam-redo').style.display = msfs && c.origin != null ? '' : 'none';
   }
 
   function paint() {
@@ -1441,7 +1449,7 @@
       'hk-reset': 'hkReset', 'hk-desc': 'hkDesc', 't-terrain': 'terrain', 't-terrain2': 'terrain', 't-trOn': 'trOn',
       't-trLook': 'trLook', 't-trStrength': 'trStrength', 't-trStream': 'trStream', 't-trRes': 'trRes', 't-trCap': 'trCap',
       't-trNotes': 'trNotes', 't-trDisk': 'trDisk', 't-trPkg': 'trPkg',
-      't-camnav': 'camNav', 't-camnav2': 'camNav', 't-cam': 'cam', 't-camst': 'camSt', 'cam-desc': 'camDesc' };
+      't-camnav': 'camNav', 't-camnav2': 'camNav', 't-cam': 'cam', 't-camst': 'camSt', 'cam-desc': 'camDesc', 'cam-redo': 'camRedo' };
     layoutWords(); keysWords();
     for (var id in map) $(id).textContent = l[map[id]];
     document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : 'en';
@@ -1493,6 +1501,7 @@
     press($('lang-en'), function () { set('language', 'en'); S.lang = 'en'; words(); });
     press($('ra-btn'), function () { if (S.st && S.st.on_ground) act('ra_calibrate'); });
     press($('ra-clear'), function () { act('ra_clear'); });
+    press($('cam-redo'), function () { act('cam_origin_redo'); });
     press($('auto'), function () { act('autostart', !(S.st && S.st.autostart)); });
     press($('t-log'), function () { act('open_log'); });
     press($('ig-main'), function () { act('ingame_install'); });

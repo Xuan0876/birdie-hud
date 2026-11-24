@@ -689,6 +689,8 @@ void App::on_panel_message(const std::string& text) {
         apply_look();
         changed();
       }
+    } else if (name == "cam_origin_redo") {
+      redo_cam_origin();
     } else if (name == "reset_layout") {
       reset_layout(set_);
       set_.hud_preset = "custom";
@@ -942,7 +944,10 @@ void App::on_state(SimState s) {
   } else {
     ra_ground_.clear();
   }
-  apply_camera(s, camera_source(), sim_.camera());
+  if (camera_source() == CameraSource::kMsfs)
+    apply_msfs_camera(s);
+  else
+    camera_from_chaseplane(s);
   t_state_ = now_s();
   state_ = s;
   model_.update(s, t_state_);
@@ -986,6 +991,54 @@ void App::on_aircraft(const std::string& title, const std::string& model) {
   else
     logf("[ac] %s (%s): RA not calibrated yet (automatic when standing on the ground)", title.c_str(), model.c_str());
   tray_update();
+}
+
+// The MSFS camera source: the newest reply plus this aircraft's origin offset (core/camera.h msfs_origin_offset),
+// which is measured the first time the aircraft stands still with the MSFS source on: parked on the ground, or the
+// sim paused in the air (the position does not move). Then the WORLD position, the SIMOBJECT one and the state are
+// the same instant; moving, one frame of difference is metres. 30 steady samples (within 5 cm), the median is kept.
+void App::apply_msfs_camera(SimState& s) {
+  const auto it = ac_title_.empty() ? set_.cam_origin_by_aircraft.end() : set_.cam_origin_by_aircraft.find(ac_title_);
+  const bool known = it != set_.cam_origin_by_aircraft.end();
+  camera_from_msfs(s, sim_.camera(), known ? it->second : Vec3{});
+  const bool want = !known && !ac_title_.empty() && opt_.replay.empty();
+  sim_.set_camera_world(want);
+  const bool frozen = state_ && s.lat == state_->lat && s.lon == state_->lon && s.alt_ft == state_->alt_ft;
+  const bool still = frozen || (s.on_ground >= 0.5 && s.gs_kt < 0.3);
+  if (!want || !still) {
+    origin_samples_.clear();
+    return;
+  }
+  const MsfsCamera* rel = sim_.camera();
+  const MsfsWorld* w = sim_.camera_world();
+  if (!rel || !w) return;
+  origin_samples_.push_back(msfs_origin_offset(s, *rel, *w));
+  if (origin_samples_.size() > 30) origin_samples_.erase(origin_samples_.begin());
+  if (origin_samples_.size() < 30) return;
+  Vec3 med{};
+  for (double Vec3::*a : {&Vec3::x, &Vec3::y, &Vec3::z}) {
+    std::vector<double> v;
+    for (const Vec3& o : origin_samples_) v.push_back(o.*a);
+    std::sort(v.begin(), v.end());
+    if (v.back() - v.front() > 0.05) return;  // not steady yet: the window slides on
+    med.*a = v[v.size() / 2];
+  }
+  set_.cam_origin_by_aircraft[ac_title_] = med;
+  origin_samples_.clear();
+  sim_.set_camera_world(false);
+  logf("[cam] %s: MSFS camera origin measured, offset %+.2f %+.2f %+.2f m", ac_title_.c_str(), med.x, med.y, med.z);
+  say(trf(S::FlashCamOriginFmt, med.z));
+  camera_from_msfs(s, sim_.camera(), med);
+  changed();
+}
+
+void App::redo_cam_origin() {
+  if (ac_title_.empty()) return;
+  set_.cam_origin_by_aircraft.erase(ac_title_);
+  origin_samples_.clear();
+  logf("[cam] %s: MSFS camera origin cleared, measuring again", ac_title_.c_str());
+  say(tr(S::FlashCamOriginRedo));
+  changed();
 }
 
 void App::store_ra(double med, bool automatic) {
@@ -1599,6 +1652,10 @@ nlohmann::json App::camera_status() const {
     c["state"] = !state_->cam_ok ? "none" : state_->cam_cockpit ? "ok" : "outside";
   c["vfov"] = live && state_->cam_ok ? nlohmann::json(std::round(state_->cam_vfov * 10) / 10) : nlohmann::json();
   if (camera_source() == CameraSource::kMsfs) {
+    // the origin offset of this aircraft (apply_msfs_camera): its forward part, or null while not measured
+    const auto o = ac_title_.empty() ? set_.cam_origin_by_aircraft.end() : set_.cam_origin_by_aircraft.find(ac_title_);
+    c["origin"] = o == set_.cam_origin_by_aircraft.end() ? nlohmann::json() : nlohmann::json(std::round(o->second.z * 100) / 100);
+    c["aircraft"] = ac_title_;
     const auto& i = sim_.camera_info();
     c["errors"] = i.errors;
     c["error"] = i.last_error;

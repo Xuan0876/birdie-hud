@@ -73,6 +73,11 @@ class SimClient {
   bool camera_polling() const { return cam_on_; }
   // The newest reply, or nullptr: off, nothing yet, or no reply for 0.5 s (an error, a sim without the API).
   const MsfsCamera* camera() const;
+  // While on (and polling), a CameraGet(WORLD) goes out with each SIMOBJECT one: to measure the SIMOBJECT origin
+  // (camera.h msfs_origin_offset). camera_world() = its newest reply if it came within 20 ms of the SIMOBJECT one
+  // (the same sim frame) and is fresh, else nullptr.
+  void set_camera_world(bool on);
+  const MsfsWorld* camera_world() const;
   const CameraInfo& camera_info() const { return cam_info_; }
 
  private:
@@ -92,6 +97,10 @@ class SimClient {
   bool cam_on_ = false;
   bool cam_pending_ = false;      // a CameraGet is out
   unsigned long cam_send_id_ = 0;  // its packet id (exceptions name it)
+  bool world_on_ = false, world_pending_ = false;
+  unsigned long world_send_id_ = 0;
+  unsigned long long world_reply_ms_ = 0;
+  std::optional<MsfsWorld> world_;
   unsigned long long cam_sent_ms_ = 0, cam_reply_ms_ = 0, cam_retry_ms_ = 0, cam_logged_ms_ = 0;
   std::optional<MsfsCamera> cam_;
   CameraInfo cam_info_;

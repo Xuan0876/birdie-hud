@@ -326,6 +326,15 @@ Settings settings_from_json(const nlohmann::json& j) {
       if (std::abs(c.ft) < 100) s.ra_by_aircraft[title] = c;
     }
   }
+  if (auto co = j.find("cam_origin_by_aircraft"); co != j.end() && co->is_object()) {
+    for (const auto& [title, v] : co->items()) {
+      if (!v.is_array() || v.size() != 3 || !v[0].is_number() || !v[1].is_number() || !v[2].is_number()) continue;
+      const Vec3 o{v[0].get<double>(), v[1].get<double>(), v[2].get<double>()};
+      if (std::isfinite(o.x) && std::isfinite(o.y) && std::isfinite(o.z) && std::abs(o.x) < 200 && std::abs(o.y) < 200 &&
+          std::abs(o.z) < 200)
+        s.cam_origin_by_aircraft[title] = o;
+    }
+  }
   if (auto hk = j.find("hotkeys"); hk != j.end() && hk->is_object()) {
     for (const auto& [action, v] : hk->items()) {
       auto it = s.hotkeys.find(action);
@@ -384,6 +393,11 @@ nlohmann::json settings_to_json(const Settings& s0) {
   nlohmann::json ra = nlohmann::json::object();
   for (const auto& [title, c] : s.ra_by_aircraft) ra[title] = {{"ft", c.ft}, {"note", c.note}};
   j["ra_by_aircraft"] = ra;
+  if (!s.cam_origin_by_aircraft.empty()) {  // absent until the first one: settings files stay as they were
+    nlohmann::json co = nlohmann::json::object();
+    for (const auto& [title, o] : s.cam_origin_by_aircraft) co[title] = {o.x, o.y, o.z};
+    j["cam_origin_by_aircraft"] = co;
+  }
   j["hotkeys"] = s.hotkeys;
   auto borders = [&](const char* name, const std::map<std::string, Settings::BorderSeats>& in) {
     if (in.empty()) return;  // absent until the first border: settings files stay as they were

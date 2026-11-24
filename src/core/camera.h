@@ -9,6 +9,7 @@
 #include <string_view>
 
 #include "core/state.h"
+#include "core/vec.h"
 
 namespace birdie {
 
@@ -25,17 +26,31 @@ struct MsfsCamera {
   double fov_rad = 0;
 };
 
+// One reply of SimConnect_CameraGet in the WORLD referential: where the camera is.
+struct MsfsWorld {
+  double lat = 0, lon = 0;  // degrees
+  double alt_m = 0;         // metres above MSL
+};
+
+// The SIMOBJECT referential has its own origin, not the point PLANE LATITUDE / LONGITUDE / ALTITUDE describe (the
+// one Birdie places the aircraft at). Measured 11/24 on the FSLabs A321neo (probe, every view alike): same lateral and
+// vertical, but 21.34 m further forward, so the eye read as is sat 21 m too far back and the runway's near end was
+// drawn too high. The offset is per aircraft: Birdie measures it while the aircraft stands still (then the WORLD
+// position, the SIMOBJECT one and the state belong to the same instant) and keeps it per aircraft.
+// Returns the offset in Birdie's body frame (x right, y up, z forward, m): eye = SIMOBJECT eye + offset.
+Vec3 msfs_origin_offset(const SimState& s, const MsfsCamera& rel, const MsfsWorld& world);
+
 // The camera from ChasePlane's L-vars. Kept exactly as Birdie computed it before the sources existed (the parity
 // tests rely on it): ok = zoom > 0.05, cockpit = mode < 0.5, field of view from the zoom (geo.h vfov_deg), eye from
 // the anchor and the view offset (geo.h eye_lateral_m).
 void camera_from_chaseplane(SimState& s);
 
 // The camera from the sim's Camera API; cam == nullptr = nothing usable (not supported, no reply yet, an error).
-// cockpit comes from CAMERA STATE (2 = cockpit).
-void camera_from_msfs(SimState& s, const MsfsCamera* cam);
+// cockpit comes from CAMERA STATE (2 = cockpit). origin = msfs_origin_offset() for this aircraft (0 = not known yet).
+void camera_from_msfs(SimState& s, const MsfsCamera* cam, const Vec3& origin = {});
 
 // Either one.
-void apply_camera(SimState& s, CameraSource src, const MsfsCamera* msfs);
+void apply_camera(SimState& s, CameraSource src, const MsfsCamera* msfs, const Vec3& msfs_origin = {});
 
 // Focal length in px for a vertical field of view (degrees) and a client height.
 double focal_from_vfov(double vfov_deg, double height);

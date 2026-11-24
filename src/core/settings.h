@@ -139,6 +139,10 @@ struct Settings {
   };
   std::map<std::string, RaCal> ra_by_aircraft;
 
+  // The MSFS camera source's origin offset per aircraft (TITLE), core/camera.h msfs_origin_offset: body frame m
+  // (x right, y up, z forward). Measured automatically while the aircraft stands still; the panel can redo it.
+  std::map<std::string, Vec3> cam_origin_by_aircraft;
+
   // HUD border (core/border.h, docs/HUD_BORDER.md): traced on the screen, kept per aircraft (TITLE) and seat; a seat
   // without its own uses the other one mirrored. pts in HUD-plane degrees; eye = where the eye was when traced
   // (lateral m + = right, then ChasePlane a_y, a_z), to tell when the view moved.
