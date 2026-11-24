@@ -1,4 +1,5 @@
 // preview only: a fake Birdie, so the page never reaches the real one. ?why=<status.why> = the HUD is hidden for that reason
+// ?cam=ok|outside|none|nosim|replay = status.camera.state, ?camerr=<text> = its last error; a "set" is echoed back
 (function () {
   var border = { editing: false, can_edit: true, seat: 'L', state: 'drawn', other_own: false, eye_moved: true, cuts_fixed: true, fit_scale: 0.85 };
   window.__border = border;
@@ -7,7 +8,12 @@
     setTimeout(function () { self.onopen && self.onopen(); }, 10);
     window.__ws = this;
   }
-  FakeWS.prototype.send = function (t) { console.log('send', t); var m = JSON.parse(t); if (m.type === 'action' && m.name === 'hello') this.push(); };
+  var sets = {};  // what the page set, echoed back like Birdie does
+  FakeWS.prototype.send = function (t) {
+    console.log('send', t); var m = JSON.parse(t);
+    if (m.type === 'action' && m.name === 'hello') this.push();
+    if (m.type === 'set') { sets[m.key] = m.value; this.push(); }
+  };
   FakeWS.prototype.close = function () {};
   FakeWS.prototype.push = function () {
     var st = { type: 'state', settings: { visible: true, glide_deg: 3, hud_scale: 1, opacity: 1, lead_ms: 0, flare_tol_deg: 0.3, ladder_step_deg: 6, language: '', bird_ra_below_ft: 500, xwind_mode: false },
@@ -20,6 +26,10 @@
       var i = kv.indexOf(':'), k = kv.slice(0, i), v = kv.slice(i + 1);
       st.settings[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v;
     });
+    for (var k in sets) st.settings[k] = sets[k];
+    var cam = ((location.search.match(/[?&]cam=(\w+)/) || [])[1]) || 'ok', err = /[?&]camerr=([^&]*)/.exec(location.search);
+    st.status.camera = { source: st.settings.camera_source || 'chaseplane', state: cam, vfov: cam === 'ok' || cam === 'outside' ? 58.2 : null,
+                         errors: err ? 12 : 0, error: err ? decodeURIComponent(err[1]) : '', availability: 0 };
     var self = this; setTimeout(function () { self.onmessage && self.onmessage({ data: JSON.stringify(st) }); }, 0);
   };
   window.WebSocket = FakeWS;

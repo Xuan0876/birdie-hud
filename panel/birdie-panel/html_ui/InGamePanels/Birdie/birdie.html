@@ -121,6 +121,7 @@
                   <div class="nav inner" role="button" tabindex="0" data-go="8"><b id="t-appr"></b><span id="n-appr"></span><span class="ar">›</span></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="3"><b id="t-border"></b><span id="n-border"></span><span class="ar">›</span></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="9"><b id="t-keys"></b><span id="n-keys"></span><span class="ar">›</span></div>
+                  <div class="nav inner" role="button" tabindex="0" data-go="11"><b id="t-camnav"></b><span id="n-cam"></span><span class="ar">›</span></div>
                   <div class="hair"></div>
                   <div class="ra">
                     <div><span id="t-ra"></span><span class="ac" id="ra-ac"></span></div>
@@ -277,6 +278,19 @@
               </div>
 
               <!-- showing and hiding by itself: on the take-off roll, and up high -->
+              <!-- camera source: ChasePlane's L-vars or the sim's own Camera API (src/core/camera.h), read only -->
+              <div class="page p11" id="page11">
+                <div class="back" role="button" tabindex="0" data-go="2">‹<span class="serif" id="t-camnav2"></span></div>
+                <div class="dimmable">
+                  <div class="row"><div class="k" id="t-cam"></div><div class="picks" id="p-cam"></div></div>
+                  <div class="ra">
+                    <div><span id="t-camst"></span><span class="ac" id="cam-state"></span></div>
+                    <div id="cam-note"></div>
+                  </div>
+                  <div class="gdesc" id="cam-desc"></div>
+                </div>
+              </div>
+
               <div class="page p4" id="page4">
                 <div class="back" role="button" tabindex="0" data-go="2">‹<span class="serif" id="t-autonav2"></span></div>
                 <div class="dimmable">

@@ -1,7 +1,7 @@
-// preview only (tools/panel_preview): ?page=N opens a sub page, ?still turns animations off for screenshots
+// preview only (tools/panel_preview): ?page=N opens a sub page (11 = Camera source), ?still turns animations off for screenshots
 (function () {
   var q = location.search;
-  var page = (q.match(/[?&]page=(\d)/) || [])[1] || '0';
+  var page = (q.match(/[?&]page=(\d+)/) || [])[1] || '0';
   if (/[?&]still/.test(q)) {
     var s = document.createElement('style');
     s.textContent = '*,*:before,*:after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important}html.web .pocket{margin:0!important;box-shadow:none!important}html.web body,html.web #birdie{background:#202020!important}';

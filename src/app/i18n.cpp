@@ -73,7 +73,7 @@ const Pair kStrings[] = {
      L"Click an edge to add a point · right-click removes one · Enter saves · Esc cancels"},
     {S::FlashBorderSaved, L"HUD 边框存好了", L"HUD border saved"},
     {S::FlashBorderCancelled, L"边框没改", L"Border unchanged"},
-    {S::FlashBorderNeedCockpit, L"进驾驶舱视角（ChasePlane）后才能描边框", L"Trace the border from the cockpit view (ChasePlane)"},
+    {S::FlashBorderNeedCockpit, L"进驾驶舱视角后才能描边框", L"Trace the border from the cockpit view"},
     {S::FlashBorderCleared, L"HUD 边框已清除", L"HUD border cleared"},
     {S::FlashBorderFitFmt, L"HUD 大小 %d%%，正好放进边框", L"HUD size %d%%: fits inside the border"},
     {S::FlashBorderMirrored, L"另一座改成按这边镜像", L"The other seat now mirrors this one"},
@@ -86,9 +86,11 @@ const Pair kStrings[] = {
     {S::PresetMinimal, L"极简", L"Minimal"},
     {S::RaClearedNote, L"已清除（不再自动校准，可以手动校准）", L"cleared (no automatic calibration; calibrate by hand)"},
     {S::ChasePlaneMissing,
-     L"没检测到 ChasePlane。Birdie 目前要靠 ChasePlane 的驾驶舱镜头才能把 HUD 画对位置。打开 ChasePlane 后 HUD 会自己出现。",
-     L"ChasePlane was not detected. Birdie currently needs the ChasePlane cockpit camera to place the HUD. "
-     L"Start ChasePlane and the HUD appears by itself."},
+     L"没检测到 ChasePlane。Birdie 默认用 ChasePlane 的驾驶舱镜头把 HUD 画对位置，打开 ChasePlane 后 HUD 会自己出现。"
+     L"没有 ChasePlane 的话，可以在面板 细调 → 镜头来源 改用 MSFS 原生镜头（Beta）。",
+     L"ChasePlane was not detected. By default Birdie places the HUD with the ChasePlane cockpit camera; start "
+     L"ChasePlane and the HUD appears by itself. Without ChasePlane, try the MSFS camera (beta): panel, Fine tuning, "
+     L"Camera source."},
     {S::SimConnectMissing,
      L"找不到 SimConnect.dll。\n\n它应该和 Birdie.exe 在同一个文件夹里（发布包里自带）。请把整个压缩包解压出来再运行，不要直接在压缩包里双击。",
      L"SimConnect.dll was not found.\n\nIt belongs in the same folder as Birdie.exe (it ships in the release zip). "

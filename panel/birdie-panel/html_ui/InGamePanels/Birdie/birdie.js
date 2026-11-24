@@ -20,7 +20,7 @@
            language: '', show_bird: true, show_fpa_num: true, show_vs_num: true, show_flare: true, show_glide: true,
            show_horizon: true, show_hdg: true, show_pitch_minor: true, show_runway: true, show_att: true, show_speed: true,
            show_alt: true, show_vs: true, show_roll: true, show_gs: true, show_bird_ra: true, bird_ra_below_ft: 500, xwind_mode: false,
-           ui_style: 'tool', auto_show: true, auto_show_kt: 40, auto_hide: false, auto_hide_ft: 2500, auto_hide_s: 30,
+           ui_style: 'tool', camera_source: 'chaseplane', auto_show: true, auto_show_kt: 40, auto_hide: false, auto_hide_ft: 2500, auto_hide_s: 30,
            // the HUD's look (core/settings.h): layout, element styles, finish, animations, approach marks
            lay_spread: 1, spd_dx: 0, spd_dy: 0, spd_len: 1, spd_size: 1, alt_dx: 0, alt_dy: 0, alt_len: 1, alt_size: 1,
            vs_dx: 0, vs_dy: 0, vs_size: 1, wind_dx: 0, wind_dy: 0, wind_size: 1, roll_dy: 0, roll_size: 1, att_size: 1,
@@ -75,6 +75,11 @@
       bdEye: '眼点和描的时候不一样了，边框可能偏，可以重描', bdCut: '仪表有一部分在边框外，会淡掉',
       bdFit: '缩到 {n}% 放得下', bdNoFit: '缩到最小也放不下', bdMirror: '镜像到另一座', bdClear: '清除', bdClearAsk: '再点一次清除',
       bdDesc: '边框跟着驾驶舱走：改缩放、转头，它都贴着窗框；最后 1° 慢慢淡出。另一座没描时，按这边镜像。',
+      camNav: '镜头来源', cam: '来源', cs_chaseplane: 'ChasePlane', cs_msfs: 'MSFS 原生 · Beta', camSt: '现在',
+      camOk: ' · 读到驾驶舱镜头', camOutside: ' · 读到镜头，但不是驾驶舱视角', camNone: ' · 读不到镜头', camNoCp: ' · 没读到 ChasePlane',
+      camNoSim: ' · 没连上模拟器', camReplay: ' · 回放中（用录下的 ChasePlane 数据）', camFov: '垂直视场角 {v}°', camErr: '最近一次出错：{e}',
+      camUserOff: 'MSFS 设置里关掉了插件镜头', camWait: '等模拟器送来镜头数据',
+      camDesc: 'ChasePlane：用 ChasePlane 的驾驶舱镜头定位 HUD（默认）。MSFS 原生：直接读模拟器自己的镜头，不需要 ChasePlane。它用的是 MSFS 还在测试的接口（Beta），模拟器更新后可能失效，那时切回 ChasePlane 就行。两种都只读镜头，不会动你的视角。',
       keys: '快捷键', keysN: '{n} 个已设', k_hud: 'HUD', k_tune: '微调', k_toggle: '显示 / 隐藏 HUD', k_xwind: '侧风模式',
       k_preset_next: '换下一套风格', k_anim_test: '播放开场', k_panel: '打开设置窗口', k_quit: '退出 Birdie',
       k_glide_up: '下滑参考线 +0.1°', k_glide_down: '下滑参考线 −0.1°', k_lead_up: '显示延迟补偿 +10 ms', k_lead_down: '显示延迟补偿 −10 ms',
@@ -158,6 +163,11 @@
       bdFit: 'shrink to {n}% to fit', bdNoFit: 'does not fit even at the smallest size', bdMirror: 'mirror to the other seat', bdClear: 'clear',
       bdClearAsk: 'once more to clear',
       bdDesc: 'The border stays with the cockpit through zoom and head turns, fading over its last degree. The other seat mirrors it until traced.',
+      camNav: 'Camera source', cam: 'Source', cs_chaseplane: 'ChasePlane', cs_msfs: 'MSFS native · Beta', camSt: 'Now',
+      camOk: ' · cockpit camera read', camOutside: ' · camera read, not a cockpit view', camNone: ' · no camera data', camNoCp: ' · ChasePlane not read',
+      camNoSim: ' · no simulator', camReplay: ' · replay (recorded ChasePlane data)', camFov: 'Vertical field of view {v}°', camErr: 'Last error: {e}',
+      camUserOff: 'Add-on cameras are switched off in the MSFS settings', camWait: 'Waiting for camera data from the sim',
+      camDesc: 'ChasePlane: the HUD follows the ChasePlane cockpit camera (the default). MSFS native: reads the sim’s own camera, no ChasePlane needed. It uses an interface MSFS still calls beta: an update may break it, and then switching back to ChasePlane is all it takes. Either way Birdie only reads the camera and never moves your view.',
       keys: 'Hotkeys', keysN: '{n} set', k_hud: 'HUD', k_tune: 'Fine tuning', k_toggle: 'Show / hide the HUD', k_xwind: 'Crosswind mode',
       k_preset_next: 'Next preset', k_anim_test: 'Play the opening', k_panel: 'Open the settings window', k_quit: 'Quit Birdie',
       k_glide_up: 'Glide reference +0.1°', k_glide_down: 'Glide reference −0.1°', k_lead_up: 'Display latency +10 ms', k_lead_down: 'Display latency −10 ms',
@@ -224,7 +234,8 @@
     nosim:    { zh: ['没连上模拟器', '打开 MSFS 后自动连上'], en: ['No simulator', 'Connects by itself when MSFS starts'] },
     wait:     { zh: ['等待数据', '等模拟器送来第一帧数据'], en: ['Waiting for data', 'Waiting for the first data from the sim'] },
     starting: { zh: ['启动中', '正在找模拟器'], en: ['Starting', 'Looking for the simulator'] },
-    nocp:     { zh: ['需要 ChasePlane', '目前只支持 ChasePlane 驾驶舱视角'], en: ['ChasePlane needed', 'Works with the ChasePlane cockpit view for now'] },
+    nocp:     { zh: ['需要 ChasePlane', '没读到 ChasePlane；也可以在 细调 → 镜头来源 改用 MSFS 原生镜头'], en: ['ChasePlane needed', 'ChasePlane not read; or use the MSFS camera in Fine tuning → Camera source'] },
+    nocam:    { zh: ['读不到镜头', 'MSFS 原生镜头没有数据；可以在 细调 → 镜头来源 切回 ChasePlane'], en: ['No camera data', 'The MSFS camera sends nothing; switch back to ChasePlane in Fine tuning → Camera source'] },
     off:      { zh: ['HUD 已关闭', '点右边的开关，或按 {hk} 打开', '点右边的开关打开'], en: ['HUD off', 'Use the switch, or {hk}, to show it', 'Use the switch to show it'] },
     offline:  { zh: ['Birdie 没在运行', '打开 Birdie.exe，这里会自己连上'], en: ['Birdie is not running', 'Start Birdie.exe and this connects by itself'] }
   };
@@ -239,7 +250,8 @@
     nosim:    { zh: ['等你起飞', '打开 MSFS 后自动连上'], en: ['Ready when you fly', 'Connects by itself when MSFS starts'] },
     wait:     { zh: ['我在听', '等模拟器送来第一帧数据'], en: ['Listening', 'Waiting for the first data from the sim'] },
     starting: { zh: ['我醒了', '正在找模拟器'], en: ['Awake', 'Looking for the simulator'] },
-    nocp:     { zh: ['还看不到你的视线', '目前需要 ChasePlane 驾驶舱视角'], en: ['I can’t see your view yet', 'ChasePlane cockpit view needed for now'] },
+    nocp:     { zh: ['还看不到你的视线', '没读到 ChasePlane；也可以改用 MSFS 原生镜头'], en: ['I can’t see your view yet', 'ChasePlane not read; or try the MSFS camera'] },
+    nocam:    { zh: ['还看不到你的视线', '读不到 MSFS 镜头，可以切回 ChasePlane'], en: ['I can’t see your view yet', 'No MSFS camera data; ChasePlane is one switch away'] },
     off:      { zh: ['我先安静一会儿', '点右边的圆，或按 {hk} 叫我回来', '点右边的圆叫我回来'], en: ['I’ll stay quiet for now', 'Tap the circle, or {hk}, to bring me back', 'Tap the circle to bring me back'] },
     offline:  { zh: ['我还没醒', '打开 Birdie.exe，这里会自己连上'], en: ['Not awake yet', 'Start Birdie.exe and this connects by itself'] }
   };
@@ -1089,7 +1101,9 @@
     // terrain
     trLook: { key: 'terrain_look', vals: ['fill', 'sky', 'ridges'], label: word('tl_'), unit: '', str: true },
     trRes: { key: 'terrain_res', vals: [30, 90], label: function (v) { return L()['r_' + v]; }, unit: '', word: true },
-    trCap: { key: 'terrain_cache_gb', vals: [1, 2, 4, 8, 16], label: function (v) { return String(v); }, unit: ' GB' }
+    trCap: { key: 'terrain_cache_gb', vals: [1, 2, 4, 8, 16], label: function (v) { return String(v); }, unit: ' GB' },
+    // camera source
+    cam: { key: 'camera_source', vals: ['chaseplane', 'msfs'], label: word('cs_'), unit: '', str: true }
   };
   function word(prefix) { return function (v) { return L()[prefix + v] || v; }; }
   function swatch(v) {
@@ -1129,6 +1143,7 @@
     cls($('ah-more'), 'idle', !s.auto_hide);
     cls($('tdz-more'), 'idle', !s.show_tdz);
     $('n-hudlook').textContent = l['pre_' + s.hud_preset] || s.hud_preset;
+    $('n-cam').textContent = l['cs_' + s.camera_source] || s.camera_source || '';
     $('n-anim').textContent = (l['a_' + s.anim_in] || '') + ' · ' + (l['a_' + s.anim_out] || '');
     $('n-appr').textContent = (s.show_tdz ? l['t_' + s.tdz_rule] : l.off) + ' · ' + Math.round(s.flare_hi_ft) + '/' + Math.round(s.flare_lo_ft) + ' ft';
     var moved = 0;
@@ -1188,6 +1203,21 @@
   }
 
   // ---------------------------------------------------------------- everything that follows the state
+  // the Camera source page: what the chosen source gives right now (status.camera, app.cpp camera_status)
+  function camPaint(c, l) {
+    var msfs = c.source === 'msfs';
+    var line = !S.online ? '' : c.state === 'replay' ? l.camReplay : c.state === 'nosim' ? l.camNoSim
+      : c.state === 'ok' ? l.camOk : c.state === 'outside' ? l.camOutside : msfs ? l.camNone : l.camNoCp;
+    $('cam-state').textContent = line;
+    var note = [];
+    if (c.vfov != null && (c.state === 'ok' || c.state === 'outside')) note.push(fmt(l.camFov, { v: c.vfov.toFixed(1) }));
+    if (msfs && c.state === 'none') {
+      if (c.availability === 3) note.push(l.camUserOff);  // SIMCONNECT_CAMERA_USER_DISABLED
+      if (c.error) note.push(fmt(l.camErr, { e: c.error })); else note.push(l.camWait);
+    }
+    $('cam-note').textContent = note.join(' · ');
+  }
+
   function paint() {
     var s = S.set, st = S.st || {}, l = L();
     cls($('birdie'), 'offline', !S.online);
@@ -1214,6 +1244,7 @@
     $('ra-btn').textContent = st.on_ground ? l.raBtn : l.raBtnWait;
     cls($('ra-btn'), 'dim', !st.on_ground);
     $('ra-clear').style.display = st.ra && st.ra.ft ? '' : 'none';
+    camPaint(st.camera || {}, l);
     cls($('auto'), 'sel', !!st.autostart);
     $('auto').setAttribute('aria-pressed', st.autostart ? 'true' : 'false');
     each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'], ['tdz', 'show_tdz'],
@@ -1409,7 +1440,8 @@
       't-flareLo': 'flareLo', 't-flareEnd': 'flareEnd', 'appr-desc': 'apprDesc', 't-keys': 'keys', 't-keys2': 'keys',
       'hk-reset': 'hkReset', 'hk-desc': 'hkDesc', 't-terrain': 'terrain', 't-terrain2': 'terrain', 't-trOn': 'trOn',
       't-trLook': 'trLook', 't-trStrength': 'trStrength', 't-trStream': 'trStream', 't-trRes': 'trRes', 't-trCap': 'trCap',
-      't-trNotes': 'trNotes', 't-trDisk': 'trDisk', 't-trPkg': 'trPkg' };
+      't-trNotes': 'trNotes', 't-trDisk': 'trDisk', 't-trPkg': 'trPkg',
+      't-camnav': 'camNav', 't-camnav2': 'camNav', 't-cam': 'cam', 't-camst': 'camSt', 'cam-desc': 'camDesc' };
     layoutWords(); keysWords();
     for (var id in map) $(id).textContent = l[map[id]];
     document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : 'en';
