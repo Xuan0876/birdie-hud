@@ -64,6 +64,16 @@ Vec3 msfs_origin_offset(const SimState& s, const MsfsCamera& rel, const MsfsWorl
   return body - Vec3{-rel.x, rel.y, rel.z};
 }
 
+bool plausible_origin(const Vec3& o) {
+  return std::isfinite(o.x) && std::isfinite(o.y) && std::isfinite(o.z) && std::abs(o.x) <= 3 && std::abs(o.y) <= 3 &&
+         std::abs(o.z) <= 60;
+}
+
+bool plausible_eye(const SimState& s) {
+  return std::isfinite(s.cam_eye_x) && std::isfinite(s.cam_eye_y) && std::isfinite(s.cam_eye_z) &&
+         std::abs(s.cam_eye_x) <= 3 && std::abs(s.cam_eye_y) <= 10 && std::abs(s.cam_eye_z) <= 80;
+}
+
 void apply_camera(SimState& s, CameraSource src, const MsfsCamera* msfs, const Vec3& msfs_origin) {
   if (src == CameraSource::kMsfs)
     camera_from_msfs(s, msfs, msfs_origin);

@@ -40,6 +40,14 @@ struct MsfsWorld {
 // Returns the offset in Birdie's body frame (x right, y up, z forward, m): eye = SIMOBJECT eye + offset.
 Vec3 msfs_origin_offset(const SimState& s, const MsfsCamera& rel, const MsfsWorld& world);
 
+// An origin offset Birdie accepts: |x|, |y| <= 3 m, |z| <= 60 m (measured: FSLabs A321 +21.4 m along, C152 +2.2 m).
+// 11/24 the measurement took frames while the sim was loading or in its menus (the position "stands still" there
+// too) and kept offsets of millions of metres; the eye then sat far to the right, the left seat read as the right
+// one, and a border traced from the captain's seat was stored as the first officer's.
+bool plausible_origin(const Vec3& o);
+// An eye Birdie can place a seat and a border with: finite, |x| <= 3 m, |y| <= 10 m, |z| <= 80 m from the reference.
+bool plausible_eye(const SimState& s);
+
 // The camera from ChasePlane's L-vars. Kept exactly as Birdie computed it before the sources existed (the parity
 // tests rely on it): ok = zoom > 0.05, cockpit = mode < 0.5, field of view from the zoom (geo.h vfov_deg), eye from
 // the anchor and the view offset (geo.h eye_lateral_m).

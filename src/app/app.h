@@ -188,7 +188,8 @@ class App {
   const char* why_key_ = "starting";  // the same reason for the panel: starting, nosim, wait, nocp, ext, look, ...
   std::deque<double> ra_ground_;  // raw RA while standing still on the ground
   std::set<std::string> origin_reminded_;  // aircraft already told this run that the MSFS camera origin is not measured
-  std::vector<Vec3> origin_samples_;  // MSFS camera origin offsets measured while standing still (apply_msfs_camera)
+  std::vector<Vec3> origin_samples_;
+  double t_origin_bad_ = -1e9;  // last "origin sample dropped" log line  // MSFS camera origin offsets measured while standing still (apply_msfs_camera)
   std::string ac_title_;          // SimConnect TITLE of the user aircraft
   double t_no_cp_ = -1;           // since when the ChasePlane L-vars read nothing (-1 = they do)
   bool cp_warned_ = false;
@@ -219,6 +220,8 @@ class App {
     double t0 = 0;
     bool reopen_window = false;  // the settings window was open: back to its border page afterwards
     bool terrain = false;        // tracing the terrain's border, not the HUD's
+    Seat seat = Seat::kLeft;     // the seat and eye when it began: saved with those
+    Vec3 eye{};
   } edit_;
   std::string focus_key_;  // show_* key the panel points at, "" = none
   double focus_until_ = 0;

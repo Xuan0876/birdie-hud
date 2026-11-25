@@ -77,6 +77,8 @@ const Pair kStrings[] = {
      L"Click an edge to add a point · right-click removes one · Enter saves · Esc cancels"},
     {S::FlashBorderSaved, L"HUD 边框存好了", L"HUD border saved"},
     {S::FlashBorderCancelled, L"边框没改", L"Border unchanged"},
+    {S::FlashBorderBadEye, L"眼点读数不对，先不能描边框：在面板“镜头来源”里重新标定镜头原点",
+     L"The eye position reads wrong, no tracing for now: measure the camera origin again (panel: Camera source)"},
     {S::FlashBorderNeedCockpit, L"进驾驶舱视角后才能描边框", L"Trace the border from the cockpit view"},
     {S::FlashBorderCleared, L"HUD 边框已清除", L"HUD border cleared"},
     {S::FlashBorderFitFmt, L"HUD 大小 %d%%，正好放进边框", L"HUD size %d%%: fits inside the border"},

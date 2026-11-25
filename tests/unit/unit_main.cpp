@@ -291,6 +291,25 @@ void test_camera_sources() {
   CHECK(settings_from_json(nlohmann::json{{"camera_source", "webcam"}}).camera_source == "chaseplane");
   CHECK(Settings{}.camera_source == "chaseplane");
 
+  // what an origin offset and an eye may be (11/24: offsets of millions of metres from loading-screen frames)
+  CHECK(plausible_origin({0.01, 0.02, 21.34}) && plausible_origin({0, 0, 2.19}) && plausible_origin({-0.12, 0.11, 21.43}));
+  CHECK(!plausible_origin({4544756.94, 6471978.31, 133179.17}) && !plausible_origin({0, 0, 61}) &&
+        !plausible_origin({3.5, 0, 0}) && !plausible_origin({0, 0, std::nan("")}));
+  {
+    SimState e;
+    e.cam_eye_x = -0.53, e.cam_eye_y = 0.23, e.cam_eye_z = 16.27;
+    CHECK(plausible_eye(e));
+    e.cam_eye_x = 4544756.4;
+    CHECK(!plausible_eye(e));
+    e.cam_eye_x = -0.54, e.cam_eye_z = 25.7;  // MD-11
+    CHECK(plausible_eye(e));
+  }
+  {
+    const auto r = settings_from_json(nlohmann::json{{"cam_origin_by_aircraft",
+        {{"good", {0.0, 0.1, 21.4}}, {"bad", {8796971.67, 9310728.81, 131900.74}}}}});
+    CHECK(r.cam_origin_by_aircraft.count("good") == 1 && r.cam_origin_by_aircraft.count("bad") == 0);
+  }
+
   // the SIMOBJECT origin, from one real probe tick (11/24, FSLabs A321neo parked at ZSWZ, default cockpit view): the
   // WORLD reply puts the camera 16.27 m ahead of PLANE LATITUDE/LONGITUDE, SIMOBJECT says -5.07: offset +21.34 m
   SimState ac;

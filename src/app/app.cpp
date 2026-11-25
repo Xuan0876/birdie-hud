@@ -1005,7 +1005,8 @@ void App::apply_msfs_camera(SimState& s) {
   const bool want = !known && !ac_title_.empty() && opt_.replay.empty();
   sim_.set_camera_world(want);
   const bool frozen = state_ && s.lat == state_->lat && s.lon == state_->lon && s.alt_ft == state_->alt_ft;
-  const bool still = frozen || (s.on_ground >= 0.5 && s.gs_kt < 0.3);
+  // the cockpit view only: loading screens and menus "stand still" as well, with a world reply from elsewhere
+  const bool still = s.cam_cockpit && (frozen || (s.on_ground >= 0.5 && s.gs_kt < 0.3));
   if (want && !still && !hide_reason(s, show_above_kt()) && origin_reminded_.insert(ac_title_).second) {
     // the HUD is up with the origin unknown (an air start, not paused): the runway is drawn metres off until then
     logf("[cam] %s: MSFS camera origin not measured yet, reminded", ac_title_.c_str());
@@ -1018,7 +1019,17 @@ void App::apply_msfs_camera(SimState& s) {
   const MsfsCamera* rel = sim_.camera();
   const MsfsWorld* w = sim_.camera_world();
   if (!rel || !w) return;
-  origin_samples_.push_back(msfs_origin_offset(s, *rel, *w));
+  const Vec3 off = msfs_origin_offset(s, *rel, *w);
+  if (!plausible_origin(off)) {  // the WORLD reply and the state are not the same instant (or place): start over
+    origin_samples_.clear();
+    if (now_s() - t_origin_bad_ > 30) {
+      t_origin_bad_ = now_s();
+      logf("[cam] %s: origin sample %+.0f %+.0f %+.0f m dropped (not plausible)", ac_title_.c_str(), off.x, off.y,
+           off.z);
+    }
+    return;
+  }
+  origin_samples_.push_back(off);
   if (origin_samples_.size() > 30) origin_samples_.erase(origin_samples_.begin());
   if (origin_samples_.size() < 30) return;
   Vec3 med{};
@@ -1670,7 +1681,8 @@ nlohmann::json App::camera_status() const {
   return c;
 }
 
-Seat App::seat() const { return state_ ? seat_of(state_->cam_eye_x) : Seat::kLeft; }
+// a wrong eye (an origin not measured right) says nothing about the seat: the captain's, as without data
+Seat App::seat() const { return state_ && plausible_eye(*state_) ? seat_of(state_->cam_eye_x) : Seat::kLeft; }
 
 std::optional<std::vector<Vec2>> App::active_border() const {
   if (edit_.on && !edit_.terrain) return edit_.pts;
@@ -1716,6 +1728,12 @@ void App::relayout() {
 
 void App::border_edit_begin(bool terrain) {
   if (edit_.on) return;
+  if (state_ && !plausible_eye(*state_)) {  // the seat and the eye kept with the border would both be wrong
+    logf("[border] eye %+.1f %+.1f %+.1f m not plausible: no tracing", state_->cam_eye_x, state_->cam_eye_y,
+         state_->cam_eye_z);
+    say(tr(S::FlashBorderBadEye), 5.0);
+    return;
+  }
   if (!can_edit_border()) {
     say(tr(S::FlashBorderNeedCockpit));
     return;
@@ -1729,6 +1747,8 @@ void App::border_edit_begin(bool terrain) {
   edit_ = BorderEdit{};
   edit_.on = true;
   edit_.terrain = terrain;
+  edit_.seat = seat();
+  edit_.eye = {state_->cam_eye_x, state_->cam_eye_y, state_->cam_eye_z};
   edit_.pts = std::move(start);
   edit_.t0 = now_s();
   edit_.reopen_window = win_.shown();
@@ -1758,15 +1778,17 @@ void App::border_edit_end(bool save) {
   const bool had_focus = GetForegroundWindow() == gfx_.hwnd();
   std::vector<Vec2> pts = std::move(edit_.pts);
   const bool reopen = edit_.reopen_window, terrain = edit_.terrain;
+  const Seat at = edit_.seat;  // the seat (and eye) the trace began in, whatever the camera did meanwhile
+  const Vec3 eye = edit_.eye;
   edit_ = BorderEdit{};
   if (save && state_ && sanitize_border(pts)) {
     Settings::BorderPoly b;
     b.pts = std::move(pts);
-    b.eye = {state_->cam_eye_x, state_->cam_eye_y, state_->cam_eye_z};
+    b.eye = eye;
     auto& seats = borders(terrain)[border_key()];
-    (seat() == Seat::kLeft ? seats.left : seats.right) = b;
-    logf("[border] %s %s %s seat: %zu points saved", terrain ? "terrain" : "HUD", border_key().c_str(),
-         seat_key(seat()), b.pts.size());
+    (at == Seat::kLeft ? seats.left : seats.right) = b;
+    logf("[border] %s %s %s seat: %zu points saved", terrain ? "terrain" : "HUD", border_key().c_str(), seat_key(at),
+         b.pts.size());
     say(tr(terrain ? S::FlashTerrainBorderSaved : S::FlashBorderSaved));
   } else {
     log_line(save ? "[border] not saved (no data / bad polygon)" : "[border] editing cancelled");

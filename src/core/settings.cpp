@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "core/border.h"
+#include "core/camera.h"
 
 namespace birdie {
 
@@ -340,9 +341,7 @@ Settings settings_from_json(const nlohmann::json& j) {
     for (const auto& [title, v] : co->items()) {
       if (!v.is_array() || v.size() != 3 || !v[0].is_number() || !v[1].is_number() || !v[2].is_number()) continue;
       const Vec3 o{v[0].get<double>(), v[1].get<double>(), v[2].get<double>()};
-      if (std::isfinite(o.x) && std::isfinite(o.y) && std::isfinite(o.z) && std::abs(o.x) < 200 && std::abs(o.y) < 200 &&
-          std::abs(o.z) < 200)
-        s.cam_origin_by_aircraft[title] = o;
+      if (plausible_origin(o)) s.cam_origin_by_aircraft[title] = o;
     }
   }
   if (auto hk = j.find("hotkeys"); hk != j.end() && hk->is_object()) {

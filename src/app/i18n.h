@@ -20,7 +20,7 @@ enum class S {
   FlashOn, FlashOff, FlashXwindOn, FlashXwindOff, FlashGlideFmt, FlashLeadFmt, FlashRaNeedGround, FlashRaDoneFmt, FlashRaCleared,
   RaNoteFmt, RaAutoNoteFmt, RaClearedNote,
   // HUD border editor
-  BorderHint1, BorderHint2, FlashBorderSaved, FlashBorderCancelled, FlashBorderNeedCockpit, FlashBorderCleared,
+  BorderHint1, BorderHint2, FlashBorderSaved, FlashBorderCancelled, FlashBorderNeedCockpit, FlashBorderBadEye, FlashBorderCleared,
   FlashBorderFitFmt, FlashBorderMirrored,
   // hotkeys
   FlashOpacityFmt, FlashSizeFmt, FlashPresetFmt, PresetAirbus, PresetBoeing, PresetFighter, PresetMinimal,
