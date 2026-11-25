@@ -66,9 +66,9 @@ HUD_SHOTS = [
 CALLOUTS = [
     (1, 560, 385, 462, 326), (2, 590, 278, 514, 312), (3, 326, 280, 400, 312), (4, 454, 405, 454, 352),
     (5, 650, 365, 650, 329), (6, 668, 478, 612, 458), (7, 535, 236, 484, 318), (8, 300, 222, 300, 262),
-    (9, 680, 222, 645, 268), (10, 250, 430, 322, 398), (11, 380, 585, 432, 546), (12, 515, 176, 470, 196),
-    (13, 600, 50, 525, 84), (14, 58, 360, 128, 330), (15, 38, 130, 84, 166), (16, 672, 388, 728, 372),
-    (17, 800, 462, 748, 450), (18, 858, 322, 802, 340),
+    (9, 680, 222, 645, 268), (10, 250, 430, 340, 374), (11, 380, 585, 432, 546), (12, 515, 176, 470, 196),
+    (13, 600, 50, 509, 83), (14, 58, 360, 128, 330), (15, 130, 100, 210, 140), (16, 672, 388, 728, 372),
+    (17, 800, 462, 742, 442), (18, 858, 322, 802, 340),
 ]
 
 
@@ -83,12 +83,16 @@ def gradient(w, h):
     return im
 
 
+# the fixture's own settings are the reference's (a 6 deg pitch ladder): the manual shows today's default, 5 deg
+DEFAULTS = ["ladder_step_deg=5"]
+
+
 def hud_picture(exe, check, args, crop, out):
     import json
     box = json.load(open(FIX / "fixture.json", encoding="utf-8"))["box_px"]
     with tempfile.TemporaryDirectory() as td:
         png = Path(td) / "hud.png"
-        r = subprocess.run([str(exe), str(FIX), str(check), str(png)] + args, capture_output=True, text=True)
+        r = subprocess.run([str(exe), str(FIX), str(check), str(png)] + DEFAULTS + args, capture_output=True, text=True)
         if r.returncode:
             sys.exit(f"birdie_shot failed: {r.stdout} {r.stderr}")
         hud = Image.open(png).convert("RGBA")

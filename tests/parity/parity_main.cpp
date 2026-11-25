@@ -410,6 +410,9 @@ int run_fixture(const Fixture& fx) {
   birdie::Settings set = birdie::settings_from_json(meta.at("settings"));
   set.show_bird_ra = false;  // Birdie's own addition: the reference never drew it
   set.sty_roll = "a32nx";     // the reference drew the FlyByWire PFD roll scale (internal only, not offered to users)
+  set.sty_speed = "a32nx";    // ... and its speed index, trend arrow, labels and ground speed (see scene.cpp)
+  set.sty_alt = "a32nx";      // ... its altitude labels
+  set.sty_hdg = "a32nx";      // ... its one-digit heading labels
   set.flare_pull = false;     // the reference's ++ = flatter than the profile
   set.show_tdz = false;       // touchdown zone marks: Birdie's own
   const auto runway = runway_from_fixture(meta);

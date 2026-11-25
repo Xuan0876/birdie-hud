@@ -35,8 +35,9 @@ run `Birdie.exe`. The `README.txt` inside covers install, use, upgrade and unins
 
 - Windows 10/11 64-bit, MSFS 2024: full screen, borderless or windowed all work (MSFS 2024 is DX12 only, so its
   full screen still lets the HUD window sit on top). VR is not supported: the HUD is a separate window on top of the sim.
-- **ChasePlane** (Parallel 42), cockpit view. Birdie reads the camera angles, zoom and eye point from ChasePlane, so
-  no calibration is needed. Support for the sim's own camera is planned.
+- **ChasePlane** (Parallel 42) in a cockpit view (the default). Birdie reads the camera angles, zoom and eye point from
+  ChasePlane, so no calibration is needed. Without ChasePlane, use the **MSFS native camera** instead (beta: it uses an
+  interface MSFS still calls beta, so a sim update may break it; switch back to ChasePlane if it does).
 - Any aircraft. No flight director yet.
 
 ## Using it

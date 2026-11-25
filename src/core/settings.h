@@ -31,7 +31,7 @@ struct Settings {
   bool show_glide = true;
   bool show_horizon = true;
   double opacity = 1.0;
-  double ladder_step_deg = 6.0;
+  double ladder_step_deg = 5.0;  // the A320 HUD: every 5 deg (6 until 11/25)
   double ladder_max_deg = 30.0;
   bool show_speed = true;
   bool show_alt = true;
@@ -45,7 +45,7 @@ struct Settings {
   bool show_fpa_num = true;
   bool show_vs_num = true;
   bool show_bird_ra = true;  // radio altitude under the bird (new in Birdie; the reference has no such key)
-  double bird_ra_below_ft = 500.0;  // ... shown only below this radio altitude
+  double bird_ra_below_ft = 2500.0;  // ... shown only below this radio altitude (A320 HUD / PFD: 2500; 500 until 11/25)
   bool xwind_mode = false;  // crosswind mode: shorter speed / altitude tapes moved outward, no VS needle (Birdie's own)
   bool show_flare = true;
   double flare_tol_deg = 0.3;

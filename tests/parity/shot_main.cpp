@@ -53,6 +53,8 @@ int main(int argc, char** argv) {
     std::string anim = "none", preset;
   std::wstring wm;  // wm=zh / wm=en: the test-build watermark (app/i18n.cpp S::Watermark)
     double p = 1.0;
+    std::optional<double> bank;  // bank=<deg>: every row flown at this bank (a look at the roll scale)
+    bool ground = false;         // ground=1: the last row on the ground (a look at the ground-only symbols)
     for (int i = 4; i < argc; ++i) {
       const std::string a = argv[i];
       const auto eq = a.find('=');
@@ -61,6 +63,8 @@ int main(int argc, char** argv) {
       if (k == "anim") anim = v;
       else if (k == "p") p = std::stod(v);
       else if (k == "preset") preset = v;
+      else if (k == "bank") bank = std::stod(v);
+      else if (k == "ground") ground = v == "1";
       else if (k == "wm") wm = v == "zh" ? L"Birdie 测试版" : L"Birdie beta";
       else {
         json jv;
@@ -82,7 +86,7 @@ int main(int argc, char** argv) {
         const auto eq = a.find('=');
         if (eq == std::string::npos) continue;
         const std::string k = a.substr(0, eq);
-        if (k != "anim" && k != "p" && k != "preset" && k != "wm") birdie::set_look_value(set, k, keep[k]);
+        if (k != "anim" && k != "p" && k != "preset" && k != "wm" && k != "bank" && k != "ground") birdie::set_look_value(set, k, keep[k]);
       }
     }
     const auto runway = [&]() -> std::optional<birdie::Runway> {
@@ -101,6 +105,8 @@ int main(int argc, char** argv) {
     birdie::SimState s;
     for (size_t row = 0; row <= ck.row; ++row) {
       s = state_from_row(fx, row);
+      if (bank) s.bank_deg = *bank;
+      if (ground && row == ck.row) s.on_ground = 1;
       model.update(s, static_cast<double>(row) / hz);
     }
     const double now = static_cast<double>(ck.row) / hz;

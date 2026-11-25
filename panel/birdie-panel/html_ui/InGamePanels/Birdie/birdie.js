@@ -16,10 +16,10 @@
   // what the panel shows; settings mirror settings.json, status is Birdie's view of the sim
   var S = {
     online: false, lang: 'zh', focus: null, page: 0,
-    set: { visible: true, glide_deg: 3.0, hud_scale: 1.0, opacity: 1.0, lead_ms: 0, flare_tol_deg: 0.3, ladder_step_deg: 6,
+    set: { visible: true, glide_deg: 3.0, hud_scale: 1.0, opacity: 1.0, lead_ms: 0, flare_tol_deg: 0.3, ladder_step_deg: 5,
            language: '', show_bird: true, show_fpa_num: true, show_vs_num: true, show_flare: true, show_glide: true,
            show_horizon: true, show_hdg: true, show_pitch_minor: true, show_runway: true, show_att: true, show_speed: true,
-           show_alt: true, show_vs: true, show_roll: true, show_gs: true, show_bird_ra: true, bird_ra_below_ft: 500, xwind_mode: false,
+           show_alt: true, show_vs: true, show_roll: true, show_gs: true, show_bird_ra: true, bird_ra_below_ft: 2500, xwind_mode: false,
            ui_style: 'tool', camera_source: 'chaseplane', auto_show: true, auto_show_kt: 40, auto_hide: false, auto_hide_ft: 2500, auto_hide_s: 30,
            // the HUD's look (core/settings.h): layout, element styles, finish, animations, approach marks
            lay_spread: 1, spd_dx: 0, spd_dy: 0, spd_len: 1, spd_size: 1, alt_dx: 0, alt_dy: 0, alt_len: 1, alt_size: 1,
@@ -101,7 +101,7 @@
       igExported: '已导出。', igFailed: '没成功：{err}', igInSim: '你正在用的就是它。',
       igInstall: '安装', igUpdate: '更新', igRemove: '移除', igRemoveAsk: '再点一次移除', igOpen: '打开文件夹',
       igPick: '选择 Community 文件夹…', igAuto: '改回自动查找', igExport: '导出到别处…',
-      wTitle: '开始之前', wCp: '需要 ChasePlane：HUD 跟着它的驾驶舱镜头摆位置。', wWin: '全屏、无边框、窗口化都可以；VR 下看不到 HUD。',
+      wTitle: '开始之前', wCp: 'HUD 跟着驾驶舱镜头摆位置：默认读 ChasePlane；没有的话，在 细调 → 镜头来源 改用 MSFS 原生镜头（Beta）。', wWin: '全屏、无边框、窗口化都可以；VR 下看不到 HUD。',
       wKey: '显示 / 隐藏 HUD：{key}', wTray: '这个窗口随时可以从托盘里的小鸟打开。',
       wIgNone: '要不要顺便装上游戏内面板？装上后，在模拟器的工具栏里也能调这些设置。',
       wIgNoFolder: '没找到 Community 文件夹；以后可以在“细调”里装游戏内面板。',
@@ -195,7 +195,7 @@
       igExported: 'Exported.', igFailed: 'Did not work: {err}', igInSim: 'You are using it right now.',
       igInstall: 'Install', igUpdate: 'Update', igRemove: 'Remove', igRemoveAsk: 'Once more to remove', igOpen: 'Open folder',
       igPick: 'Choose the Community folder…', igAuto: 'Find it by itself', igExport: 'Export elsewhere…',
-      wTitle: 'Before you fly', wCp: 'Needs ChasePlane: the HUD follows its cockpit camera.',
+      wTitle: 'Before you fly', wCp: 'The HUD follows the cockpit camera: ChasePlane by default; without it, use the MSFS native camera (beta) in Fine tuning → Camera source.',
       wWin: 'Full screen, borderless or windowed all work; the HUD does not show in VR.',
       wKey: 'Show / hide the HUD: {key}', wTray: 'Open this window any time from the bird in the tray.',
       wIgNone: 'Install the in-sim panel too? Then the same settings sit in the sim’s toolbar.',
@@ -301,7 +301,7 @@
         '<path class="ic" d="M30 13L8 24"/><path class="ic" d="M6 10v18" opacity=".5"/>'],
       ['roll', 'show_roll', '坡度', 'Bank', '顶上的坡度刻度', 'Bank scale at the top',
         '<path class="ic" d="M4 24a13 13 0 0 1 26 0"/><path class="ic" d="M17 11l-3 5h6z"/>'],
-      ['gs', 'show_gs', '地速与风', 'GS & wind', '地速，风向风速', 'Ground speed and wind',
+      ['gs', 'show_gs', '地速与风', 'GS & wind', '风向风速；地速只在地面上显示', 'Wind; the ground speed on the ground only',
         '<text class="t" x="2" y="15" font-size="11">GS</text><path class="ic" d="M22 28V12M18 16l4-4 4 4"/>']]
   };
   var ALL = [].concat(GLYPHS.path, GLYPHS.world, GLYPHS.inst);
@@ -1424,8 +1424,8 @@
     var html = '';
     ((t && t.regions) || []).forEach(function (r) {
       var full = r.have >= r.tiles && r.tiles > 0, delId = 'trdel-' + r.id;
-      html += '<div class="tr-rg"><span class="nm">' + r.name + '</span><span class="sz num">' +
-        fmt(l.trTiles, { have: r.have, n: r.tiles, size: bytes(r.bytes) }) + '</span><span class="acts">' +
+      html += '<div class="tr-rg"><span class="tx"><span class="nm">' + r.name + '</span><span class="sz num">' +
+        fmt(l.trTiles, { have: r.have, n: r.tiles, size: bytes(r.bytes) }) + '</span></span><span class="acts">' +
         (full ? '<span class="have">' + l.trHave + '</span>' : '<span class="act quiet" role="button" tabindex="0" data-get="' + r.id + '">' + l.trGet + '</span>') +
         (r.have ? '<span class="act plain' + (asking(delId) ? ' ask' : '') + '" role="button" tabindex="0" data-del="' + r.id + '" data-ask="' + delId + '">' +
           (asking(delId) ? l.trDelAsk : l.trDel) + '</span>' : '') + '</span></div>';

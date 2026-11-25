@@ -86,20 +86,20 @@
   <tr><td class="nb">1</td><td class="k">Bird (flight path vector)</td><td>Where the aircraft is really going. Here it sits on the aiming point.</td></tr>
   <tr><td class="nb">2</td><td class="k">Path angle</td><td>Right of the bird: the flight path angle (°), negative when descending.</td></tr>
   <tr><td class="nb">3</td><td class="k">Vertical speed</td><td>Left of the bird, ft/min.</td></tr>
-  <tr><td class="nb">4</td><td class="k">Radio altitude under the bird</td><td>Shown below a set height (500 ft by default).</td></tr>
+  <tr><td class="nb">4</td><td class="k">Radio altitude under the bird</td><td>Shown below a set height (2,500 ft by default, as on the Airbus HUD).</td></tr>
   <tr><td class="nb">5</td><td class="k">Glide reference line</td><td>Dashed line on the ground at the set glide angle (3.0° by default).</td></tr>
   <tr><td class="nb">6</td><td class="k">Runway outline</td><td>The runway you are lined up with, from the sim's own airport data, with its name under it.</td></tr>
   <tr><td class="nb">7</td><td class="k">Touchdown-zone marks</td><td>The aiming point marks and the end of the touchdown zone, after ICAO or FAA (chapter 4).</td></tr>
   <tr><td class="nb">8</td><td class="k">Horizon</td><td>The true horizon.</td></tr>
-  <tr><td class="nb">9</td><td class="k">Heading scale</td><td>Magnetic heading on the horizon; the figures are tens of degrees (7 = 070°).</td></tr>
-  <tr><td class="nb">10</td><td class="k">Pitch scale</td><td>Rungs every set step (6° by default): solid above the horizon, dashed below.</td></tr>
+  <tr><td class="nb">9</td><td class="k">Heading scale</td><td>Magnetic heading on the horizon; the figures are tens of degrees, two digits (07 = 070°).</td></tr>
+  <tr><td class="nb">10</td><td class="k">Pitch scale</td><td>Rungs every set step (5° by default, as on the Airbus HUD): solid above the horizon, dashed below.</td></tr>
   <tr><td class="nb">11</td><td class="k">Short marks</td><td>A short mark every 2.5°.</td></tr>
   <tr><td class="nb">12</td><td class="k">Nose mark</td><td>Where the nose points; read pitch and bank against it.</td></tr>
-  <tr><td class="nb">13</td><td class="k">Bank scale</td><td>Bank scale and pointer at the top; the small trapezoid under the pointer is sideslip.</td></tr>
-  <tr><td class="nb">14</td><td class="k">Speed tape</td><td>Indicated airspeed (kt).</td></tr>
-  <tr><td class="nb">15</td><td class="k">Ground speed &amp; wind</td><td>Ground speed; next to it wind direction / speed and an arrow relative to the nose.</td></tr>
-  <tr><td class="nb">16</td><td class="k">Altitude tape</td><td>Barometric altitude; the readout rolls below the hundreds.</td></tr>
-  <tr><td class="nb">17</td><td class="k">Baro &amp; radio altitude</td><td>Under the altitude tape: pressure setting (hPa) and radio altitude.</td></tr>
+  <tr><td class="nb">13</td><td class="k">Bank scale</td><td>Bank scale (10°, 20°, 30°) and pointer at the top; the small trapezoid under the pointer is sideslip. Past 35° of bank the arc and the 45° and 67° marks join in.</td></tr>
+  <tr><td class="nb">14</td><td class="k">Speed tape</td><td>Indicated airspeed (kt), three-digit marks (120, 080). The hollow triangle points at the speed; the narrow hollow bar above or below it is the speed trend (the speed in 10 s).</td></tr>
+  <tr><td class="nb">15</td><td class="k">Wind &amp; ground speed</td><td>Wind direction / speed and an arrow relative to the nose. As on the real A320 HUD, the ground speed shows on the ground only (taxi, take-off and landing roll), right of the speed tape.</td></tr>
+  <tr><td class="nb">16</td><td class="k">Altitude tape</td><td>Barometric altitude, marks in hundreds of feet, three digits (005 = 500 ft); the readout rolls below the hundreds.</td></tr>
+  <tr><td class="nb">17</td><td class="k">Baro</td><td>Under the altitude tape: pressure setting (hPa). With “Radio altitude under the bird” off, the radio altitude shows here too.</td></tr>
   <tr><td class="nb">18</td><td class="k">Vertical speed needle</td><td>Right of the altitude tape; the figure is hundreds of ft/min.</td></tr>
 </table>
 <p class="small">Each symbol can be switched on or off on the Symbols page of the settings window (chapter 6).</p>
@@ -259,8 +259,8 @@
     <table>
       <tr><td class="k">Display latency</td><td>The HUD is always a little behind the sim picture. These milliseconds extrapolate the attitude forward to hide it. If the HUD lags in turns, add some (0–150 ms, 0 by default).</td></tr>
       <tr><td class="k">Flare cue tolerance</td><td>How wide "+" is, ±0.3° by default.</td></tr>
-      <tr><td class="k">Pitch scale every</td><td>Off, 3°, 5°, 6° (default), 10°.</td></tr>
-      <tr><td class="k">Radio altitude under the bird</td><td>The height below which it shows, 500 ft by default.</td></tr>
+      <tr><td class="k">Pitch scale every</td><td>Off, 3°, 5° (default), 6°, 10°.</td></tr>
+      <tr><td class="k">Radio altitude under the bird</td><td>The height below which it shows, 2,500 ft by default.</td></tr>
       <tr><td class="k">Crosswind mode</td><td>See chapter 4.</td></tr>
     </table>
     <p>Then five pages: <b>Show / hide by itself</b> (chapter 5), <b>Approach</b>, <b>HUD border</b>, <b>Hotkeys</b> (chapter 10) and <b>Camera source</b>.</p>

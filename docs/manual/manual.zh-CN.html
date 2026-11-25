@@ -86,20 +86,20 @@
   <tr><td class="nb">1</td><td class="k">小鸟（飞行路径矢量）</td><td>飞机实际飞去的方向。图中它正压在瞄准点上。</td></tr>
   <tr><td class="nb">2</td><td class="k">航迹角</td><td>小鸟右边，当前的飞行路径角（°），负数表示下降。</td></tr>
   <tr><td class="nb">3</td><td class="k">升降速度</td><td>小鸟左边，ft/min。</td></tr>
-  <tr><td class="nb">4</td><td class="k">小鸟下的 RA</td><td>无线电高度，低于设定高度（默认 500 ft）才出现。</td></tr>
+  <tr><td class="nb">4</td><td class="k">小鸟下的 RA</td><td>无线电高度，低于设定高度（默认 2,500 ft，和空客 HUD 一样）才出现。</td></tr>
   <tr><td class="nb">5</td><td class="k">下滑参考线</td><td>按设定的下滑角（默认 3.0°）画在地面上的虚线。</td></tr>
   <tr><td class="nb">6</td><td class="k">跑道轮廓</td><td>你对准的那条跑道，位置来自模拟器自己的机场数据。下面写着跑道号。</td></tr>
   <tr><td class="nb">7</td><td class="k">接地区标志</td><td>按 ICAO 或 FAA 规则画出瞄准点标志，以及接地区结束的地方（第 4 章）。</td></tr>
   <tr><td class="nb">8</td><td class="k">地平线</td><td>真实的地平线。</td></tr>
-  <tr><td class="nb">9</td><td class="k">航向刻度</td><td>地平线上的磁航向，数字是航向的十位（7 = 070°）。</td></tr>
-  <tr><td class="nb">10</td><td class="k">俯仰刻度</td><td>按设定间隔（默认 6°）的俯仰梯，实线在地平线上，虚线在下。</td></tr>
+  <tr><td class="nb">9</td><td class="k">航向刻度</td><td>地平线上的磁航向，数字是航向的十位，两位数（07 = 070°）。</td></tr>
+  <tr><td class="nb">10</td><td class="k">俯仰刻度</td><td>按设定间隔（默认 5°，和空客 HUD 一样）的俯仰梯，实线在地平线上，虚线在下。</td></tr>
   <tr><td class="nb">11</td><td class="k">短刻度</td><td>每 2.5° 一条的短刻度。</td></tr>
   <tr><td class="nb">12</td><td class="k">机头符号</td><td>机头指向。读俯仰和坡度时以它为准。</td></tr>
-  <tr><td class="nb">13</td><td class="k">坡度刻度</td><td>顶上的坡度刻度和指针，指针下的小梯形是侧滑。</td></tr>
-  <tr><td class="nb">14</td><td class="k">速度带</td><td>指示空速（kt）。</td></tr>
-  <tr><td class="nb">15</td><td class="k">地速与风</td><td>地速；旁边是风向 / 风速和风的箭头（箭头相对机头）。</td></tr>
-  <tr><td class="nb">16</td><td class="k">高度带</td><td>气压高度，读数框里百位以下是滚动的数字。</td></tr>
-  <tr><td class="nb">17</td><td class="k">气压与 RA</td><td>高度带下面：气压设定（hPa）和无线电高度。</td></tr>
+  <tr><td class="nb">13</td><td class="k">坡度刻度</td><td>顶上的坡度刻度（10°、20°、30°）和指针，指针下的小梯形是侧滑。坡度超过 35° 时加上弧线和 45°、67° 刻度。</td></tr>
+  <tr><td class="nb">14</td><td class="k">速度带</td><td>指示空速（kt），三位数刻度（120、080）。空心三角指着当前速度；三角上方或下方的细长空心框是速度趋势（10 秒后的速度）。</td></tr>
+  <tr><td class="nb">15</td><td class="k">风与地速</td><td>风向 / 风速和风的箭头（箭头相对机头）。地速像真 A320 HUD 一样只在地面上显示（滑行、起飞滑跑、落地滑跑），在速度带右边。</td></tr>
+  <tr><td class="nb">16</td><td class="k">高度带</td><td>气压高度，刻度是三位数的百英尺（005 = 500 ft）；读数框里百位以下是滚动的数字。</td></tr>
+  <tr><td class="nb">17</td><td class="k">气压</td><td>高度带下面：气压设定（hPa）。关掉“小鸟下的 RA”时，无线电高度也显示在这里。</td></tr>
   <tr><td class="nb">18</td><td class="k">升降速度指针</td><td>高度带右边，数字是百 ft/min。</td></tr>
 </table>
 <p class="small">每个符号都能在设置窗口的"符号"页里单独开关（第 6 章）。</p>
@@ -259,8 +259,8 @@
     <table>
       <tr><td class="k">显示延迟补偿</td><td>HUD 总比模拟器画面晚一点。这里设的毫秒数会把姿态往前外推，抵消延迟。转弯时 HUD 落后就加一点（0–150 ms，默认 0）。</td></tr>
       <tr><td class="k">拉平提示容差</td><td>"+"的范围，默认 ±0.3°。</td></tr>
-      <tr><td class="k">俯仰刻度间隔</td><td>关、3°、5°、6°（默认）、10°。</td></tr>
-      <tr><td class="k">小鸟下的 RA</td><td>从多高开始在小鸟下显示无线电高度，默认 500 ft。</td></tr>
+      <tr><td class="k">俯仰刻度间隔</td><td>关、3°、5°（默认）、6°、10°。</td></tr>
+      <tr><td class="k">小鸟下的 RA</td><td>从多高开始在小鸟下显示无线电高度，默认 2,500 ft。</td></tr>
       <tr><td class="k">侧风模式</td><td>见第 4 章。</td></tr>
     </table>
     <p>下面五个入口：<b>自动显示 / 隐藏</b>（第 5 章）、<b>进近</b>、<b>HUD 边框</b>、<b>快捷键</b>（第 10 章）、<b>镜头来源</b>。</p>

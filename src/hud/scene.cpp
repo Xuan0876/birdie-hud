@@ -156,7 +156,11 @@ Conformal conformal(const Frame& fr, const Settings& set, double hdg_true, doubl
         const auto l = fr.pix(dir_deg(az - 0.5, 0.0)), r = fr.pix(dir_deg(az + 0.5, 0.0));
         if (c && l && r) {
           const long long hh = pymod(h, 360LL);
-          out.hdg_labels.push_back({*c, angle_deg(*l, *r), hh == 0 ? L"0" : fmt("%lld", pyfloordiv(hh, 10))});
+          // the A320 HUD writes two digits (00, 03, 33: a ground power-on video, 11/25); "a32nx" (parity only)
+          // keeps the reference's single digit
+          std::wstring t = set.sty_hdg == "a32nx" ? (hh == 0 ? L"0" : fmt("%lld", pyfloordiv(hh, 10)))
+                                                  : fmt("%02lld", pyfloordiv(hh, 10));
+          out.hdg_labels.push_back({*c, angle_deg(*l, *r), std::move(t)});
         }
       }
     }
@@ -282,6 +286,10 @@ void speed_tape(Batch& B, const SimState& s, const HudFilters& filt, const Setti
   const double ias = s.ias_kt;
   const double w = 3.0;
   const bool box = set.sty_speed == "box", boeing = set.sty_speed == "boeing";
+  // "airbus" follows the real A320 HUD (Korean Air A320neo approach, a ground power-on video; 11/25): a hollow index,
+  // a narrow hollow trend bar, three-digit labels (040). "a32nx" (parity only) keeps the reference's drawing
+  // (FlyByWire): a filled index, a trend arrow, labels without the leading zero.
+  const bool a320 = set.sty_speed == "airbus";
   const auto [top, bot] = tape_span(set, set.spd_len);
   if (!box) {
     B.line(Polyline{{SPD_LINE_X, top}, {SPD_LINE_X, bot}}, w, true);
@@ -293,7 +301,8 @@ void speed_tape(Batch& B, const SimState& s, const HudFilters& filt, const Setti
       if (top + 4 < y && y < bot - 4) {
         B.line(Polyline{{SPD_LINE_X - 12.0, y}, {SPD_LINE_X, y}}, w, true);
         const bool under_box = boeing && std::abs(y - TAPE_MID) < 32;
-        if (v % 20 == 0 && top + 14 < y && y < bot - 6 && !under_box) B.text(94.0, y + 9.27, fmt("%lld", v), 26, kMid, true);
+        if (v % 20 == 0 && top + 14 < y && y < bot - 6 && !under_box)
+          B.text(94.0, y + 9.27, fmt(a320 ? "%03lld" : "%lld", v), 26, kMid, true);
       }
     }
   }
@@ -301,6 +310,11 @@ void speed_tape(Batch& B, const SimState& s, const HudFilters& filt, const Setti
     const double x0 = box ? 50.0 : 56.0, x1 = box ? 136.0 : 126.0;
     B.line(readout_box(x0, x1, TAPE_MID, 21.0, boeing ? 1 : 0, 12.0), w, true, true);
     B.text(0.5 * (x0 + x1), TAPE_MID + 11.5, fmt("%lld", pyround(std::max(0.0, ias))), 32, kMid, true);
+  } else if (a320) {
+    // the index: a bar across the scale, a hollow triangle pointing at it, a short mark left of the numbers
+    B.line(Polyline{{119.47, TAPE_MID}, {147.3, TAPE_MID}}, w, true);
+    B.line(Polyline{{147.3, TAPE_MID}, {164.0, TAPE_MID - 9.0}, {164.0, TAPE_MID + 9.0}}, w, true, true);
+    B.line(Polyline{{56.0, TAPE_MID}, {66.0, TAPE_MID}}, w, true);
   } else {
     // fixed speed index: bar across the scale + pointer
     B.fill({{119.47, 509.5}, {119.47, 512.58}, {147.3, 512.58}, {160.57, 517.47}, {160.57, 504.62}, {147.3, 509.5}},
@@ -312,9 +326,16 @@ void speed_tape(Batch& B, const SimState& s, const HudFilters& filt, const Setti
     tr = std::max(-lim, std::min(lim, tr));
     const double y1 = TAPE_MID - tr * SPD_PX_PER_KT;
     const int sg = tr > 0 ? 1 : -1;
-    B.line(Polyline{{168.0, TAPE_MID}, {168.0, y1}}, w, true);
-    B.line(Polyline{{161.0, y1 + sg * 10}, {168.0, y1}, {175.0, y1 + sg * 10}}, w, true);
+    if (a320) {  // a narrow hollow bar from the index to the speed in 10 s, beside the scale
+      const double ya = TAPE_MID - sg * 4.0;
+      B.line(Polyline{{144.0, ya}, {152.0, ya}, {152.0, y1}, {144.0, y1}}, w, true, true);
+    } else {
+      B.line(Polyline{{168.0, TAPE_MID}, {168.0, y1}}, w, true);
+      B.line(Polyline{{161.0, y1 + sg * 10}, {168.0, y1}, {175.0, y1 + sg * 10}}, w, true);
+    }
   }
+  // the A320 HUD shows the ground speed only on the ground (taxi, take-off roll, roll-out), right of the tape
+  if (a320 && set.show_gs && s.on_ground != 0) B.text(178.0, TAPE_MID - 100.0, fmt("GS %.0f", s.gs_kt), 24, kStart, true);
   const double mach = s.mach;
   if (mach >= 0.5)
     B.text(box ? 93.0 : 104.0, box ? TAPE_MID + 60.0 : 730.0 - (TAPE_BOT - bot),
@@ -348,7 +369,7 @@ void wind(Batch& B, const SimState& s) {
 // Ground speed and wind, top left (their own group: they move with the speed tape's side, not its offsets).
 void ground_speed(Batch& B, const SimState& s, const Settings& set) {
   if (!set.show_speed || !set.show_gs) return;
-  B.text(68.0, 300.0, fmt("GS %.0f", s.gs_kt), 24, kStart, true);
+  if (set.sty_speed != "airbus") B.text(68.0, 300.0, fmt("GS %.0f", s.gs_kt), 24, kStart, true);  // airbus: speed_tape()
   wind(B, s);
 }
 
@@ -380,7 +401,10 @@ std::optional<Drum> altitude_tape(Batch& B, const SimState& s, const Settings& s
       if (!(top + 4 < y && y < bot - 4) || (by0 - 4 < y && y < by1 + 4)) continue;
       B.line(Polyline{{ALT_LINE_X - 8.56, y}, {ALT_LINE_X, y}}, w, true);
       if (pymod(v, 500LL) == 0 && top + 14 < y && y < bot - 6 && !(by0 - 12 < y && y < by1 + 18)) {
-        const std::wstring txt = v >= 0 ? fmt("%lld", pyfloordiv(v, 100)) : fmt("-%lld", pyfloordiv(std::llabs(v), 100));
+        // the A320 HUD: three digits (005, 010; "a32nx", parity only: the reference's 5, 10)
+        const bool ref = set.sty_alt == "a32nx" || boeing;
+        const std::wstring txt = v >= 0 ? fmt(ref ? "%lld" : "%03lld", pyfloordiv(v, 100))
+                                        : fmt(ref ? "-%lld" : "-%02lld", pyfloordiv(std::llabs(v), 100));
         B.text(1081.0, y + 8.5, txt, 26, kMid, true);
       }
     }
@@ -501,34 +525,23 @@ void roll_scale(Batch& B, const SimState& s, const Settings& set) {
            w, true, true);
     return;
   }
-  if (set.sty_roll == "airbus") {
-    // the A320 HUD (SmartCockpit HUD notes): ticks at 10, 20, 30 and 45 deg on a short arc; the 60 deg ticks only
-    // once the bank passes 40 deg. (The FlyByWire geometry kept as "a32nx" is the PFD's: an arc to 65 deg and the
-    // 67 deg bank-limit marks, which the HUD does not draw.)
-    Polyline arc;
-    for (double a : linspace(-45.0, 45.0, 31)) arc.push_back(at(a, 190.0));
-    B.line(arc, w, true);
-    std::vector<double> ticks{-45.0, -30.0, -20.0, -10.0, 10.0, 20.0, 30.0, 45.0};
-    if (std::abs(s.bank_deg) > 40.0) ticks.insert(ticks.end(), {-60.0, 60.0});
-    for (double a : ticks) {
-      const double len = std::abs(a) == 10.0 || std::abs(a) == 20.0 ? 13.0 : 24.0;
-      B.line(Polyline{at(a, 190.0), at(a, 190.0 + len)}, w, true);
-    }
-    B.line(Polyline{{640, 138.44}, {652.22, 118.24}, {627.79, 118.24}}, w, true, true);
-    B.line(Polyline{rot(640.18, 140), rot(630.18, 161.89), rot(650.18, 161.89)}, w, true, true);
-    B.line(Polyline{rot(629 + slip, 164.85), rot(621 + slip, 181), rot(659 + slip, 181.07), rot(651 + slip, 164.85)}, w,
-           true, true);
-    return;
-  }
+  // "airbus": the A320 HUD as FlyByWire draws it (hudTest branch, AttitudeIndicatorFixed.tsx) and the real one shows
+  // it (Korean Air A320neo video): bare ticks at 10, 20 and 30 deg; the arc and the 45 / 67 deg marks join them only
+  // while the bank is past 35 deg. Until 11/25 Birdie drew an arc all the time: the transcription had missed when FBW
+  // shows that group. "a32nx" (parity only) keeps the reference's drawing: everything, always.
+  const bool outer = set.sty_roll != "airbus" || std::abs(s.bank_deg) > 35.0;
   const double a0 = rad(155.16), a1 = rad(24.84);
   Polyline arc;
   for (double a : linspace(a0, a1, 40)) arc.push_back({cx + 190 * std::cos(a), cy - 190 * std::sin(a)});
-  B.line(arc, w, true);
+  if (outer) B.line(arc, w, true);
   static constexpr double kTicks[10][4] = {
       {735.2, 164, 749.3, 139.5}, {705.1, 150, 712.8, 129.3}, {673, 141.5, 677, 119.3}, {544.8, 164, 530.7, 139.5},
       {574.9, 150, 567.2, 129.3}, {607, 141.5, 603, 119.3},   {774.5, 194.5, 794.5, 174.5},
       {505.5, 194.5, 485.5, 174.5}, {813, 249, 832, 240},     {467, 249, 448, 240}};
-  for (const auto& t : kTicks) B.line(Polyline{{t[0], t[1]}, {t[2], t[3]}}, w, true);
+  for (int i = 0; i < (outer ? 10 : 6); ++i) {  // the first six: 10, 20, 30 deg; then 45 and 67 deg
+    const auto& t = kTicks[i];
+    B.line(Polyline{{t[0], t[1]}, {t[2], t[3]}}, w, true);
+  }
   B.line(Polyline{{640, 138.44}, {652.22, 118.24}, {627.79, 118.24}}, w, true, true);
   B.line(Polyline{rot(640.18, 140), rot(630.18, 161.89), rot(650.18, 161.89)}, w, true, true);
   B.line(Polyline{rot(629 + slip, 164.85), rot(621 + slip, 181), rot(659 + slip, 181.07), rot(651 + slip, 164.85)}, w,
@@ -595,7 +608,9 @@ void heading_fixed(Batch& B, const SimState& s, const Settings& set) {
 void misc(Batch& B, const SimState& s, const Settings& set) {
   const double ra = s.radio_alt_ft;
   const double lift = TAPE_BOT - tape_span(set, set.alt_len).bot;  // crosswind mode: follows the shorter tape up
-  if (set.show_alt && 0 <= ra && ra <= 2500 && s.on_ground == 0) {
+  // under the bird already (as on the A320 HUD and FBW's): not again under the tape
+  const bool on_bird = set.show_bird && set.show_bird_ra && ra <= set.bird_ra_below_ft;
+  if (set.show_alt && 0 <= ra && ra <= 2500 && s.on_ground == 0 && !on_bird) {
     if (set.sty_alt == "box") B.text(1100.0, TAPE_MID + 114.0, fmt("RA %.0f", ra), 26, kMid, true);
     else B.text(1095.0, 772.0 - lift, fmt("RA %.0f", ra), 26, kMid, true);  // under the tape, clear of the runway
   }

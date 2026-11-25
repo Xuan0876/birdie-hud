@@ -25,7 +25,7 @@ Birdie（小鸟）是微软模拟飞行 2024 的平视显示器（HUD）覆盖�
 ## 需要
 
 - Windows 10/11 64 位；MSFS 2024 全屏、无边框、窗口化都可以（MSFS 2024 只有 DX12，全屏下 HUD 照样叠得上去）。不支持 VR：HUD 是盖在模拟器上面的另一个窗口。
-- **ChasePlane**（Parallel 42），驾驶舱视角。Birdie 从 ChasePlane 读镜头角度、缩放和眼点，不需要标定；模拟器原生镜头以后支持。
+- **ChasePlane**（Parallel 42），驾驶舱视角（默认）。Birdie 从 ChasePlane 读镜头角度、缩放和眼点，不需要标定。没有 ChasePlane 的话，可以改用 **MSFS 原生镜头**（Beta：用的是 MSFS 还在测试的接口，模拟器更新后可能失效，那时切回 ChasePlane 就行）。
 - 机型不限。暂时没有飞行指引（FD）。
 
 ## 使用
