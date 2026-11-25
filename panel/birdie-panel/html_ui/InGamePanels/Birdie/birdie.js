@@ -29,6 +29,7 @@
            sty_roll: 'airbus', show_accel: false, hud_font: 'bahnschrift', hud_color: '#00ff00', hud_outline: 1, hud_glow: 0,
            anim_in: 'fade', anim_out: 'fade', anim_time: 1, hud_preset: 'airbus',
            show_tdz: true, tdz_rule: 'icao', tdz_style: 'aim', flare_ra_ft: 50, flare_hi_ft: 40, flare_lo_ft: 10, flare_end_deg: -0.5,
+           tint_on: false, tint_color: 'hud', tint_alpha: 0.1, tint_edge: 'feather',
            terrain_on: false, terrain_look: 'fill', terrain_strength: 1, terrain_stream: true, terrain_res: 30, terrain_cache_gb: 2,
            terrain_notes: true,
            hotkeys: { toggle: 'Ctrl+Alt+Insert', xwind: 'Ctrl+Alt+Shift+Insert', glide_up: 'Ctrl+Alt+PgUp', glide_down: 'Ctrl+Alt+PgDn',
@@ -57,6 +58,9 @@
       s_needle: '指针', s_digital: '数字', s_horizon: '地平线上', s_arc: '底部罗盘', s_tape: '顶部航向带', s_bottom: '底部',
       accel: '加速度尖括号（波音）', color: '颜色', font: '字体', outline: '描边', glow: '光晕',
       c_green: '绿', c_soft: '柔绿', c_lime: '黄绿', c_white: '白', c_cyan: '青', c_amber: '琥珀', c_magenta: '品红', c_custom: '自定',
+      tint: '背景色', tintOn: '在 HUD 范围里铺一层颜色', tintColor: '颜色', tintHue: '色相', tintAlpha: '浓淡', tintEdge: '边缘',
+      tc_hud: '跟随 HUD', tc_glass: '深绿玻璃', tc_smoke: '暗片', tc_amber: '琥珀', tc_blue: '蓝',
+      te_hard: '硬边', te_feather: '羽化', te_wide: '宽羽化', te_line: '细边线',
       g_all: '整体', g_spd: '速度带', g_alt: '高度带', g_vs: '升降速度', g_wind: '地速与风', g_roll: '坡度刻度', g_misc: '其他',
       l_spread: '左右张开', l_text: '文字大小', l_line: '线宽', l_dx: '左右', l_dy: '上下', l_len: '长度', l_sz: '大小',
       l_bird: '小鸟大小', l_att: '机头符号', l_ladder: '俯仰刻度宽', l_hdg: '航向上下',
@@ -145,6 +149,9 @@
       s_needle: 'Needle', s_digital: 'Number', s_horizon: 'On the horizon', s_arc: 'Compass arc', s_tape: 'Top tape', s_bottom: 'Bottom',
       accel: 'Acceleration caret (Boeing)', color: 'Colour', font: 'Font', outline: 'Outline', glow: 'Glow',
       c_green: 'Green', c_soft: 'Soft green', c_lime: 'Lime', c_white: 'White', c_cyan: 'Cyan', c_amber: 'Amber', c_magenta: 'Magenta', c_custom: 'Own',
+      tint: 'Background tint', tintOn: 'A colour behind the HUD', tintColor: 'Colour', tintHue: 'Hue', tintAlpha: 'Strength', tintEdge: 'Edge',
+      tc_hud: 'HUD colour', tc_glass: 'Green glass', tc_smoke: 'Smoked', tc_amber: 'Amber', tc_blue: 'Blue',
+      te_hard: 'Hard', te_feather: 'Soft', te_wide: 'Wide soft', te_line: 'Edge line',
       g_all: 'Overall', g_spd: 'Speed tape', g_alt: 'Altitude tape', g_vs: 'Vertical speed', g_wind: 'Ground speed & wind', g_roll: 'Bank scale', g_misc: 'Other',
       l_spread: 'Spread', l_text: 'Text', l_line: 'Lines', l_dx: 'Across', l_dy: 'Up/down', l_len: 'Length', l_sz: 'Size',
       l_bird: 'Bird', l_att: 'Nose mark', l_ladder: 'Rungs', l_hdg: 'Heading',
@@ -748,6 +755,16 @@
     hud.setAttribute('opacity', Math.max(PREVIEW_MIN_OPACITY, s.opacity).toFixed(2));
     hud.style.color = !s.hud_color || s.hud_color === '#00ff00' ? '#57f27f' : s.hud_color;  // the preview's green is softer
     cls(hud, 'spot', !!S.focus);
+    var tint = $('pvtint');
+    if (tint) {  // the background tint over the preview's field, as faint as on the HUD
+      var tc = s.tint_color === 'hud' || !s.tint_color ? hud.style.color : s.tint_color;
+      tint.setAttribute('fill', tc);
+      tint.setAttribute('fill-opacity', s.tint_on ? (s.tint_alpha * Math.max(PREVIEW_MIN_OPACITY, s.opacity)).toFixed(3) : '0');
+      tint.setAttribute('opacity', s.tint_on ? '1' : '0');
+      tint.setAttribute('stroke', s.tint_edge === 'line' ? tc : 'none');
+      tint.setAttribute('stroke-opacity', Math.min(1, 3.5 * s.tint_alpha).toFixed(2));
+      tint.setAttribute('stroke-width', '4');
+    }
     each(hud.querySelectorAll('.el'), function (el) {
       var k = el.getAttribute('data-el'), g = glyph(k);
       cls(el, 'off', g ? !s[g[1]] : false);
@@ -759,6 +776,7 @@
   }
   function tweenScale(target) {  // the instruments breathe to their new size
     var fixed = $('fixed');
+    var tint = $('pvtint'); if (tint) tint.setAttribute('transform', fixedTransform(target));  // the field scales with the HUD (no tween)
     if (!fixed || Math.abs(target - shownScale) < 1e-4) { if (fixed) fixed.setAttribute('transform', fixedTransform(target)); shownScale = target; return; }
     var from = shownScale, t0 = Date.now(), dur = 500;
     if (scaleAnim) clearInterval(scaleAnim);
@@ -902,6 +920,9 @@
     size:   { key: 'hud_scale', min: 60, max: 115, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
     glide:  { key: 'glide_deg', min: 2.0, max: 5.9, step: 0.1, get: function (v) { return v; }, put: function (x) { return Math.round(x * 10) / 10; }, out: function (x) { return x.toFixed(1) + '°'; } },
     outline: pct('hud_outline', 0, 1.5), glow: pct('hud_glow', 0, 1),
+    tintAlpha: { key: 'tint_alpha', min: 2, max: 50, step: 1, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } },
+    // the own colour: a hue at full saturation (the swatches give the dark ones)
+    tintHue: { key: 'tint_color', min: 0, max: 359, step: 1, get: function (v) { return hueOf(tintRgb(v)); }, put: hueHex, out: function (x) { return x + '°'; } },
     trStrength: { key: 'terrain_strength', min: 20, max: 200, step: 5, get: function (v) { return Math.round(v * 100); }, put: function (x) { return x / 100; }, out: function (x) { return x + '%'; } }
   };
   function pct(key, min, max) {
@@ -1071,6 +1092,7 @@
   var ANIMS = ['none', 'fade', 'iris', 'boot', 'scan', 'assemble'];
   var COLORS = [['c_green', '#00ff00'], ['c_soft', '#3cff74'], ['c_lime', '#b6ff3c'], ['c_white', '#ffffff'], ['c_cyan', '#4de8ff'],
                 ['c_amber', '#ffb000'], ['c_magenta', '#ff6ad5']];
+  var TINTS = [['tc_hud', 'hud'], ['tc_glass', '#0b2a18'], ['tc_smoke', '#000000'], ['tc_amber', '#ffb040'], ['tc_blue', '#4aa8ff']];
   var FONTS = { bahnschrift: 'Bahnschrift', consolas: 'Consolas', segoe: 'Segoe UI', narrow: 'Arial Narrow' };
   var PICKS = {
     lead: { key: 'lead_ms', vals: [0, 20, 40, 60, 80, 100, 150], label: function (v) { return String(v); }, unit: ' ms' },
@@ -1091,6 +1113,8 @@
     hdgS: { key: 'sty_hdg', vals: ['horizon', 'arc', 'tape'], label: word('s_'), unit: '', str: true },
     rollS: { key: 'sty_roll', vals: ['airbus', 'boeing', 'bottom'], label: word('s_'), unit: '', str: true },
     color: { key: 'hud_color', vals: COLORS.map(function (c) { return c[1]; }), label: swatch, unit: '', str: true },
+    tintColor: { key: 'tint_color', vals: TINTS.map(function (c) { return c[1]; }), label: tintSwatch, unit: '', str: true },
+    tintEdge: { key: 'tint_edge', vals: ['hard', 'feather', 'wide', 'line'], label: word('te_'), unit: '', str: true },
     font: { key: 'hud_font', vals: ['bahnschrift', 'consolas', 'segoe', 'narrow'], label: function (v) { return FONTS[v]; }, unit: '', str: true },
     animIn: { key: 'anim_in', vals: ANIMS, label: word('a_'), unit: '', str: true },
     animOut: { key: 'anim_out', vals: ANIMS, label: word('a_'), unit: '', str: true },
@@ -1115,12 +1139,32 @@
     COLORS.forEach(function (c) { if (c[1] === v) name = L()[c[0]]; });
     return '<span class="sw" style="background:' + v + '"></span>' + name;
   }
+  function tintRgb(v) { return v === 'hud' || !v ? (S.set.hud_color || '#00ff00') : v; }
+  function tintSwatch(v) {
+    var name = L().c_custom;
+    TINTS.forEach(function (c) { if (c[1] === v) name = L()[c[0]]; });
+    return '<span class="sw" style="background:' + tintRgb(v) + '"></span>' + name;
+  }
+  function hueOf(hex) {
+    var r = parseInt(hex.substr(1, 2), 16) / 255, g = parseInt(hex.substr(3, 2), 16) / 255, b = parseInt(hex.substr(5, 2), 16) / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0;
+    if (!d) return 0;
+    if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+    return Math.round((h * 60 + 360) % 360);
+  }
+  function hueHex(h) {  // full saturation, middle lightness
+    var c = function (n) {
+      var k = (n + h / 30) % 12, v = 0.5 - 0.5 * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+      return ('0' + Math.round(v * 255).toString(16)).slice(-2);
+    };
+    return '#' + c(0) + c(8) + c(4);
+  }
   function pickVal(c, el) { var v = el.getAttribute('data-v'); return c.str ? v : parseFloat(v); }
   function picks() {
     Object.keys(PICKS).forEach(function (id) {
       var c = PICKS[id], cur = S.set[c.key], vals = c.vals.slice();
       if (vals.indexOf(cur) < 0 && typeof cur === 'number') { vals.push(cur); vals.sort(function (a, b) { return a - b; }); }  // e.g. set by hotkey
-      if (id === 'color' && vals.indexOf(cur) < 0 && cur) vals.push(cur);  // a colour typed into settings.json
+      if ((id === 'color' || id === 'tintColor') && vals.indexOf(cur) < 0 && cur) vals.push(cur);  // typed into settings.json / from the hue
       var box = $('p-' + id);
       box.innerHTML = vals.map(function (v, i) {
         return '<span class="pick' + (v === cur ? ' sel' : '') + ((id === 'ladder' && !v) || c.str || c.word ? ' word' : '') + '" role="button" tabindex="0" data-v="' + v + '">' +
@@ -1132,7 +1176,8 @@
           if (c.act) { act(c.act, pickVal(c, b)); S.set[c.key] = pickVal(c, b); touched[c.key] = 0; }
           else set(c.key, pickVal(c, b));
           each(ps, function (o) { cls(o, 'sel', o === b); });
-          if (id === 'ladder' || c.key.indexOf('sty_') === 0 || c.key === 'hud_color') render();
+          if (id === 'ladder' || c.key.indexOf('sty_') === 0 || c.key === 'hud_color' || c.key.indexOf('tint_') === 0) render();
+          if (c.key === 'tint_color' || c.key === 'hud_color') { paintScale('tintHue'); picks(); }
           if (id === 'look') { applyLook(); words(); return; }
           summary(); fact();
         });
@@ -1160,6 +1205,7 @@
     $('n-sym').textContent = fmt(l.symCount, { n: n, all: ALL.length });
     $('n-terrain').textContent = s.terrain_on ? (l['tl_' + s.terrain_look] || '') : l.off;
     cls($('tr-more'), 'idle', !s.terrain_on);
+    cls($('tint-more'), 'idle', !s.tint_on);
   }
 
   // ---------------------------------------------------------------- the voice
@@ -1256,7 +1302,7 @@
     cls($('auto'), 'sel', !!st.autostart);
     $('auto').setAttribute('aria-pressed', st.autostart ? 'true' : 'false');
     each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'], ['tdz', 'show_tdz'],
-          ['tr-on', 'terrain_on'], ['tr-stream', 'terrain_stream'], ['tr-notes', 'terrain_notes']], function (t) {
+          ['tr-on', 'terrain_on'], ['tint-on', 'tint_on'], ['tr-stream', 'terrain_stream'], ['tr-notes', 'terrain_notes']], function (t) {
       cls($(t[0]), 'sel', !!s[t[1]]);
       $(t[0]).setAttribute('aria-pressed', s[t[1]] ? 'true' : 'false');
     });
@@ -1442,6 +1488,7 @@
       't-animnav': 'animNav', 't-animnav2': 'animNav', 't-elements': 'elements', 't-finish': 'finish', 't-fpv': 'fpv',
       't-spdS': 'spdS', 't-altS': 'altS', 't-vsS': 'vsS', 't-ladderS': 'ladderS', 't-hdgS': 'hdgS', 't-rollS': 'rollS',
       't-accel': 'accel', 't-color': 'color', 't-font': 'font', 't-outline': 'outline', 't-glow': 'glow',
+      't-tint': 'tint', 't-tintOn': 'tintOn', 't-tintColor': 'tintColor', 't-tintEdge': 'tintEdge', 't-tintHue': 'tintHue', 't-tintAlpha': 'tintAlpha',
       'lay-reset': 'layReset', 'lay-desc': 'layDesc', 't-animIn': 'animIn', 't-animOut': 'animOut', 't-animTime': 'animTime',
       'try-in': 'tryIn', 'try-out': 'tryOut', 'anim-desc': 'animDesc', 't-appr': 'appr', 't-appr2': 'appr', 't-tdz': 'tdz',
       't-tdzRule': 'tdzRule', 't-tdzStyle': 'tdzStyle', 't-flareG': 'flareG', 't-flareRa': 'flareRa', 't-flareHi': 'flareHi',
@@ -1470,6 +1517,7 @@
     press($('ah'), function () { set('auto_hide', !S.set.auto_hide); paint(); });
     press($('accel'), function () { set('show_accel', !S.set.show_accel); paint(); });
     press($('tdz'), function () { set('show_tdz', !S.set.show_tdz); paint(); });
+    press($('tint-on'), function () { set('tint_on', !S.set.tint_on); paint(); });
     press($('tr-on'), function () { set('terrain_on', !S.set.terrain_on); paint(); });
     press($('tr-stream'), function () { set('terrain_stream', !S.set.terrain_stream); paint(); });
     press($('tr-notes'), function () { set('terrain_notes', !S.set.terrain_notes); paint(); });

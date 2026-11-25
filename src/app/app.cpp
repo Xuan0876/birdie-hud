@@ -587,6 +587,7 @@ Settings only_symbol(const Settings& s, const std::string& key) {
   Settings f = s;
   for (const auto& sym : kSymbols) f.*sym.field = key == sym.key;
   f.ladder_step_deg = 0;
+  f.tint_on = false;  // drawn once, by the dimmed full pass
   if (key == "show_pitch_minor") f.ladder_step_deg = s.ladder_step_deg;  // the panel's "pitch marks" = the ladder too
   if (key == "show_fpa_num" || key == "show_vs_num" || key == "show_bird_ra") f.show_bird = true;
   return f;

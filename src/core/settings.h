@@ -123,6 +123,14 @@ struct Settings {
   double terrain_cache_gb = 2.0;
   std::string terrain_dir;
   bool terrain_notes = true;
+  // Background tint (the panel's HUD look page): a see-through colour inside the HUD's area (the combiner, or the
+  // user's HUD border), under the terrain and every symbol. tint_color "hud" = the HUD colour, else "#rrggbb";
+  // tint_alpha is scaled by opacity (the HUD brightness). tint_edge: "hard", "feather" (fades over the last degree, as
+  // the HUD border does), "wide" (over 3 degrees), "line" (hard, with a thin edge line).
+  bool tint_on = false;
+  std::string tint_color = "hud";
+  double tint_alpha = 0.10;
+  std::string tint_edge = "feather";
 
   // Birdie's settings window (tray: Open panel): top-left in physical screen px, kNoPos = not placed yet.
   static constexpr int kNoPos = -100000;
@@ -170,6 +178,10 @@ void reset_layout(Settings& s);
 bool set_look_value(Settings& s, const std::string& key, const nlohmann::json& v);
 // Every look key with its value, for the panel.
 void look_to_json(const Settings& s, nlohmann::json& out);
+
+// The background tint's colour ("hud" or "#rrggbb") and edge ("hard" "feather" "wide" "line").
+bool tint_color_ok(const std::string& c);
+bool tint_edge_ok(const std::string& e);
 
 // Missing keys keep their defaults; unknown keys are ignored; wrong types are skipped.
 Settings settings_from_json(const nlohmann::json& j);

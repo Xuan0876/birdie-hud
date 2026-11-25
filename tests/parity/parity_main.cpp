@@ -348,6 +348,62 @@ void check_border(const Fixture& fx, const birdie::test::Check& ck, const birdie
     birdie::test::save_png_rgba(out / (std::string(idx) + "_edit.png"), to_rgba(e, bw, bh, 110));
 }
 
+// ---- background tint (settings tint_*): the colour fills the field (combiner, cut by the border), nothing outside;
+// with a soft edge it fades towards the combiner's edge. Checked where no symbol is drawn.
+void check_tint(const birdie::Model& model, const birdie::SimState& s, birdie::Settings set,
+                const birdie::Runway* runway, double W, double H, double ox, double oy, int bw, int bh, double now,
+                Tally& t) {
+  const int before = t.failures;
+  const std::vector<birdie::Vec2> border{{-16, 8}, {16, 8.5}, {15, -6}, {3, -9.5}, {-15, -7}};
+  const auto plain = birdie::hud::build_scene(model, s, W, H, ox, oy, set, runway, L"", now, &border);
+  const auto open = birdie::hud::build_scene(model, s, W, H, ox, oy, set, runway, L"", now);  // no border
+  set.tint_on = true, set.tint_color = "#204080", set.tint_alpha = 0.2, set.tint_edge = "hard";
+  const auto hard = birdie::hud::build_scene(model, s, W, H, ox, oy, set, runway, L"", now, &border);
+  set.tint_edge = "feather";
+  const auto soft = birdie::hud::build_scene(model, s, W, H, ox, oy, set, runway, L"", now);
+  if (!plain.clip || !hard.border || !hard.tint || !soft.tint) {
+    t.fail("tint: no field / border / tint in the scene");
+    return;
+  }
+  std::vector<std::uint8_t> a, o, b, c;
+  if (!renderer().render_to_memory(birdie::hud::commands(plain, set.opacity), bw, bh, a) ||
+      !renderer().render_to_memory(birdie::hud::commands(open, set.opacity), bw, bh, o) ||
+      !renderer().render_to_memory(birdie::hud::commands(hard, set.opacity), bw, bh, b) ||
+      !renderer().render_to_memory(birdie::hud::commands(soft, set.opacity), bw, bh, c)) {
+    t.fail("tint: render failed");
+    return;
+  }
+  const auto& field = *plain.clip;
+  const auto& poly = hard.border->first;
+  const double feather = hard.border->second, soft_px = soft.tint->feather_px;
+  const int want_a = static_cast<int>(std::lround(255 * 0.2 * set.opacity));
+  const int want_b = static_cast<int>(std::lround(0x80 * 0.2 * set.opacity));
+  size_t outside = 0, deep = 0, deep_bad = 0, rim = 0, rim_bad = 0;
+  for (int y = 0; y < bh; ++y) {
+    for (int x = 0; x < bw; ++x) {
+      const size_t i = (static_cast<size_t>(y) * bw + x) * 4;
+      const double cx = x + 0.5, cy = y + 0.5;
+      const bool in_f = inside_px(field, cx, cy), in_b = inside_px(poly, cx, cy);
+      if ((!in_f && edge_px(field, cx, cy) > 1.0) || (!in_b && edge_px(poly, cx, cy) > 1.0))
+        if (b[i + 3] > 0) ++outside;
+      if (in_f && o[i + 3] == 0 && edge_px(field, cx, cy) < 0.15 * soft_px) {  // no border, no symbol here
+        ++rim;
+        if (c[i + 3] > want_a / 2) ++rim_bad;
+      }
+      if (a[i + 3] != 0) continue;  // a symbol (or its fade) is here
+      if (in_f && in_b && edge_px(field, cx, cy) > 2 && edge_px(poly, cx, cy) > 1.6 * feather) {
+        ++deep;
+        if (std::abs(b[i + 3] - want_a) > 2 || std::abs(b[i] - want_b) > 2) ++deep_bad;
+      }
+    }
+  }
+  if (outside) t.fail("tint: %zu pixels drawn outside the field", outside);
+  if (!deep || deep_bad > deep / 1000) t.fail("tint: %zu of %zu pixels inside not the tint colour", deep_bad, deep);
+  if (!rim || rim_bad) t.fail("tint: %zu of %zu pixels at the edge not faded (feather %.1f px)", rim_bad, rim, soft_px);
+  std::printf("        tint     %s (%zu px tinted, %zu px faded at the edge)\n", t.failures == before ? "ok" : "FAILED",
+              deep, rim);
+}
+
 int run_fixture(const Fixture& fx) {
   Tally t;
   const json& meta = fx.meta;
@@ -404,6 +460,8 @@ int run_fixture(const Fixture& fx) {
       compare_image(fx, ck, cl, meta.at("box_px")[2].get<int>(), meta.at("box_px")[3].get<int>(), t);
       check_border(fx, ck, model, s, set, runway ? &*runway : nullptr, W, H, ox, oy, meta.at("box_px")[2].get<int>(),
                    meta.at("box_px")[3].get<int>(), now, t);
+      check_tint(model, s, set, runway ? &*runway : nullptr, W, H, ox, oy, meta.at("box_px")[2].get<int>(),
+                 meta.at("box_px")[3].get<int>(), now, t);
       ++t.checks;
       ++next;
     }

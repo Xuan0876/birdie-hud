@@ -27,6 +27,7 @@ const BoolKey kBools[] = {
     {"show_tdz", &Settings::show_tdz},
     {"terrain_on", &Settings::terrain_on},    {"terrain_stream", &Settings::terrain_stream},
     {"terrain_notes", &Settings::terrain_notes},
+    {"tint_on", &Settings::tint_on},
 };
 
 struct NumKey {
@@ -46,6 +47,7 @@ const NumKey kNums[] = {
     {"auto_hide_s", &Settings::auto_hide_s, 0.0, 600.0, 1.0},
     {"terrain_strength", &Settings::terrain_strength, 0.2, 2.0, 0.05},
     {"terrain_cache_gb", &Settings::terrain_cache_gb, 0.5, 64.0, 0.5},
+    {"tint_alpha", &Settings::tint_alpha, 0.0, 0.5, 0.01},
 };
 
 double snap(double v, double lo, double hi, double step) {
@@ -67,6 +69,8 @@ nlohmann::json panel_settings(const Settings& s) {
   j["hotkeys"] = s.hotkeys;
   j["terrain_look"] = s.terrain_look;
   j["terrain_res"] = s.terrain_res;
+  j["tint_color"] = s.tint_color;
+  j["tint_edge"] = s.tint_edge;
   look_to_json(s, j);
   return j;
 }
@@ -126,6 +130,13 @@ bool apply_panel_set(Settings& s, const std::string& key, const nlohmann::json& 
   if (key == "terrain_res") {
     if (!v.is_number() || (v.get<double>() != 30 && v.get<double>() != 90)) return false;
     s.terrain_res = static_cast<int>(v.get<double>());
+    return true;
+  }
+  if (key == "tint_color" || key == "tint_edge") {
+    if (!v.is_string()) return false;
+    const auto l = v.get<std::string>();
+    if (key == "tint_color" ? !tint_color_ok(l) : !tint_edge_ok(l)) return false;
+    (key == "tint_color" ? s.tint_color : s.tint_edge) = l;
     return true;
   }
   if (key == "camera_source") {

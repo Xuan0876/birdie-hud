@@ -107,6 +107,16 @@ struct Scene {
   std::optional<Batch> terrain_lines;  // skyline / ridges
   // The terrain's own border (screen px) + feather; none = the terrain is drawn inside the HUD's clips instead.
   std::optional<std::pair<Polyline, double>> terrain_border;
+  // Background tint (settings tint_*): a see-through colour over the HUD's whole field (inside clip and border),
+  // under the terrain and the symbols. feather_px > 0 = it fades over that width inside the field's edge; line = a
+  // thin edge line in the same colour around the field.
+  struct Tint {
+    double rgb[3] = {0.0, 1.0, 0.0};
+    double alpha = 0.0;
+    double feather_deg = 0.0, feather_px = 0.0;
+    bool line = false;
+  };
+  std::optional<Tint> tint;
 };
 
 struct CommandList {

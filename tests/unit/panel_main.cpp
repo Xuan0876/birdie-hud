@@ -151,9 +151,26 @@ void test_settings() {
     const auto b = birdie::settings_from_json(bad);
     CHECK(b.terrain_look == "fill" && b.terrain_res == 30 && b.terrain_cache_gb == 64 && b.terrain_strength == 0.2);
   }
+  // background tint: off by default, colour "hud" or #rrggbb, edge from its list, strength 0..0.5
+  {
+    birdie::Settings t;
+    CHECK(!t.tint_on && t.tint_color == "hud" && t.tint_alpha == 0.10 && t.tint_edge == "feather");
+    CHECK(apply_panel_set(t, "tint_on", true) && t.tint_on);
+    CHECK(apply_panel_set(t, "tint_color", "#0b2a18") && t.tint_color == "#0b2a18");
+    CHECK(!apply_panel_set(t, "tint_color", "green") && !apply_panel_set(t, "tint_color", "#12345") && t.tint_color == "#0b2a18");
+    CHECK(apply_panel_set(t, "tint_color", "hud") && t.tint_color == "hud");
+    CHECK(apply_panel_set(t, "tint_edge", "line") && t.tint_edge == "line" && !apply_panel_set(t, "tint_edge", "soft"));
+    CHECK(apply_panel_set(t, "tint_alpha", 0.9) && t.tint_alpha == 0.5);
+    CHECK(apply_panel_set(t, "tint_alpha", 0.123) && t.tint_alpha == 0.12);
+    CHECK(t.hud_preset == "airbus");  // not part of the look presets
+    const auto r = birdie::settings_from_json(birdie::settings_to_json(t));
+    CHECK(r.tint_on && r.tint_color == "hud" && r.tint_alpha == 0.12 && r.tint_edge == "line");
+    const auto b = birdie::settings_from_json({{"tint_color", "red"}, {"tint_edge", 3}, {"tint_alpha", -1}});
+    CHECK(b.tint_color == "hud" && b.tint_edge == "feather" && b.tint_alpha == 0);
+  }
   const auto j = birdie::app::panel_settings(s);
   CHECK(j["terrain_look"] == "ridges" && j["terrain_res"] == 90 && j["terrain_on"] == true && !j.contains("terrain_dir"));
-  CHECK(j.size() == 87 && j["camera_source"] == "chaseplane" && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
+  CHECK(j.size() == 91 && j["tint_color"] == "hud" && j["tint_edge"] == "feather" && j["camera_source"] == "chaseplane" && j["hotkeys"]["toggle"] == "Ctrl+Alt+Insert" && j["sty_fpv"] == "airbus" && j["tdz_rule"] == "icao" && j["show_tdz"] == true && j["ui_style"] == "dusk" && j["auto_hide"] == true && j["auto_show_kt"] == 60 && j["xwind_mode"] == false && j["show_bird_ra"] == true && j["bird_ra_below_ft"] == 1000 && j["show_runway"] == false && j["lead_ms"] == 300 && j["language"] == "en");
   CHECK(!j.contains("box_w") && !j.contains("ra_by_aircraft"));
 }
 

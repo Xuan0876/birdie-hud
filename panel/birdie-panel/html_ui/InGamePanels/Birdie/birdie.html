@@ -52,6 +52,7 @@
           <div class="pvwrap" id="pvwrap"><div class="pv" id="pv">
             <div class="sun"></div>
             <svg viewBox="20 60 1240 830" preserveAspectRatio="xMidYMid meet">
+              <rect class="pvtint" id="pvtint" x="0" y="0" width="1280" height="1024" opacity="0"/>
               <g class="lights" id="lights"></g>
               <g class="hud" id="hud"></g>
             </svg>
@@ -182,6 +183,15 @@
                   <div class="row"><div class="k" id="t-font"></div><div class="picks" id="p-font"></div></div>
                   <div class="scale" id="s-outline"></div>
                   <div class="scale" id="s-glow"></div>
+                  <!-- background tint: a see-through colour over the HUD's whole field -->
+                  <div class="gh"><span id="t-tint"></span><i></i></div>
+                  <div class="toggle" id="tint-on" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-tintOn"></span></div>
+                  <div class="more" id="tint-more">
+                    <div class="row"><div class="k" id="t-tintColor"></div><div class="picks swatches" id="p-tintColor"></div></div>
+                    <div class="scale" id="s-tintHue"></div>
+                    <div class="scale" id="s-tintAlpha"></div>
+                    <div class="row"><div class="k" id="t-tintEdge"></div><div class="picks" id="p-tintEdge"></div></div>
+                  </div>
                 </div>
               </div>
 

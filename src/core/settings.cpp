@@ -120,6 +120,10 @@ void each_field(Settings& s, F&& f) {
   f("terrain_cache_gb", s.terrain_cache_gb);
   f("terrain_dir", s.terrain_dir);
   f("terrain_notes", s.terrain_notes);
+  f("tint_on", s.tint_on);
+  f("tint_color", s.tint_color);
+  f("tint_alpha", s.tint_alpha);
+  f("tint_edge", s.tint_edge);
 }
 
 void read(const nlohmann::json& v, double& out) {
@@ -221,6 +225,9 @@ void sanitize_look(Settings& s) {
 
 }  // namespace
 
+bool tint_color_ok(const std::string& c) { return c == "hud" || is_hex_color(c); }
+bool tint_edge_ok(const std::string& e) { return e == "hard" || e == "feather" || e == "wide" || e == "line"; }
+
 bool is_look_key(const std::string& key) {
   if (key == "show_accel") return true;
   // animations, the flare cue and the touchdown zone are not part of a preset
@@ -316,6 +323,9 @@ Settings settings_from_json(const nlohmann::json& j) {
   s.terrain_strength = std::clamp(s.terrain_strength, 0.2, 2.0);
   if (!std::isfinite(s.terrain_cache_gb)) s.terrain_cache_gb = 2.0;
   s.terrain_cache_gb = std::clamp(s.terrain_cache_gb, 0.5, 64.0);
+  if (!tint_color_ok(s.tint_color)) s.tint_color = "hud";
+  if (!tint_edge_ok(s.tint_edge)) s.tint_edge = "feather";
+  s.tint_alpha = std::isfinite(s.tint_alpha) ? std::clamp(s.tint_alpha, 0.0, 0.5) : 0.10;
   auto ra = j.find("ra_by_aircraft");
   if (ra != j.end() && ra->is_object()) {
     for (const auto& [title, v] : ra->items()) {

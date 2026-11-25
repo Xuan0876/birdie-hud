@@ -823,6 +823,7 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
   const double w = std::max(1.5, 3.0 * sc);
   scene.bore = fr.canvas_pix(CX, BORE_Y);
   finish(scene, set);
+  if (scene.tint) scene.tint->feather_px = fr.f * std::tan(rad(scene.tint->feather_deg));
 
   // radio altitude under the bird (Birdie's addition): placed first so the runway label can step out of its way
   struct BirdRa {
@@ -1002,6 +1003,16 @@ void finish(Scene& scene, const Settings& set) {
   parse_color(set.hud_color, scene.rgb);
   scene.outline = set.hud_outline;
   scene.glow = set.hud_glow;
+  scene.tint.reset();
+  if (set.tint_on && set.tint_alpha > 0) {
+    Scene::Tint t;
+    if (set.tint_color == "hud") std::copy(scene.rgb, scene.rgb + 3, t.rgb);
+    else parse_color(set.tint_color, t.rgb);
+    t.alpha = set.tint_alpha;
+    t.feather_deg = set.tint_edge == "feather" ? kBorderFeatherDeg : set.tint_edge == "wide" ? 3.0 : 0.0;
+    t.line = set.tint_edge == "line";
+    scene.tint = t;
+  }
 }
 
 Scene flash_scene(const std::wstring& flash) {
@@ -1030,7 +1041,10 @@ void append_commands(CommandList& out, const Scene& scene, double opacity) {
   // HUD colour (straight alpha: Direct2D premultiplies brush colours itself), outline black 190/255, text halo
   // 120/255 (both times hud_outline)
   const double o = scene.outline;
-  c.insert(c.end(), {10.0, k[0], k[1], k[2], a, 0.0, 0.0, 0.0, 0.745 * a * o, 0.0, 0.0, 0.0, 0.47 * a * o, 2.4});
+  auto hud_style = [&] {
+    c.insert(c.end(), {10.0, k[0], k[1], k[2], a, 0.0, 0.0, 0.0, 0.745 * a * o, 0.0, 0.0, 0.0, 0.47 * a * o, 2.4});
+  };
+  hud_style();
   auto clip = [&](const Polyline& pts) {
     c.insert(c.end(), {4.0, static_cast<double>(pts.size())});
     for (const auto& q : pts) c.insert(c.end(), {q.x, q.y});
@@ -1056,6 +1070,13 @@ void append_commands(CommandList& out, const Scene& scene, double opacity) {
     }
     if (scene.clip) clip(*scene.clip);
     if (scene.border) feathered(*scene.border);
+    const Scene::Tint* tint = scene.tint && scene.clip ? &*scene.tint : nullptr;
+    if (tint) {  // the background tint: op 8 with no hole fills everything, i.e. all of the field inside the clips
+      const bool soft = tint->feather_px >= 0.5;
+      if (soft) feathered({*scene.clip, tint->feather_px});
+      c.insert(c.end(), {8.0, tint->rgb[0], tint->rgb[1], tint->rgb[2], tint->alpha * a, 0.0});
+      if (soft) c.push_back(5.0);
+    }
     if (!own) terrain();
     scene.main.emit(c, out.text);
     if (scene.drum) {
@@ -1065,6 +1086,26 @@ void append_commands(CommandList& out, const Scene& scene, double opacity) {
     }
     if (scene.border) c.push_back(5.0);
     if (scene.clip) c.push_back(5.0);
+    if (tint && tint->line) {  // the field's edge: the combiner's outline inside the border, the border's inside it
+      const double* t = tint->rgb;
+      c.insert(c.end(), {10.0, t[0], t[1], t[2], std::min(1.0, 3.5 * tint->alpha) * a, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+      auto edge = [&](const Polyline& pts) {
+        c.insert(c.end(), {1.0, 1.5, 0.0, 1.0, static_cast<double>(pts.size())});
+        for (const auto& q : pts) c.insert(c.end(), {q.x, q.y});
+        c.push_back(6.0);
+      };
+      if (scene.border) {
+        clip(scene.border->first);
+        edge(*scene.clip);
+        c.push_back(5.0);
+        clip(*scene.clip);
+        edge(scene.border->first);
+        c.push_back(5.0);
+      } else {
+        edge(*scene.clip);
+      }
+      hud_style();  // the flash message below keeps the HUD colour
+    }
   }
   if (scene.flash) scene.flash->emit(c, out.text);
 }
