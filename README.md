@@ -22,7 +22,7 @@ and position can be set on its own, as can colour, font, line width and glow.
 It is an external, transparent, click-through window rendered on the GPU (Direct2D + DirectComposition). Nothing is
 injected into the simulator; data comes from SimConnect. An optional toolbar panel lets you adjust it in flight.
 
-> **Status: 1.0.0.** Flown with the FSLabs A321, Fenix A321, FlyByWire A32NX and the C152 on a 21:9 screen, and checked on 16:9.
+> **Status: 2.0.0-beta in testing; the stable release is 1.0.0.** 1.0.0 was flown with the FSLabs A321, Fenix A321, FlyByWire A32NX and the C152 on a 21:9 screen, and checked on 16:9.
 > Other screen shapes and aircraft should work but are less tested — reports welcome.
 
 ## Download
