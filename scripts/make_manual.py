@@ -57,6 +57,9 @@ HUD_SHOTS = [
     ("preset-fighter", 3, ["hud_scale=1.0", "show_tdz=true", "preset=fighter"], WIDE),
     ("preset-minimal", 3, ["hud_scale=1.0", "show_tdz=true", "preset=minimal"], WIDE),
     ("crosswind", 3, ["hud_scale=1.0", "show_tdz=true", "xwind_mode=true"], WIDE),
+    ("tint-hud", 3, ["hud_scale=1.0", "show_tdz=true", "tint_on=true", "tint_alpha=0.12"], WIDE),
+    ("tint-smoke", 3, ["hud_scale=1.0", "show_tdz=true", "tint_on=true", "tint_color=\"#000000\"", "tint_alpha=0.35",
+                       "tint_edge=line"], WIDE),
 ]
 # numbered callouts on hud.png: (number, circle x, y, points at x, y) in the cropped picture's px, placed by eye.
 # The manual's legend uses the same numbers.
@@ -113,8 +116,10 @@ PANEL_SHOTS = [
     ("panel-home", "still&why=taxi"),
     ("panel-symbols", "still&page=1"),
     ("panel-fine", "still&page=2"),
-    ("panel-look", "still&page=5"),
+    ("panel-look", "still&page=5&set=tint_on:true"),
     ("panel-approach", "still&page=8"),
+    ("panel-terrain", "still&page=10&set=terrain_on:true", 2090),  # cut in the region list
+    ("panel-camera", "still&page=11&set=camera_source:msfs"),
     ("panel-welcome", "still&welcome"),
 ]
 PANEL_W, PANEL_BG = 352, (32, 32, 32)
@@ -138,7 +143,7 @@ class PreviewServer:
         self.httpd.shutdown()
 
 
-def panel_picture(port, query, out, scale=2):
+def panel_picture(port, query, out, scale=2, max_h=0):
     """Headless Edge, tall window; the page sits at the left (preview.js): crop its width, trim the empty bottom."""
     edge(["--hide-scrollbars", f"--force-device-scale-factor={scale}", "--window-size=600,1400",
           "--virtual-time-budget=8000", f"--screenshot={out}", f"http://127.0.0.1:{port}/birdie.html?{query}"], out, 90)
@@ -149,6 +154,8 @@ def panel_picture(port, query, out, scale=2):
         if any(sum(abs(a - b) for a, b in zip(px[x, y], PANEL_BG)) > 12 for x in range(0, im.width, 4)):
             bottom = y + 1
             break
+    if max_h:
+        bottom = min(bottom, max_h)
     im.crop((0, 0, im.width, max(bottom, 1))).save(out, optimize=True)
 
 
@@ -198,12 +205,12 @@ def main():
                 callouts(out, CALLOUTS)
             print(out.relative_to(ROOT))
         with PreviewServer() as srv:
-            for name, query in PANEL_SHOTS:
+            for name, query, *cut in PANEL_SHOTS:
                 if only and name not in only:
                     continue
                 for lang in LANGS:
                     out = IMG / f"{name}.{lang}.png"
-                    panel_picture(srv.port, query + ("&en" if lang == "en" else ""), out)
+                    panel_picture(srv.port, query + ("&en" if lang == "en" else ""), out, max_h=cut[0] if cut else 0)
                     print(out.relative_to(ROOT))
         if only:
             return

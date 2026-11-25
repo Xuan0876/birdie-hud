@@ -22,10 +22,11 @@
       <div><span class="n">5</span>什么时候显示</div>
       <div><span class="n">6</span>设置窗口</div>
       <div><span class="n">7</span>HUD 外观</div>
-      <div><span class="n">8</span>细调</div>
-      <div><span class="n">9</span>快捷键</div>
-      <div><span class="n">10</span>问题排查</div>
-      <div><span class="n">11</span>升级、卸载、许可</div>
+      <div><span class="n">8</span>地形</div>
+      <div><span class="n">9</span>细调</div>
+      <div><span class="n">10</span>快捷键</div>
+      <div><span class="n">11</span>问题排查</div>
+      <div><span class="n">12</span>升级、卸载、许可</div>
     </div>
   </div>
   <div class="foot">
@@ -42,7 +43,7 @@
   <li><b>与外界景物对齐的保形符号</b>：地平线、航向刻度、俯仰刻度、下滑参考线、跑道轮廓和接地区标志。它们贴在真实的地平线和跑道上，随视角移动。</li>
   <li><b>固定在机体上的仪表</b>：速度带、高度带、升降速度、坡度刻度、无线电高度、拉平提示等。</li>
 </ul>
-<p>默认是空客的样子；另有波音、战斗机、极简三套预设，每个元素的样式、大小、位置、颜色都能单独设置（第 7 章）。</p>
+<p>默认是空客的样子；另有波音、战斗机、极简三套预设，每个元素的样式、大小、位置、颜色都能单独设置（第 7 章）。另有两样可选、默认关着：在 HUD 范围里铺一层背景色（第 7 章），以及在 HUD 上画出地形（第 8 章）。</p>
 <div class="note">Birdie 只做 HUD 这一件事。</div>
 
 <h2><span class="n">2</span>安装和第一次运行</h2>
@@ -50,7 +51,7 @@
 <ul>
   <li>Windows 10 / 11 64 位。</li>
   <li>MSFS 2024，<b>全屏、无边框、窗口化都可以</b>（MSFS 2024 只有 DX12，全屏下 HUD 照样叠得上去）。VR 下看不到 HUD：它是盖在模拟器上面的另一个窗口。</li>
-  <li><b>ChasePlane</b>（Parallel 42），驾驶舱视角。Birdie 从 ChasePlane 读镜头角度、缩放和眼点，所以不需要标定。</li>
+  <li><b>ChasePlane</b>（Parallel 42），驾驶舱视角（默认）。Birdie 从 ChasePlane 读镜头角度、缩放和眼点，所以不需要标定。没有 ChasePlane 的话，可以改用 <b>MSFS 原生镜头</b>（Beta，第 9 章"镜头来源"）。</li>
   <li>机型不限。目前没有飞行指引（FD）。</li>
 </ul>
 <h3>安装</h3>
@@ -71,7 +72,7 @@
 </div>
 <h3>进模拟器</h3>
 <ol>
-  <li>先开 MSFS 2024 和 ChasePlane。Birdie 开着就行，模拟器启动后它会自己连上。</li>
+  <li>先开 MSFS 2024 和 ChasePlane（用 MSFS 原生镜头时不用开 ChasePlane）。Birdie 开着就行，模拟器启动后它会自己连上。</li>
   <li>进驾驶舱视角。在地面上 HUD 先待命，起飞滑跑超过 40 kt 时自动出现。想立刻看到，按 <kbd>Ctrl+Alt+Insert</kbd>。</li>
 </ol>
 
@@ -116,7 +117,7 @@
 <p>显示方式可选"瞄准点和终点"（默认）、"全部标志"、"只标终点"。终点是跑道两侧的一对短实块。</p>
 <div class="note">已知问题：在部分跑道上，Birdie 画的瞄准点标志和地景里的大白块相比，前后约差半块。</div>
 <h3>拉平提示</h3>
-<p>离地 50 ft 以下（可调），小鸟上方会闪烁拉平提示。它比较你现在的航迹角和一条理想的拉平曲线：40 ft 开始拉平，到 10 ft 时航迹角收到 −0.5°（三个数都可调，第 8 章"进近"）。</p>
+<p>离地 50 ft 以下（可调），小鸟上方会闪烁拉平提示。它比较你现在的航迹角和一条理想的拉平曲线：40 ft 开始拉平，到 10 ft 时航迹角收到 −0.5°（三个数都可调，第 9 章"进近"）。</p>
 <div class="flare">
   <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M73 32H87M80 25V39"/></g></svg>+ 正在曲线上，保持</div>
   <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M57 32H71M64 25V39M89 32H103M96 25V39"/></g></svg>++ 还太陡，继续拉</div>
@@ -141,7 +142,8 @@
   <tr><td class="k">HUD 不显示</td><td>外部视角。</td><td>回到驾驶舱视角。</td></tr>
   <tr><td class="k">HUD 暂停</td><td>MSFS 不在前台，或者模拟器暂停了、数据停了。</td><td>切回模拟器 / 取消暂停。</td></tr>
   <tr><td class="k">HUD 自动隐藏</td><td>开了"高空自动隐藏"，无线电高度高于设定值。</td><td>降到设定高度以下就回来。</td></tr>
-  <tr><td class="k">需要 ChasePlane</td><td>没检测到 ChasePlane 的驾驶舱视角。</td><td>装好并启用 ChasePlane，进它的驾驶舱视角。</td></tr>
+  <tr><td class="k">没检测到 ChasePlane</td><td>镜头来源是 ChasePlane，但没读到它的驾驶舱视角。</td><td>启用 ChasePlane，进它的驾驶舱视角；或者在"细调 → 镜头来源"改用 MSFS 原生镜头。</td></tr>
+  <tr><td class="k">读不到 MSFS 镜头</td><td>镜头来源是 MSFS 原生，但模拟器没送来镜头数据。</td><td>进驾驶舱视角；看"细调 → 镜头来源"里的说明；还不行就切回 ChasePlane。</td></tr>
   <tr><td class="k">没连上模拟器</td><td>MSFS 还没开。</td><td>打开 MSFS 后自动连上。</td></tr>
   <tr><td class="k">HUD 已关闭</td><td>你把 HUD 关了。</td><td>按快捷键或点首页的开关。</td></tr>
 </table>
@@ -167,7 +169,7 @@
       <li><b>预览</b>：HUD 不在屏幕上时（比如在地面待命），顶上会显示一张预览，样式跟着你的设置变。HUD 在屏幕上时，直接看真 HUD。</li>
       <li><b>状态行和开关</b>：现在的状态（第 5 章），右边的开关打开 / 关闭 HUD。</li>
       <li><b>亮度</b>（25–100%）、<b>大小</b>（60–115%）、<b>下滑角</b>（2.0–5.9°）。</li>
-      <li><b>符号</b>、<b>HUD 外观</b>、<b>细调</b>：进入各自的页面。</li>
+      <li><b>符号</b>、<b>HUD 外观</b>、<b>地形</b>、<b>细调</b>：进入各自的页面。</li>
       <li>底部：界面语言（中文 / EN）和退出 Birdie。</li>
     </ul>
   </div>
@@ -211,8 +213,46 @@
 <p>每组仪表（速度带、高度带、升降速度、地速与风、坡度刻度）都能上下左右移动、改长度和大小；还能整体改左右张开、文字大小、线宽，以及小鸟、机头符号、俯仰刻度宽度和航向的位置。单位是度（HUD 上的角度）。调的时候 HUD 会一直显示，在地面上也能看；"恢复默认布局"一键还原。</p>
 <h3>开场 / 退场</h3>
 <p>HUD 出现和消失时的动画：无、淡入淡出（默认）、光圈、开机、扫描、组装；时长可选 0.5–2 倍。在驾驶舱视角下可以点"预览开场 / 退场"看效果。</p>
+<h3>背景色</h3>
+<p>在 HUD 的范围里铺一层半透明的颜色，像真飞机合像镜那块玻璃。默认关着，在"HUD 外观"页最下面打开。范围跟着 HUD 走：没描边框时是整块合像镜，描过边框（第 9 章）就是边框里面。地形和所有符号都画在它上面。</p>
+<div class="grid2">
+  <figure><img src="img/tint-hud.png" alt=""><figcaption>跟随 HUD 色，浓淡 12%，羽化边缘</figcaption></figure>
+  <figure><img src="img/tint-smoke.png" alt=""><figcaption>暗片，浓淡 35%，细边线</figcaption></figure>
+</div>
+<ul>
+  <li><b>颜色</b>：跟随 HUD（默认）、深绿玻璃、暗片、琥珀、蓝；也可以用"色相"滑块自己挑一种。</li>
+  <li><b>浓淡</b>：2–50%，默认 10%。Birdie 只能在模拟器画面上盖一层颜色：亮的颜色会把暗处提亮（夜里像发光），深的颜色会把画面压暗。</li>
+  <li><b>边缘</b>：硬边、羽化（默认，边上 1° 慢慢淡出）、宽羽化（3°）、细边线（硬边外加一条同色细线）。</li>
+  <li>跟着 HUD 一起出现、消失，也跟着 HUD 亮度一起变：用亮度滑块或快捷键调暗 HUD 时，背景色一起变淡。</li>
+</ul>
 
-<h2><span class="n">8</span>细调</h2>
+<h2><span class="n">8</span>地形</h2>
+<div class="side">
+  <img src="img/panel-terrain.zh-CN.png" alt="">
+  <div>
+    <p>在 HUD 上画出前方的山：山坡铺一层很淡的 HUD 色，最上面一条天际线。平地不论多高都是透明的，跑道、城市和高原机场不会被盖住。在首页点"地形"进入，默认关着。</p>
+    <p>高程数据来自欧盟的 Copernicus 数字高程模型，要联网下载，所以第一次打开后要等一会儿才有地形。</p>
+    <h3>画法和浓淡</h3>
+    <ul>
+      <li><b>画法</b>：坡面 + 天际线（默认）、只要天际线、坡面 + 天际线 + 前方山脊。</li>
+      <li><b>浓淡</b>：20–200%，默认 100%。</li>
+      <li><b>地形边框</b>：地形可以有自己的范围，比如铺满整块风挡，而 HUD 符号仍留在合像镜里；也可以比 HUD 小。点"在画面上描"，描法和 HUD 边框一样（第 9 章）。没描时跟着 HUD 边框。按机型和座位分别保存。</li>
+    </ul>
+    <h3>下载和磁盘</h3>
+    <ul>
+      <li><b>飞到哪，自动下载到哪</b>（默认开）：HUD 打开时，Birdie 下载飞机周围 100 km 的地形，存进缓存。HUD 上会提示下载进度（可以关掉提示）。</li>
+      <li><b>精度</b>：30 m（每块 1°×1° 约 26 MB，默认）或 90 m（约 3 MB）。</li>
+      <li><b>缓存上限</b>：1、2（默认）、4、8、16 GB。超过上限时，先删最久没用到的块。</li>
+      <li><b>离线包</b>：把常飞的地区提前下好，飞行时不用等，也不会被缓存清理掉。列表里有中国各区、日本、韩国、阿尔卑斯、挪威、美国西部山区、新西兰等。</li>
+      <li><b>自己下载</b>：Copernicus 的 <code>.tif</code>（或整包 <code>.zip</code> / <code>.tar</code>）放进 import 文件夹，再点"导入"。</li>
+      <li>数据默认在 <code>%LOCALAPPDATA%\Birdie\dem</code>，可以"换个位置"。都是普通文件，随时可以在这一页清空。</li>
+    </ul>
+    <p class="small">换位置、导入只能在 Birdie 的设置窗口里做（托盘里的小鸟），游戏内面板里没有这两项。</p>
+    <p class="small">地形只用于模拟飞行，不能用于真实导航。</p>
+  </div>
+</div>
+
+<h2><span class="n">9</span>细调</h2>
 <div class="side">
   <img src="img/panel-fine.zh-CN.png" alt="">
   <div>
@@ -223,7 +263,7 @@
       <tr><td class="k">小鸟下的 RA</td><td>从多高开始在小鸟下显示无线电高度，默认 500 ft。</td></tr>
       <tr><td class="k">侧风模式</td><td>见第 4 章。</td></tr>
     </table>
-    <p>下面四个入口：<b>自动显示 / 隐藏</b>（第 5 章）、<b>进近</b>、<b>HUD 边框</b>、<b>快捷键</b>（第 9 章）。</p>
+    <p>下面五个入口：<b>自动显示 / 隐藏</b>（第 5 章）、<b>进近</b>、<b>HUD 边框</b>、<b>快捷键</b>（第 10 章）、<b>镜头来源</b>。</p>
   </div>
 </div>
 <div class="side">
@@ -235,7 +275,20 @@
   </div>
 </div>
 <h3>HUD 边框</h3>
-<p>HUD 可能超出驾驶舱的挡风玻璃。在驾驶舱视角下点"在画面上描"，沿着窗框点出一个多边形，按 <kbd>Enter</kbd> 保存、<kbd>Esc</kbd> 放弃。之后 HUD 只画在边框里，最后 1° 慢慢淡出；改缩放、转头时边框都贴着窗框。边框按机型和座位分别保存，另一座没描时按这一座镜像。如果有仪表落在边框外，页面会提示缩到多少能放下。</p>
+<p>HUD 可能超出驾驶舱的挡风玻璃。在驾驶舱视角下点"在画面上描"，沿着窗框点出一个多边形，按 <kbd>Enter</kbd> 保存、<kbd>Esc</kbd> 放弃。之后 HUD 只画在边框里，最后 1° 慢慢淡出；改缩放、转头时边框都贴着窗框。边框按机型和座位分别保存，另一座没描时按这一座镜像。用 MSFS 原生镜头时，要等镜头原点标定好才能描（眼点读数不对时 Birdie 会拒绝，免得存错座位）。如果有仪表落在边框外，页面会提示缩到多少能放下。</p>
+<div class="side">
+  <img src="img/panel-camera.zh-CN.png" alt="">
+  <div>
+    <h3>镜头来源</h3>
+    <p>Birdie 要知道你的眼睛在驾驶舱的哪里、往哪看、视角多大，才能把 HUD 叠到正确的位置。这一页选从哪里读：</p>
+    <ul>
+      <li><b>ChasePlane</b>（默认）：用 ChasePlane 的驾驶舱镜头，不需要标定。</li>
+      <li><b>MSFS 原生 · Beta</b>：直接读模拟器自己的镜头，不需要 ChasePlane。它用的是 MSFS 还在测试的接口，模拟器更新后可能失效，那时切回 ChasePlane 就行。</li>
+    </ul>
+    <p>两种都只读镜头，不会动你的视角。"现在"一行显示读到了什么，以及垂直视场角。</p>
+    <p><b>镜头原点</b>：用 MSFS 原生镜头时，每架飞机第一次要标定一次镜头原点。在地面停稳几秒，或者在空中按一下暂停，Birdie 会自己标定，HUD 上提示"已标定"。没标定前跑道框会偏，HUD 会提醒一次。标定结果按机型记住；觉得不准可以点"重新标定"。</p>
+  </div>
+</div>
 <h3>无线电高度校准</h3>
 <p>有的机型停在地面时无线电高度不是 0。Birdie 按机型分别记一个偏差：第一次停稳在地面时自动校准，也可以手动点"停在地面时，记下现在的读数"，或者清除。</p>
 <h3>其他</h3>
@@ -245,7 +298,7 @@
   <li><b>随 Windows 启动</b>、<b>日志</b>（打开日志文件）、版本号。</li>
 </ul>
 
-<h2><span class="n">9</span>快捷键</h2>
+<h2><span class="n">10</span>快捷键</h2>
 <p>快捷键在任何窗口里都有效。在"细调 → 快捷键"里点右边的组合键，再按下新的；<kbd>Esc</kbd> 不改，退格键清除。和别的程序重复的会标"被占用"，换一个就好。组合键必须带 Ctrl、Alt 或 Shift。</p>
 <table>
   <tr><th>动作</th><th>默认</th></tr>
@@ -258,40 +311,45 @@
 </table>
 <p>用快捷键改设置时，屏幕左上角会短暂显示新的值。</p>
 
-<h2><span class="n">10</span>问题排查</h2>
+<h2><span class="n">11</span>问题排查</h2>
 <table>
   <tr><th>现象</th><th>原因和办法</th></tr>
   <tr><td class="k">完全看不到 HUD</td><td>先看设置窗口首页的状态行（第 5 章）。最常见的是：不在驾驶舱视角、在地面上还没到 40 kt、HUD 被快捷键关了。</td></tr>
-  <tr><td class="k">"需要 ChasePlane"</td><td>Birdie 目前只支持 ChasePlane 的驾驶舱视角。确认 ChasePlane 在运行，并切到它的驾驶舱视角。</td></tr>
+  <tr><td class="k">"没检测到 ChasePlane"</td><td>确认 ChasePlane 在运行，并切到它的驾驶舱视角。没有 ChasePlane 的话，在"细调 → 镜头来源"改用 MSFS 原生镜头。</td></tr>
+  <tr><td class="k">用 MSFS 原生镜头时跑道框偏</td><td>镜头原点还没标定，或者标定得不对。在地面停稳几秒或在空中暂停一下；还是偏就在"镜头来源"里点"重新标定"。</td></tr>
+  <tr><td class="k">"眼点读数不对，先不能描边框"</td><td>同上：先把镜头原点重新标定好，再描边框。</td></tr>
+  <tr><td class="k">打开了地形但看不到</td><td>要联网下载，HUD 打开时才下载，第一次要等一会儿（HUD 上有下载提示）。山很远或是平地时本来就不画。看"地形"页的下载状态。</td></tr>
   <tr><td class="k">启动时提示找不到 SimConnect.dll</td><td>没有把 zip 整个解压。<code>SimConnect.dll</code> 要和 <code>Birdie.exe</code> 在同一个文件夹。</td></tr>
   <tr><td class="k">"Windows 已保护你的电脑"</td><td>程序没有代码签名。点"更多信息"→"仍要运行"。</td></tr>
   <tr><td class="k">设置在浏览器里打开</td><td>电脑上没有 WebView2 运行时（Windows 10 可能没有）。功能一样；想要独立窗口可以安装 Microsoft Edge WebView2 运行时。</td></tr>
   <tr><td class="k">跑道框左右或前后偏</td><td>16:10 屏幕和部分机型的眼点还在验证中。请提一个 Issue，附上截图、机型、屏幕尺寸和日志。</td></tr>
-  <tr><td class="k">RA 在地面上不是 0</td><td>停稳后点"停在地面时，记下现在的读数"（第 8 章）。</td></tr>
-  <tr><td class="k">转弯时 HUD 跟不上</td><td>加一点显示延迟补偿（第 8 章），每次 10–20 ms 试。</td></tr>
+  <tr><td class="k">RA 在地面上不是 0</td><td>停稳后点"停在地面时，记下现在的读数"（第 9 章）。</td></tr>
+  <tr><td class="k">转弯时 HUD 跟不上</td><td>加一点显示延迟补偿（第 9 章），每次 10–20 ms 试。</td></tr>
   <tr><td class="k">工具栏里没有小鸟</td><td>装完游戏内面板要重启模拟器；在"细调 → 游戏内面板"里看状态和路径。</td></tr>
   <tr><td class="k">快捷键没反应</td><td>可能被别的程序占用了，在"快捷键"页里换一个。</td></tr>
 </table>
 <h3>日志和反馈</h3>
 <p>日志在 <code>%APPDATA%\Birdie\birdie.log</code>（"细调 → 日志"可以直接打开），设置在同一个文件夹的 <code>settings.json</code>。反馈问题请到 https://github.com/Xuan0876/birdie-hud/issues 开一个 Issue，写清楚做了什么、看到了什么，附上日志、机型、屏幕尺寸，有截图更好。</p>
 
-<h2><span class="n">11</span>升级、卸载、许可</h2>
+<h2><span class="n">12</span>升级、卸载、许可</h2>
 <h3>升级</h3>
 <p>退出 Birdie（右键托盘小鸟 → 退出），用新版本的文件覆盖原来的文件夹，再启动。设置会保留；装过的游戏内面板会自动更新，重启模拟器后生效。</p>
 <h3>卸载</h3>
 <ol>
   <li>装过游戏内面板的话：细调 → 游戏内面板 → 移除。</li>
   <li>开过"随 Windows 启动"的话先关掉，然后退出 Birdie。</li>
+  <li>用过地形的话：在"地形"页清空缓存、删除离线包（或者直接删 <code>%LOCALAPPDATA%\Birdie\dem</code>，换过位置就删新位置）。</li>
   <li>删除 Birdie 所在的文件夹。设置和日志在 <code>%APPDATA%\Birdie</code>，也可以一起删掉。</li>
 </ol>
 <h3>已知限制</h3>
 <ul>
   <li>HUD 比它对应的模拟器画面晚一点显示；显示延迟补偿可以抵消大部分。</li>
   <li>不支持 VR。模拟器自己的截图和"游戏捕获"录像里没有 HUD，录像请用显示器捕获。</li>
-  <li>目前需要 ChasePlane；模拟器原生镜头以后支持。没有飞行指引（FD）。</li>
+  <li>默认用 ChasePlane；MSFS 原生镜头还是 Beta，模拟器更新后可能失效。没有飞行指引（FD）。</li>
 </ul>
 <h3>许可与署名</h3>
 <p>Birdie 是自由软件，按 GNU 通用公共许可证第 3 版（GPL-3.0）发布，不提供任何担保。源代码：https://github.com/Xuan0876/birdie-hud。HUD 的版式参考了 FlyByWire A32NX 的 HUD（GPL-3.0）；第三方组件的许可见发布包里的 <code>THIRD_PARTY_NOTICES.md</code> 和 <code>licenses</code> 文件夹。</p>
+<p>地形的高程数据：produced using Copernicus WorldDEM-30 / -90 © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018 provided under COPERNICUS by the European Union and ESA; all rights reserved。Copernicus 计划的主管机构对这些数据的任何使用均不承担责任，也没有认可 Birdie。</p>
 <p>Microsoft Flight Simulator、ChasePlane、FlyByWire、FSLabs、Fenix、Airbus、Boeing 是各自所有者的商标；Birdie 与它们没有关联，也没有得到它们的认可。</p>
 <p>Birdie by Naux, built together with Claude Opus 5.5 (Anthropic).</p>
 

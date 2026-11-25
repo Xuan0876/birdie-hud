@@ -29,7 +29,21 @@
     for (var k in sets) st.settings[k] = sets[k];
     var cam = ((location.search.match(/[?&]cam=(\w+)/) || [])[1]) || 'ok', err = /[?&]camerr=([^&]*)/.exec(location.search);
     st.status.camera = { source: st.settings.camera_source || 'chaseplane', state: cam, vfov: cam === 'ok' || cam === 'outside' ? 58.2 : null,
-                         errors: err ? 12 : 0, error: err ? decodeURIComponent(err[1]) : '', availability: 0 };
+                         errors: err ? 12 : 0, error: err ? decodeURIComponent(err[1]) : '', availability: 0, aircraft: 'FSLabs A321-200 CFM', origin: 21.38 };
+    // the Terrain page: a cache, the Alps package installed (tile counts and sizes as the real store reports them)
+    var en = st.status.lang === 'en', MB = 1048576;
+    var rg = [['cn_sw', '中国西南（云贵川渝）', 'SW China (Yunnan, Guizhou, Sichuan)', 169, 486729464], ['tibet', '青藏高原', 'Tibetan Plateau', 260, 748814560],
+      ['cn_se', '中国东南沿海', 'SE China coast', 188, 541450528], ['cn_n', '华北 · 华中', 'North & central China', 170, 489609520],
+      ['cn_ne', '东北', 'NE China', 247, 646093832], ['cn_nw', '新疆 · 甘肃', 'Xinjiang & Gansu', 448, 1290265088],
+      ['taiwan', '台湾', 'Taiwan', 14, 40320784], ['korea', '韩国', 'Korea', 32, 92161792], ['japan', '日本', 'Japan', 148, 426248288],
+      ['himalaya', '尼泊尔 · 喜马拉雅', 'Nepal & Himalaya', 45, 129602520], ['alps', '阿尔卑斯', 'Alps', 59, 169923304],
+      ['iberia', '伊比利亚南部 · 直布罗陀', 'Southern Iberia & Gibraltar', 27, 77761512], ['norway', '挪威', 'Norway', 291, 437776296],
+      ['us_west', '美国西部山区', 'Western US mountains', 349, 1005139544], ['alaska', '阿拉斯加南部', 'Southern Alaska', 171, 285129576],
+      ['mexico', '墨西哥中南部', 'Central & southern Mexico', 60, 172803360], ['nz', '新西兰', 'New Zealand', 63, 181443528]];
+    st.status.terrain = { cache_tiles: 23, cache_bytes: 610 * MB, pkg_tiles: 59, pkg_bytes: 169923304, disk_free: 91 * 1024 * MB, import_files: 0,
+      dir: 'C:\\Users\\me\\AppData\\Local\\Birdie\\dem', is_default: true, moving: false, stream: 'on',
+      job: { kind: '', done: 0, total: 0, rate: 0, error: '', failed: 0, label: '', tile: '' },
+      regions: rg.map(function (r) { return { id: r[0], name: en ? r[2] : r[1], tiles: r[3], bytes: r[4], have: r[0] === 'alps' ? r[3] : 0 }; }) };
     var self = this; setTimeout(function () { self.onmessage && self.onmessage({ data: JSON.stringify(st) }); }, 0);
   };
   window.WebSocket = FakeWS;

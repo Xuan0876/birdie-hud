@@ -22,10 +22,11 @@
       <div><span class="n">5</span>When it shows</div>
       <div><span class="n">6</span>The settings window</div>
       <div><span class="n">7</span>HUD look</div>
-      <div><span class="n">8</span>Fine tuning</div>
-      <div><span class="n">9</span>Hotkeys</div>
-      <div><span class="n">10</span>Troubleshooting</div>
-      <div><span class="n">11</span>Upgrade, uninstall, license</div>
+      <div><span class="n">8</span>Terrain</div>
+      <div><span class="n">9</span>Fine tuning</div>
+      <div><span class="n">10</span>Hotkeys</div>
+      <div><span class="n">11</span>Troubleshooting</div>
+      <div><span class="n">12</span>Upgrade, uninstall, license</div>
     </div>
   </div>
   <div class="foot">
@@ -42,7 +43,7 @@
   <li><b>Conformal symbols</b>, registered to the outside view: horizon, heading scale, pitch scale, glide reference line, runway outline and touchdown-zone marks. They sit on the real horizon and runway and move with the view.</li>
   <li><b>Airframe-fixed instruments</b>: speed and altitude tapes, vertical speed, bank scale, radio altitude, the flare cue and more.</li>
 </ul>
-<p>It looks like an Airbus HUD by default. Boeing, fighter and minimal presets are one click away, and every element's style, size, position and colour can be set on its own (chapter 7).</p>
+<p>It looks like an Airbus HUD by default. Boeing, fighter and minimal presets are one click away, and every element's style, size, position and colour can be set on its own (chapter 7). Two more things are there if you want them, both off by default: a background tint inside the HUD (chapter 7) and the terrain drawn on the HUD (chapter 8).</p>
 <div class="note">Birdie does one thing: the HUD.</div>
 
 <h2><span class="n">2</span>Install and first run</h2>
@@ -50,7 +51,7 @@
 <ul>
   <li>Windows 10 / 11, 64-bit.</li>
   <li>MSFS 2024 in <b>full screen, borderless or a window</b>: all work (MSFS 2024 is DX12 only, so its full screen still lets the HUD sit on top). VR hides the HUD: it is a separate window on top of the sim.</li>
-  <li><b>ChasePlane</b> (Parallel 42) in a cockpit view. Birdie reads the camera angles, zoom and eye point from ChasePlane, so no calibration is needed.</li>
+  <li><b>ChasePlane</b> (Parallel 42) in a cockpit view (the default). Birdie reads the camera angles, zoom and eye point from ChasePlane, so no calibration is needed. Without ChasePlane, use the <b>MSFS native camera</b> instead (beta, chapter 9, Camera source).</li>
   <li>Any aircraft. No flight director yet.</li>
 </ul>
 <h3>Install</h3>
@@ -71,7 +72,7 @@
 </div>
 <h3>In the sim</h3>
 <ol>
-  <li>Start MSFS 2024 and ChasePlane. Leave Birdie running; it connects by itself when the sim starts.</li>
+  <li>Start MSFS 2024 and ChasePlane (not needed with the MSFS native camera). Leave Birdie running; it connects by itself when the sim starts.</li>
   <li>Use the cockpit view. On the ground the HUD stands by and shows once the take-off roll passes 40 kt. To see it at once, press <kbd>Ctrl+Alt+Insert</kbd>.</li>
 </ol>
 
@@ -116,7 +117,7 @@
 <p>Show "Aiming point + end" (default), "All marks" or "End only". The end is a pair of short solid blocks across the runway edges.</p>
 <div class="note">Known issue: on some runways Birdie's aiming point marks sit about half a mark along the runway from the scenery's white blocks.</div>
 <h3>Flare cue</h3>
-<p>Below 50 ft (adjustable) a cue blinks above the bird. It compares your flight path angle with an ideal flare: start at 40 ft and reach −0.5° at 10 ft (all three adjustable, chapter 8, Approach).</p>
+<p>Below 50 ft (adjustable) a cue blinks above the bird. It compares your flight path angle with an ideal flare: start at 40 ft and reach −0.5° at 10 ft (all three adjustable, chapter 9, Approach).</p>
 <div class="flare">
   <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M73 32H87M80 25V39"/></g></svg>+ on the profile: hold it</div>
   <div><svg viewBox="0 0 160 110"><g fill="none" stroke="#57f27f" stroke-width="3" stroke-linecap="square"><circle cx="80" cy="74" r="11"/><path d="M69 74H47M91 74H113M80 63V51"/><path d="M57 32H71M64 25V39M89 32H103M96 25V39"/></g></svg>++ still steep: keep pulling</div>
@@ -141,7 +142,8 @@
   <tr><td class="k">HUD not shown</td><td>Outside view.</td><td>Go back to the cockpit view.</td></tr>
   <tr><td class="k">HUD paused</td><td>MSFS is not in front, or the sim is paused / the data stopped.</td><td>Switch back to the sim / unpause.</td></tr>
   <tr><td class="k">HUD hidden up high</td><td>"Hide when high" is on and the radio altitude is above the set height.</td><td>It returns below that height.</td></tr>
-  <tr><td class="k">ChasePlane needed</td><td>No ChasePlane cockpit view found.</td><td>Run ChasePlane and use its cockpit view.</td></tr>
+  <tr><td class="k">ChasePlane not detected</td><td>The camera source is ChasePlane, and no ChasePlane cockpit view was found.</td><td>Run ChasePlane and use its cockpit view, or switch to the MSFS native camera under Fine tuning → Camera source.</td></tr>
+  <tr><td class="k">No MSFS camera data</td><td>The camera source is MSFS native, and the sim sends no camera data.</td><td>Use the cockpit view; read the notes under Fine tuning → Camera source; if it still fails, switch back to ChasePlane.</td></tr>
   <tr><td class="k">No simulator</td><td>MSFS is not running yet.</td><td>Connects by itself when MSFS starts.</td></tr>
   <tr><td class="k">HUD off</td><td>You turned it off.</td><td>The hotkey or the switch on the home page.</td></tr>
 </table>
@@ -167,7 +169,7 @@
       <li><b>Preview</b>: while the HUD is not on the screen (standing by on the ground, say), a preview at the top follows your settings. With the HUD on screen, look at the real thing.</li>
       <li><b>Status and switch</b>: what is going on (chapter 5); the switch turns the HUD on or off.</li>
       <li><b>Bright</b> (25–100%), <b>Size</b> (60–115%), <b>Glide</b> (2.0–5.9°).</li>
-      <li><b>Symbols</b>, <b>HUD look</b>, <b>Fine tuning</b>: their own pages.</li>
+      <li><b>Symbols</b>, <b>HUD look</b>, <b>Terrain</b>, <b>Fine tuning</b>: their own pages.</li>
       <li>At the bottom: language (中文 / EN) and Quit Birdie.</li>
     </ul>
   </div>
@@ -211,8 +213,46 @@
 <p>Each instrument group (speed tape, altitude tape, vertical speed, ground speed &amp; wind, bank scale) moves across and up/down and changes length and size. Overall: spread, text size and line width; and the bird, nose mark, rung width and heading position. Offsets are in degrees on the HUD. While you adjust, the HUD stays on, even on the ground; "Reset the layout" puts it back.</p>
 <h3>Opening / closing</h3>
 <p>How the HUD appears and goes: none, fade (default), iris, power-on, scan, assemble; duration 0.5–2×. From the cockpit view, "Play the opening / closing" shows it on the HUD.</p>
+<h3>Background tint</h3>
+<p>A see-through colour over the HUD's field, like the glass of a real combiner. It is off by default; switch it on at the bottom of the HUD look page. It covers what the HUD covers: the whole combiner, or the inside of your HUD border once you have traced one (chapter 9). The terrain and every symbol are drawn on top of it.</p>
+<div class="grid2">
+  <figure><img src="img/tint-hud.png" alt=""><figcaption>HUD colour, 12%, soft edge</figcaption></figure>
+  <figure><img src="img/tint-smoke.png" alt=""><figcaption>Smoked, 35%, edge line</figcaption></figure>
+</div>
+<ul>
+  <li><b>Colour</b>: the HUD colour (default), green glass, smoked, amber, blue; or pick any hue with the Hue slider.</li>
+  <li><b>Strength</b>: 2–50%, 10% by default. Birdie can only lay a colour over the sim's picture: a light colour brightens the dark parts (it glows at night), a dark one darkens the picture.</li>
+  <li><b>Edge</b>: hard, soft (default, fading over its last degree), wide soft (3°), edge line (hard, with a thin line of the same colour).</li>
+  <li>It comes and goes with the HUD and follows its brightness: dim the HUD with the slider or a hotkey and the tint dims too.</li>
+</ul>
 
-<h2><span class="n">8</span>Fine tuning</h2>
+<h2><span class="n">8</span>Terrain</h2>
+<div class="side">
+  <img src="img/panel-terrain.en.png" alt="">
+  <div>
+    <p>The mountains ahead, on the HUD: a faint shade of the HUD colour on the slopes and a skyline on top. Flat ground stays clear at any height, so runways, cities and high airports are never covered. Open it with Terrain on the home page; it is off by default.</p>
+    <p>The heights come from the Copernicus digital elevation model of the EU and are downloaded, so the first time you switch it on, the terrain takes a little while to appear.</p>
+    <h3>Drawing and strength</h3>
+    <ul>
+      <li><b>Drawing</b>: slopes + skyline (default), skyline only, slopes + skyline + the ridges in front.</li>
+      <li><b>Strength</b>: 20–200%, 100% by default.</li>
+      <li><b>Terrain border</b>: the terrain can have a reach of its own, the whole windscreen, say, while the HUD symbols stay in the combiner, or smaller than the HUD. "Trace it on the screen" works like the HUD border (chapter 9); until traced it follows the HUD border. Kept per aircraft and seat.</li>
+    </ul>
+    <h3>Downloads and disk</h3>
+    <ul>
+      <li><b>Download where I fly, by itself</b> (on by default): while the HUD is on, Birdie downloads the terrain 100 km around the aircraft into its cache, and says on the HUD how far it has got (the note can be turned off).</li>
+      <li><b>Detail</b>: 30 m (about 26 MB per 1°×1° tile, default) or 90 m (about 3 MB).</li>
+      <li><b>Cache</b>: 1, 2 (default), 4, 8 or 16 GB at most; above the limit, the tiles used longest ago go first.</li>
+      <li><b>Packages</b>: download the places you fly ahead of time, with no waiting in flight; the cache never trims them. Regions include parts of China, Japan, Korea, the Alps, Norway, the western US mountains and New Zealand.</li>
+      <li><b>Your own files</b>: put Copernicus <code>.tif</code> files (or the <code>.zip</code> / <code>.tar</code> they come in) into the import folder and press Import.</li>
+      <li>The data is in <code>%LOCALAPPDATA%\Birdie\dem</code> unless you move it ("Move elsewhere…"). They are plain files; clear them on this page any time.</li>
+    </ul>
+    <p class="small">Moving the data and importing are only in Birdie's settings window (the bird in the tray), not in the in-sim panel.</p>
+    <p class="small">The terrain is for flight simulation only, not for real-world navigation.</p>
+  </div>
+</div>
+
+<h2><span class="n">9</span>Fine tuning</h2>
 <div class="side">
   <img src="img/panel-fine.en.png" alt="">
   <div>
@@ -223,7 +263,7 @@
       <tr><td class="k">Radio altitude under the bird</td><td>The height below which it shows, 500 ft by default.</td></tr>
       <tr><td class="k">Crosswind mode</td><td>See chapter 4.</td></tr>
     </table>
-    <p>Then four pages: <b>Show / hide by itself</b> (chapter 5), <b>Approach</b>, <b>HUD border</b> and <b>Hotkeys</b> (chapter 9).</p>
+    <p>Then five pages: <b>Show / hide by itself</b> (chapter 5), <b>Approach</b>, <b>HUD border</b>, <b>Hotkeys</b> (chapter 10) and <b>Camera source</b>.</p>
   </div>
 </div>
 <div class="side">
@@ -235,7 +275,20 @@
   </div>
 </div>
 <h3>HUD border</h3>
-<p>The HUD can reach past the cockpit's windscreen. From the cockpit view, choose "Trace it on the screen" and click a polygon along the window frame; <kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels. The HUD is then drawn only inside the border, fading over its last degree, and the border stays on the frame through zoom and head turns. It is kept per aircraft and seat; the other seat mirrors it until traced. If instruments fall outside, the page says how far to shrink the HUD to fit.</p>
+<p>The HUD can reach past the cockpit's windscreen. From the cockpit view, choose "Trace it on the screen" and click a polygon along the window frame; <kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels. The HUD is then drawn only inside the border, fading over its last degree, and the border stays on the frame through zoom and head turns. It is kept per aircraft and seat; the other seat mirrors it until traced. With the MSFS native camera, measure the camera origin first: Birdie refuses to trace while the eye position reads wrong, so the border is never stored for the wrong seat. If instruments fall outside, the page says how far to shrink the HUD to fit.</p>
+<div class="side">
+  <img src="img/panel-camera.en.png" alt="">
+  <div>
+    <h3>Camera source</h3>
+    <p>To lay the HUD over the right spot, Birdie needs to know where your eyes are in the cockpit, where you look and how wide the view is. This page picks where it reads that from:</p>
+    <ul>
+      <li><b>ChasePlane</b> (default): the ChasePlane cockpit camera; nothing to measure.</li>
+      <li><b>MSFS native · Beta</b>: the sim's own camera, no ChasePlane needed. It uses an interface MSFS still calls beta: an update may break it, and then switching back to ChasePlane is all it takes.</li>
+    </ul>
+    <p>Either way Birdie only reads the camera and never moves your view. "Now" says what is read, with the vertical field of view.</p>
+    <p><b>Camera origin</b>: with the MSFS native camera, each aircraft needs its camera origin measured once. Stand still on the ground for a few seconds, or press pause once in the air, and Birdie measures it and says so on the HUD. Until then the runway outline is off, and the HUD reminds you once. It is kept per aircraft; "Measure again" if it looks wrong.</p>
+  </div>
+</div>
 <h3>Radio altitude zero</h3>
 <p>Some aircraft read more than 0 ft standing on the ground. Birdie keeps an offset per aircraft: it sets itself the first time you stand still on the ground, or take the reading yourself, or clear it.</p>
 <h3>More</h3>
@@ -245,7 +298,7 @@
   <li><b>Start with Windows</b>, <b>Log</b> (opens the log file), the version.</li>
 </ul>
 
-<h2><span class="n">9</span>Hotkeys</h2>
+<h2><span class="n">10</span>Hotkeys</h2>
 <p>Hotkeys work from any window. Under Fine tuning → Hotkeys, click a combo and press the new one; <kbd>Esc</kbd> keeps it, Backspace clears it. A combo another program already uses is marked taken. Combos need Ctrl, Alt or Shift.</p>
 <table>
   <tr><th>Action</th><th>Default</th></tr>
@@ -258,40 +311,45 @@
 </table>
 <p>A hotkey that changes a setting shows the new value briefly at the top left of the screen.</p>
 
-<h2><span class="n">10</span>Troubleshooting</h2>
+<h2><span class="n">11</span>Troubleshooting</h2>
 <table>
   <tr><th>What you see</th><th>Cause and fix</th></tr>
   <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: not in the cockpit view, on the ground below 40 kt, or the HUD was turned off by its hotkey.</td></tr>
-  <tr><td class="k">"ChasePlane needed"</td><td>Birdie works with the ChasePlane cockpit view for now. Make sure ChasePlane runs and use its cockpit view.</td></tr>
+  <tr><td class="k">"ChasePlane not detected"</td><td>Make sure ChasePlane runs and use its cockpit view. Without ChasePlane, switch to the MSFS native camera under Fine tuning → Camera source.</td></tr>
+  <tr><td class="k">Runway outline off with the MSFS native camera</td><td>The camera origin is not measured yet, or measured wrong. Stand still on the ground a few seconds, or pause in the air; if it is still off, press "Measure again" under Camera source.</td></tr>
+  <tr><td class="k">"The eye position reads wrong, no tracing for now"</td><td>As above: measure the camera origin again, then trace the border.</td></tr>
+  <tr><td class="k">Terrain switched on but nothing shows</td><td>It is downloaded, only while the HUD is on, so the first time takes a while (the HUD says how far it has got). Distant or flat ground is not drawn anyway. The Terrain page shows the download state.</td></tr>
   <tr><td class="k">SimConnect.dll not found at start</td><td>The zip was not extracted whole. <code>SimConnect.dll</code> must be in the same folder as <code>Birdie.exe</code>.</td></tr>
   <tr><td class="k">"Windows protected your PC"</td><td>Birdie is not code-signed. Click "More info", then "Run anyway".</td></tr>
   <tr><td class="k">Settings open in the browser</td><td>No WebView2 runtime (Windows 10 may lack it). Everything works the same; install the Microsoft Edge WebView2 runtime for Birdie's own window.</td></tr>
   <tr><td class="k">Runway outline off sideways or along</td><td>16:10 screens and the eye point of some aircraft are still being checked. Please open an issue with a screenshot, the aircraft, your screen size and the log.</td></tr>
-  <tr><td class="k">Radio altitude not 0 on the ground</td><td>Stand still and take the reading (chapter 8).</td></tr>
-  <tr><td class="k">HUD lags in turns</td><td>Add display latency (chapter 8), 10–20 ms at a time.</td></tr>
+  <tr><td class="k">Radio altitude not 0 on the ground</td><td>Stand still and take the reading (chapter 9).</td></tr>
+  <tr><td class="k">HUD lags in turns</td><td>Add display latency (chapter 9), 10–20 ms at a time.</td></tr>
   <tr><td class="k">No bird in the toolbar</td><td>Restart the sim after installing the in-sim panel; check its state and folder under Fine tuning → In-sim panel.</td></tr>
   <tr><td class="k">A hotkey does nothing</td><td>Another program may use it; pick another one on the Hotkeys page.</td></tr>
 </table>
 <h3>Log and reports</h3>
 <p>The log is <code>%APPDATA%\Birdie\birdie.log</code> (Fine tuning → Log opens it); the settings are <code>settings.json</code> in the same folder. Report problems at https://github.com/Xuan0876/birdie-hud/issues: what you did, what you saw, with the log, the aircraft and your screen size; a screenshot helps.</p>
 
-<h2><span class="n">11</span>Upgrade, uninstall, license</h2>
+<h2><span class="n">12</span>Upgrade, uninstall, license</h2>
 <h3>Upgrade</h3>
 <p>Quit Birdie (right-click the tray bird → Quit), copy the new files over the old folder and start it again. Your settings stay; an installed in-sim panel updates itself (restart the sim to see it).</p>
 <h3>Uninstall</h3>
 <ol>
   <li>If you installed the in-sim panel: Fine tuning → In-sim panel → Remove.</li>
   <li>Turn off "Start with Windows" if you turned it on, then quit Birdie.</li>
+  <li>If you used the terrain: clear the cache and delete the packages on the Terrain page (or delete <code>%LOCALAPPDATA%\Birdie\dem</code>, or the folder you moved it to).</li>
   <li>Delete Birdie's folder. Settings and the log are in <code>%APPDATA%\Birdie</code>; delete that too if you like.</li>
 </ol>
 <h3>Known limitations</h3>
 <ul>
   <li>The HUD is drawn a little after the sim frame it belongs to; display latency hides most of it.</li>
   <li>No VR. The sim's own screenshots and game-capture recordings do not include the HUD; record with display capture.</li>
-  <li>ChasePlane is needed for now; the sim's own camera comes later. No flight director yet.</li>
+  <li>ChasePlane is the default; the MSFS native camera is still beta and may break with a sim update. No flight director yet.</li>
 </ul>
 <h3>License and credits</h3>
 <p>Birdie is free software under the GNU General Public License, version 3 (GPL-3.0), with no warranty. Source: https://github.com/Xuan0876/birdie-hud. The HUD layout follows the FlyByWire A32NX HUD (GPL-3.0); third-party licenses are in <code>THIRD_PARTY_NOTICES.md</code> and the <code>licenses</code> folder of the release.</p>
+<p>Terrain heights: produced using Copernicus WorldDEM-30 / -90 © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability for any use of the Copernicus WorldDEM-30, and do not endorse Birdie.</p>
 <p>Microsoft Flight Simulator, ChasePlane, FlyByWire, FSLabs, Fenix, Airbus and Boeing are trademarks of their owners. Birdie is not affiliated with or endorsed by any of them.</p>
 <p>Birdie by Naux, built together with Claude Opus 5.5 (Anthropic).</p>
 
