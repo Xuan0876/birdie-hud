@@ -36,6 +36,8 @@ const Pair kStrings[] = {
     {S::WhyNoChasePlane, L"没检测到 ChasePlane", L"ChasePlane not detected"},
     {S::WhyNoCamera, L"读不到 MSFS 镜头", L"No MSFS camera data"},
     {S::FlashCamOriginFmt, L"MSFS 镜头原点已标定（%+.2f m）", L"MSFS camera origin measured (%+.2f m)"},
+    {S::FlashCamOriginNeed, L"MSFS 镜头原点还没标定，跑道框会偏：停稳或暂停几秒即可",
+     L"MSFS camera origin not measured yet, the runway will be off: stand still or pause a few seconds"},
     {S::FlashCamOriginRedo, L"停稳几秒（或暂停），重新标定 MSFS 镜头原点", L"Stand still a few seconds (or pause) to measure the MSFS camera origin again"},
     {S::WhyExternalView, L"外部视角", L"external view"},
     {S::WhyNotForward, L"没在看前方", L"not looking ahead"},

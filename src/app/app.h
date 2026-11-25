@@ -8,6 +8,7 @@
 #include <map>
 #include <filesystem>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -58,7 +59,7 @@ class App {
   void replay_step();
   void redraw();
   bool compute_why();
-  void say(const std::wstring& text);
+  void say(const std::wstring& text, double secs = 2.5);
   void calibrate_ra();
   void clear_ra();
   void store_ra(double ground_reading_ft, bool automatic);
@@ -186,6 +187,7 @@ class App {
   std::wstring why_;
   const char* why_key_ = "starting";  // the same reason for the panel: starting, nosim, wait, nocp, ext, look, ...
   std::deque<double> ra_ground_;  // raw RA while standing still on the ground
+  std::set<std::string> origin_reminded_;  // aircraft already told this run that the MSFS camera origin is not measured
   std::vector<Vec3> origin_samples_;  // MSFS camera origin offsets measured while standing still (apply_msfs_camera)
   std::string ac_title_;          // SimConnect TITLE of the user aircraft
   double t_no_cp_ = -1;           // since when the ChasePlane L-vars read nothing (-1 = they do)

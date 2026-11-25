@@ -1005,6 +1005,11 @@ void App::apply_msfs_camera(SimState& s) {
   sim_.set_camera_world(want);
   const bool frozen = state_ && s.lat == state_->lat && s.lon == state_->lon && s.alt_ft == state_->alt_ft;
   const bool still = frozen || (s.on_ground >= 0.5 && s.gs_kt < 0.3);
+  if (want && !still && !hide_reason(s, show_above_kt()) && origin_reminded_.insert(ac_title_).second) {
+    // the HUD is up with the origin unknown (an air start, not paused): the runway is drawn metres off until then
+    logf("[cam] %s: MSFS camera origin not measured yet, reminded", ac_title_.c_str());
+    say(tr(S::FlashCamOriginNeed), 6.0);
+  }
   if (!want || !still) {
     origin_samples_.clear();
     return;
@@ -1077,9 +1082,9 @@ void App::clear_ra() {
   say(tr(S::FlashRaCleared));
 }
 
-void App::say(const std::wstring& text) {
+void App::say(const std::wstring& text, double secs) {
   flash_ = text;
-  flash_until_ = now_s() + 2.5;
+  flash_until_ = now_s() + secs;
   logf("[set] %s", to_utf8(text).c_str());
   if (panel_.running()) panel_.broadcast(nlohmann::json{{"type", "notice"}, {"text", to_utf8(text)}}.dump());
 }
