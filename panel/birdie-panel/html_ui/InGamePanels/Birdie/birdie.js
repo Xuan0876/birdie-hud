@@ -43,8 +43,8 @@
   var T = {
     zh: {
       sym: '符号', symCount: '{n} / {all} 显示中', fine: '细调', path: '飞行路径', world: '天地', inst: '仪表',
-      size: '大小', bright: '亮度', glide: '下滑角', lead: '显示延迟补偿', tol: '拉平提示容差', ladder: '俯仰刻度间隔',
-      rah: '小鸟下的 RA 从多高开始出现', ra: '无线电高度校准', xw: '侧风模式：仪表带收窄',
+      size: '大小', bright: '亮度', glide: '下滑角', lead: '显示延迟补偿', tol: '“正好”的范围', ladder: '长刻度间隔',
+      rah: '从多高开始出现', symDetail: '符号细节', tintHead: 'HUD 边框与背景色', ra: '无线电高度校准', xw: '侧风模式：仪表带收窄',
       raBtn: '停在地面时，记下现在的读数', raBtnWait: '停稳在地面上才能校准', raClear: '清除', raNone: '这架飞机还没校准；第一次停稳在地面时会自动校准',
       power: '显示 HUD', raNoAc: '连上模拟器后，按机型分别记住', raFmt: '读数减去 {ft} ft', off: '关', auto: '随 Windows 启动', log: '日志', quit: '退出 Birdie',
       quitAsk: '再点一次退出', gIdle: '悬停一个符号，HUD 上那一笔会亮起来', nowOff: '现在关着，点一下打开',
@@ -68,10 +68,9 @@
       animIn: '开场', animOut: '退场', animTime: '时长', a_none: '无', a_fade: '淡入淡出', a_iris: '光圈', a_boot: '开机',
       a_scan: '扫描', a_assemble: '组装', tryIn: '预览开场', tryOut: '预览退场',
       animDesc: '淡入淡出、光圈偏优雅；开机、扫描、组装偏酷炫。预览要在驾驶舱视角下、HUD 能显示时才看得到。',
-      appr: '进近：接地区 · 拉平', tdz: '跑道上标出接地区', tdzRule: '规则', tdzStyle: '显示', t_icao: 'ICAO', t_faa: 'FAA',
-      t_aim: '瞄准点和终点', t_full: '全部标志', t_end: '只标终点', flareG: '拉平提示', flareRa: '从多高开始提示',
+      tdzRule: '规则', tdzStyle: '显示', t_icao: 'ICAO', t_faa: 'FAA',
+      t_aim: '瞄准点和终点', t_full: '全部标志', t_end: '只标终点', flareRa: '从多高开始提示',
       flareHi: '开始拉平的高度', flareLo: '拉平结束的高度', flareEnd: '接地时的航迹角',
-      apprDesc: '标志的位置按跑道长度取 ICAO 附件 14 或 FAA AC 150/5340-1；"终点"是接地区结束的地方（900 m / 3000 ft，最多跑道的三分之一）。拉平提示：+ 正好，++ 还太陡、继续拉。',
       pv: '预览', pvAway: '预览 · HUD 此刻不在屏幕上', pvOffline: '预览', pvDim: '按 {min}% 画，实际 {v}%',
       border: 'HUD 边框', seatL: '机长位', seatR: '副驾位', bdNone: '还没描，HUD 用的是整块合像镜', bdDrawn: '已经描好',
       bdMirrored: '按另一座镜像', bdShortDrawn: '已描', bdShortMirrored: '镜像', bdShortNone: '未设',
@@ -133,8 +132,8 @@
     },
     en: {
       sym: 'Symbols', symCount: '{n} / {all} shown', fine: 'Fine tuning', path: 'Flight path', world: 'Sky & ground', inst: 'Instruments',
-      size: 'Size', bright: 'Bright', glide: 'Glide', lead: 'Display latency', tol: 'Flare cue tolerance', ladder: 'Pitch scale every',
-      rah: 'Radio altitude under the bird from', xw: 'Crosswind mode: narrow tapes',
+      size: 'Size', bright: 'Bright', glide: 'Glide', lead: 'Display latency', tol: 'On-profile band', ladder: 'Long marks every',
+      rah: 'Shows from', symDetail: 'Symbol details', tintHead: 'Border & tint', xw: 'Crosswind mode: narrow tapes',
       ra: 'Radio altitude zero', raBtn: 'Take the reading now (on the ground)', raBtnWait: 'Stand still on the ground to calibrate',
       raClear: 'clear', raNone: 'not set for this aircraft yet; it sets itself the first time you stand still on the ground',
       raNoAc: 'kept per aircraft once the sim is connected', raFmt: 'reading minus {ft} ft', off: 'off', auto: 'Start with Windows',
@@ -159,10 +158,9 @@
       animIn: 'Opening', animOut: 'Closing', animTime: 'Duration', a_none: 'None', a_fade: 'Fade', a_iris: 'Iris', a_boot: 'Power-on',
       a_scan: 'Scan', a_assemble: 'Assemble', tryIn: 'Play the opening', tryOut: 'Play the closing',
       animDesc: 'Fade and iris are quiet; power-on, scan and assemble are showy. Previews play on the HUD, from the cockpit view.',
-      appr: 'Approach: touchdown zone · flare', tdz: 'Touchdown zone on the runway', tdzRule: 'Rule', tdzStyle: 'Show', t_icao: 'ICAO', t_faa: 'FAA',
-      t_aim: 'Aiming point + end', t_full: 'All marks', t_end: 'End only', flareG: 'Flare cue', flareRa: 'Cue from',
+      tdzRule: 'Rule', tdzStyle: 'Show', t_icao: 'ICAO', t_faa: 'FAA',
+      t_aim: 'Aiming point + end', t_full: 'All marks', t_end: 'End only', flareRa: 'Cue from',
       flareHi: 'Flare starts at', flareLo: 'Flare ends at', flareEnd: 'Path angle at touchdown',
-      apprDesc: 'Marks placed by runway length after ICAO Annex 14 or FAA AC 150/5340-1; the end is where the touchdown zone ends (900 m / 3000 ft, at most a third of the runway). Flare cue: + on profile, ++ still steep, keep pulling.',
       nowOff: 'now off, tap to show', pv: 'Preview', pvAway: 'Preview · the HUD is not on the screen now', pvOffline: 'Preview',
       pvDim: 'drawn at {min}%, set to {v}%',
       border: 'HUD border', seatL: 'left seat', seatR: 'right seat', bdNone: 'Not traced: the HUD uses its whole combiner', bdDrawn: 'Traced',
@@ -275,9 +273,9 @@
         '<circle class="ic" cx="9" cy="19" r="3.5"/><path class="ic" d="M12.5 19h4"/><text class="t" x="18" y="22" font-size="11">3.0</text>'],
       ['vsn', 'show_vs_num', '升降速度', 'Vert. speed', '小鸟左边：升降速度（ft/min）', 'Left of the bird: vertical speed (ft/min)',
         '<text class="t" x="1" y="22" font-size="11">700</text><path class="ic" d="M19 19h3.5"/><circle class="ic" cx="26" cy="19" r="3.5"/>'],
-      ['bra', 'show_bird_ra', 'RA 高度', 'Radio alt', '小鸟下方：无线电高度，低于细调里设的高度才出现', 'Under the bird: radio altitude, below the height set in Fine tuning',
+      ['bra', 'show_bird_ra', 'RA 高度', 'Radio alt', '小鸟下方：无线电高度，低于下面设的高度才出现', 'Under the bird: radio altitude, below the height set further down',
         '<circle class="ic" cx="17" cy="10" r="3.5"/><path class="ic" d="M13.5 10H7M20.5 10H27"/><text class="t" x="17" y="27" font-size="11" text-anchor="middle">320</text>'],
-      ['flare', 'show_flare', '拉平提示', 'Flare cue', '50 ft 以下在小鸟上方闪：+ 正好，++ 还太陡、继续拉', 'Below 50 ft above the bird: + on profile, ++ still steep, keep pulling',
+      ['flare', 'show_flare', '拉平提示', 'Flare cue', '接近地面时在小鸟上方闪：+ 正好，++ 还太陡、继续拉', 'Near the ground, above the bird: + on profile, ++ still steep, keep pulling',
         '<path class="ic" d="M5 17h9M9.5 12.5v9M20 17h9M24.5 12.5v9"/>'],
       ['glide', 'show_glide', '下滑线', 'Glide line', '理想下滑角在地面上的那条线', 'The line your ideal glide path makes on the ground',
         '<path class="ic" d="M3 13h28" opacity=".5"/><path class="ic" d="M3 21h6M12 21h6M21 21h6"/>']],
@@ -289,7 +287,9 @@
       ['minor', 'show_pitch_minor', '俯仰刻度', 'Pitch marks', '每 2.5° 的短刻度', 'Short marks every 2.5°',
         '<path class="ic" d="M12 9h10M12 17h10M12 25h10"/>'],
       ['runway', 'show_runway', '跑道', 'Runway', '选中的跑道轮廓', 'Outline of the runway you are lined up with',
-        '<path class="ic" d="M14 7h6l7 21H7z"/>']],
+        '<path class="ic" d="M14 7h6l7 21H7z"/>'],
+      ['tdz', 'show_tdz', '接地区', 'Touchdown', '跑道上的瞄准点和接地区终点，按 ICAO 或 FAA 的规则', 'Aiming point and end of the touchdown zone, after ICAO or FAA',
+        '<path class="ic" d="M14 7h6l7 21H7z" opacity=".45"/><path class="ic" d="M10.5 20.5h4M19.5 20.5h4" stroke-width="2.6"/><path class="ic" d="M9 25h3M22 25h3"/>']],
     inst: [
       ['att', 'show_att', '机头', 'Aircraft', '机头指向：读俯仰和坡度', 'Where the nose points',
         '<path class="ic" d="M3 17h9v4M31 17h-9v4"/><path class="ic" d="M15 15h4v4h-4z"/>'],
@@ -823,7 +823,8 @@
   }
 
   // ---------------------------------------------------------------- pages
-  var HOLD_PAGES = [5, 6, 7, 8], holding = false;
+  var HOLD_PAGES = [1, 5, 6, 7], holding = false;
+  var PARENT = { 1: 0, 2: 0, 3: 5, 4: 2, 5: 0, 6: 5, 7: 5, 9: 2, 10: 0, 11: 2 };  // Esc and the back arrows
   function hold() {  // the HUD stays on (even on the ground) while a look page is open; renewed every 8 s
     var on = HOLD_PAGES.indexOf(S.page) >= 0 && S.online;
     if (on || holding) act('hold', on);
@@ -894,6 +895,17 @@
       var leave = function () { focusOn(null); };
       b.addEventListener('mouseenter', enter); b.addEventListener('focus', enter);
       b.addEventListener('mouseleave', leave); b.addEventListener('blur', leave);
+    });
+  }
+  function details() {
+    each(document.querySelectorAll('.sd'), function (box) {
+      var g = glyph(box.getAttribute('data-sym'));
+      box.querySelector('.sd-i').innerHTML = g[6];
+      box.querySelector('.sd-n').textContent = S.lang === 'zh' ? g[2] : g[3];
+      if (box.getAttribute('data-wired')) return;
+      box.setAttribute('data-wired', '1');
+      box.addEventListener('mouseenter', function () { focusOn(g[0]); });
+      box.addEventListener('mouseleave', function () { focusOn(null); });
     });
   }
   var descTimer = null;
@@ -1186,15 +1198,14 @@
   }
   function summary() {  // the lines that say what a page is set to
     var s = S.set, l = L();
-    $('n-fine').textContent = s.lead_ms + ' ms · ±' + s.flare_tol_deg.toFixed(1) + '° · ' + (s.ladder_step_deg ? s.ladder_step_deg + '°' : l.off);
+    $('n-fine').textContent = (l['cs_' + s.camera_source] || s.camera_source || '') + ' · ' + l.autoNav + ' ' +
+      (s.auto_show || s.auto_hide ? [s.auto_show ? Math.round(s.auto_show_kt) + ' kt' : '', s.auto_hide ? Math.round(s.auto_hide_ft) + ' ft' : ''].filter(Boolean).join(' / ') : l.off);
     $('n-auto').textContent = (s.auto_show ? Math.round(s.auto_show_kt) + ' kt' : l.off) + ' · ' + (s.auto_hide ? Math.round(s.auto_hide_ft) + ' ft' : l.off);
     cls($('as-more'), 'idle', !s.auto_show);
     cls($('ah-more'), 'idle', !s.auto_hide);
-    cls($('tdz-more'), 'idle', !s.show_tdz);
     $('n-hudlook').textContent = l['pre_' + s.hud_preset] || s.hud_preset;
     $('n-cam').textContent = l['cs_' + s.camera_source] || s.camera_source || '';
     $('n-anim').textContent = (l['a_' + s.anim_in] || '') + ' · ' + (l['a_' + s.anim_out] || '');
-    $('n-appr').textContent = (s.show_tdz ? l['t_' + s.tdz_rule] : l.off) + ' · ' + Math.round(s.flare_hi_ft) + '/' + Math.round(s.flare_lo_ft) + ' ft';
     var moved = 0;
     LAYOUT.forEach(function (g) { g[1].forEach(function (r) { if (Math.abs(s[r[0]] - (r.length > 2 ? 1 : 0)) > 1e-6) moved++; }); });
     $('n-layout').textContent = moved ? '' + moved : '—';
@@ -1281,6 +1292,7 @@
       var g = glyph(el.getAttribute('data-k')), on = !!s[g[1]];
       cls(el, 'sel', on); cls(el, 'unsel', !on);
     });
+    each(document.querySelectorAll('.sd'), function (box) { cls(box, 'off', !s[glyph(box.getAttribute('data-sym'))[1]]); });
     Object.keys(SCALES).forEach(paintScale);
     Object.keys(PICKS).forEach(function (id) {
       var ps = $('p-' + id).querySelectorAll('.pick'), cur = S.set[PICKS[id].key], found = false;
@@ -1301,7 +1313,7 @@
     camPaint(st.camera || {}, l);
     cls($('auto'), 'sel', !!st.autostart);
     $('auto').setAttribute('aria-pressed', st.autostart ? 'true' : 'false');
-    each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'], ['tdz', 'show_tdz'],
+    each([['xw', 'xwind_mode'], ['as', 'auto_show'], ['ah', 'auto_hide'], ['accel', 'show_accel'],
           ['tr-on', 'terrain_on'], ['tint-on', 'tint_on'], ['tr-stream', 'terrain_stream'], ['tr-notes', 'terrain_notes']], function (t) {
       cls($(t[0]), 'sel', !!s[t[1]]);
       $(t[0]).setAttribute('aria-pressed', s[t[1]] ? 'true' : 'false');
@@ -1481,6 +1493,7 @@
   function words() {
     var l = L(), map = { 't-sym': 'sym', 't-sym2': 'sym', 't-fine': 'fine', 't-fine2': 'fine', 't-path': 'path', 't-world': 'world', 't-inst': 'inst',
       't-size': 'size', 't-bright': 'bright', 't-glide': 'glide', 't-lead': 'lead', 't-tol': 'tol', 't-ladder': 'ladder', 't-rah': 'rah', 't-ra': 'ra',
+      't-symDetail': 'symDetail', 't-overall': 'g_all',
       't-xw': 'xw', 'ra-clear': 'raClear', 't-auto': 'auto', 't-log': 'log', 't-quit': 'quit', 't-pk': 'power',
       't-border': 'border', 't-border2': 'border', 'bd-desc': 'bdDesc', 't-look': 'look', 't-autonav': 'autoNav', 't-autonav2': 'autoNav',
       't-as': 'as', 't-ah': 'ah', 't-ahft': 'ahFt', 't-ahs': 'ahS', 'auto-desc': 'autoDesc',
@@ -1488,11 +1501,11 @@
       't-animnav': 'animNav', 't-animnav2': 'animNav', 't-elements': 'elements', 't-finish': 'finish', 't-fpv': 'fpv',
       't-spdS': 'spdS', 't-altS': 'altS', 't-vsS': 'vsS', 't-ladderS': 'ladderS', 't-hdgS': 'hdgS', 't-rollS': 'rollS',
       't-accel': 'accel', 't-color': 'color', 't-font': 'font', 't-outline': 'outline', 't-glow': 'glow',
-      't-tint': 'tint', 't-tintOn': 'tintOn', 't-tintColor': 'tintColor', 't-tintEdge': 'tintEdge', 't-tintHue': 'tintHue', 't-tintAlpha': 'tintAlpha',
+      't-tint': 'tintHead', 't-tintOn': 'tintOn', 't-tintColor': 'tintColor', 't-tintEdge': 'tintEdge', 't-tintHue': 'tintHue', 't-tintAlpha': 'tintAlpha',
       'lay-reset': 'layReset', 'lay-desc': 'layDesc', 't-animIn': 'animIn', 't-animOut': 'animOut', 't-animTime': 'animTime',
-      'try-in': 'tryIn', 'try-out': 'tryOut', 'anim-desc': 'animDesc', 't-appr': 'appr', 't-appr2': 'appr', 't-tdz': 'tdz',
-      't-tdzRule': 'tdzRule', 't-tdzStyle': 'tdzStyle', 't-flareG': 'flareG', 't-flareRa': 'flareRa', 't-flareHi': 'flareHi',
-      't-flareLo': 'flareLo', 't-flareEnd': 'flareEnd', 'appr-desc': 'apprDesc', 't-keys': 'keys', 't-keys2': 'keys',
+      'try-in': 'tryIn', 'try-out': 'tryOut', 'anim-desc': 'animDesc',
+      't-tdzRule': 'tdzRule', 't-tdzStyle': 'tdzStyle', 't-flareRa': 'flareRa', 't-flareHi': 'flareHi',
+      't-flareLo': 'flareLo', 't-flareEnd': 'flareEnd', 't-keys': 'keys', 't-keys2': 'keys',
       'hk-reset': 'hkReset', 'hk-desc': 'hkDesc', 't-terrain': 'terrain', 't-terrain2': 'terrain', 't-trOn': 'trOn',
       't-trLook': 'trLook', 't-trStrength': 'trStrength', 't-trStream': 'trStream', 't-trRes': 'trRes', 't-trCap': 'trCap',
       't-trNotes': 'trNotes', 't-trDisk': 'trDisk', 't-trPkg': 'trPkg',
@@ -1500,7 +1513,7 @@
     layoutWords(); keysWords();
     for (var id in map) $(id).textContent = l[map[id]];
     document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : 'en';
-    glyphs(); picks(); describe(null, true);
+    glyphs(); details(); picks(); describe(null, true);
     voiceKey = ''; pvShown = null; paint();
   }
 
@@ -1516,7 +1529,6 @@
     press($('as'), function () { set('auto_show', !S.set.auto_show); paint(); });
     press($('ah'), function () { set('auto_hide', !S.set.auto_hide); paint(); });
     press($('accel'), function () { set('show_accel', !S.set.show_accel); paint(); });
-    press($('tdz'), function () { set('show_tdz', !S.set.show_tdz); paint(); });
     press($('tint-on'), function () { set('tint_on', !S.set.tint_on); paint(); });
     press($('tr-on'), function () { set('terrain_on', !S.set.terrain_on); paint(); });
     press($('tr-stream'), function () { set('terrain_stream', !S.set.terrain_stream); paint(); });
@@ -1587,7 +1599,7 @@
     document.addEventListener('keydown', function (e) {
       if (onListenKey(e)) return;  // recording a hotkey: every key is for it
       if (COUI || e.keyCode !== 27) return;  // Esc: back, then away (Birdie's own window only; the sim keeps its keys)
-      if (S.page === 10) go(0); else if (S.page >= 3) go(2); else if (S.page) go(0); else host({ host: 'close' });
+      if (S.page) go(PARENT[S.page] || 0); else host({ host: 'close' });
     });
     if (PEEK) {  // a click anywhere but the switch opens the window; the strip lifts its line in each time it shows
       $('peekcard').addEventListener('click', function (e) {

@@ -106,21 +106,40 @@
                   <div class="gh"><span id="t-world"></span><i></i></div><div class="gl" id="g-world"></div>
                   <div class="gh"><span id="t-inst"></span><i></i></div><div class="gl" id="g-inst"></div>
                   <div class="gdesc" id="gdesc"></div>
+                  <!-- each symbol's own settings under its name: dimmed (still adjustable) while that symbol is off -->
+                  <div class="gh sd-gh"><span id="t-symDetail"></span><i></i></div>
+                  <div class="sd" data-sym="tdz">
+                    <div class="sd-h"><svg viewBox="0 0 34 34" class="sd-i"></svg><span class="sd-n"></span></div>
+                    <div class="row"><div class="k" id="t-tdzRule"></div><div class="picks" id="p-tdzRule"></div></div>
+                    <div class="row"><div class="k" id="t-tdzStyle"></div><div class="picks" id="p-tdzStyle"></div></div>
+                  </div>
+                  <div class="sd" data-sym="flare">
+                    <div class="sd-h"><svg viewBox="0 0 34 34" class="sd-i"></svg><span class="sd-n"></span></div>
+                    <div class="row"><div class="k" id="t-tol"></div><div class="picks" id="p-tol"></div></div>
+                    <div class="row"><div class="k" id="t-flareRa"></div><div class="picks" id="p-flareRa"></div></div>
+                    <div class="row"><div class="k" id="t-flareHi"></div><div class="picks" id="p-flareHi"></div></div>
+                    <div class="row"><div class="k" id="t-flareLo"></div><div class="picks" id="p-flareLo"></div></div>
+                    <div class="row"><div class="k" id="t-flareEnd"></div><div class="picks" id="p-flareEnd"></div></div>
+                  </div>
+                  <div class="sd" data-sym="minor">
+                    <div class="sd-h"><svg viewBox="0 0 34 34" class="sd-i"></svg><span class="sd-n"></span></div>
+                    <div class="row"><div class="k" id="t-ladder"></div><div class="picks" id="p-ladder"></div></div>
+                  </div>
+                  <div class="sd" data-sym="bra">
+                    <div class="sd-h"><svg viewBox="0 0 34 34" class="sd-i"></svg><span class="sd-n"></span></div>
+                    <div class="row"><div class="k" id="t-rah"></div><div class="picks" id="p-rah"></div></div>
+                  </div>
+                  <!-- not one symbol's: the whole HUD drawn a little ahead -->
+                  <div class="gh"><span id="t-overall"></span><i></i></div>
+                  <div class="row"><div class="k" id="t-lead"></div><div class="picks" id="p-lead"></div></div>
                 </div>
               </div>
 
-              <!-- fine tuning -->
+              <!-- fine tuning: Birdie itself, not the HUD's drawing -->
               <div class="page p2" id="page2">
                 <div class="back" role="button" tabindex="0" data-go="0">‹<span class="serif" id="t-fine2"></span></div>
                 <div class="dimmable">
-                  <div class="row"><div class="k" id="t-lead"></div><div class="picks" id="p-lead"></div></div>
-                  <div class="row"><div class="k" id="t-tol"></div><div class="picks" id="p-tol"></div></div>
-                  <div class="row"><div class="k" id="t-ladder"></div><div class="picks" id="p-ladder"></div></div>
-                  <div class="row"><div class="k" id="t-rah"></div><div class="picks" id="p-rah"></div></div>
-                  <div class="toggle" id="xw" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-xw"></span><span class="hk num" id="xw-hk"></span></div>
-                  <div class="nav inner" role="button" tabindex="0" data-go="4"><b id="t-autonav"></b><span id="n-auto"></span><span class="ar">›</span></div>
-                  <div class="nav inner" role="button" tabindex="0" data-go="8"><b id="t-appr"></b><span id="n-appr"></span><span class="ar">›</span></div>
-                  <div class="nav inner" role="button" tabindex="0" data-go="3"><b id="t-border"></b><span id="n-border"></span><span class="ar">›</span></div>
+                  <div class="nav inner first-inner" role="button" tabindex="0" data-go="4"><b id="t-autonav"></b><span id="n-auto"></span><span class="ar">›</span></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="9"><b id="t-keys"></b><span id="n-keys"></span><span class="ar">›</span></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="11"><b id="t-camnav"></b><span id="n-cam"></span><span class="ar">›</span></div>
                   <div class="hair"></div>
@@ -148,7 +167,7 @@
 
               <!-- HUD border: traced on the screen, kept per aircraft and seat -->
               <div class="page p3" id="page3">
-                <div class="back" role="button" tabindex="0" data-go="2">‹<span class="serif" id="t-border2"></span></div>
+                <div class="back" role="button" tabindex="0" data-go="5">‹<span class="serif" id="t-border2"></span></div>
                 <div class="dimmable">
                   <div class="bd">
                     <div class="bd-who" id="bd-who"></div>
@@ -168,6 +187,7 @@
                 <div class="dimmable">
                   <div class="row"><div class="k" id="t-preset"></div><div class="picks" id="p-preset"></div></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="6"><b id="t-layout"></b><span id="n-layout"></span><span class="ar">›</span></div>
+                  <div class="toggle" id="xw" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-xw"></span><span class="hk num" id="xw-hk"></span></div>
                   <div class="nav inner" role="button" tabindex="0" data-go="7"><b id="t-animnav"></b><span id="n-anim"></span><span class="ar">›</span></div>
                   <div class="gh"><span id="t-elements"></span><i></i></div>
                   <div class="row"><div class="k" id="t-fpv"></div><div class="picks" id="p-fpv"></div></div>
@@ -183,8 +203,9 @@
                   <div class="row"><div class="k" id="t-font"></div><div class="picks" id="p-font"></div></div>
                   <div class="scale" id="s-outline"></div>
                   <div class="scale" id="s-glow"></div>
-                  <!-- background tint: a see-through colour over the HUD's whole field -->
+                  <!-- where the HUD is drawn: the border traced on the screen, and the tint that fills it -->
                   <div class="gh"><span id="t-tint"></span><i></i></div>
+                  <div class="nav inner" role="button" tabindex="0" data-go="3"><b id="t-border"></b><span id="n-border"></span><span class="ar">›</span></div>
                   <div class="toggle" id="tint-on" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span><span id="t-tintOn"></span></div>
                   <div class="more" id="tint-more">
                     <div class="row"><div class="k" id="t-tintColor"></div><div class="picks swatches" id="p-tintColor"></div></div>
@@ -214,24 +235,6 @@
                   <div class="row"><div class="k" id="t-animTime"></div><div class="picks" id="p-animTime"></div></div>
                   <div class="anim-try"><span class="act" id="try-in" role="button" tabindex="0"></span><span class="act quiet" id="try-out" role="button" tabindex="0"></span></div>
                   <div class="gdesc" id="anim-desc"></div>
-                </div>
-              </div>
-
-              <!-- approach: touchdown zone marks and the flare cue -->
-              <div class="page p8" id="page8">
-                <div class="back" role="button" tabindex="0" data-go="2">‹<span class="serif" id="t-appr2"></span></div>
-                <div class="dimmable">
-                  <div class="toggle" id="tdz" role="button" tabindex="0" aria-pressed="true"><span class="dot"></span><span id="t-tdz"></span></div>
-                  <div class="more" id="tdz-more">
-                    <div class="row"><div class="k" id="t-tdzRule"></div><div class="picks" id="p-tdzRule"></div></div>
-                    <div class="row"><div class="k" id="t-tdzStyle"></div><div class="picks" id="p-tdzStyle"></div></div>
-                  </div>
-                  <div class="gh"><span id="t-flareG"></span><i></i></div>
-                  <div class="row"><div class="k" id="t-flareRa"></div><div class="picks" id="p-flareRa"></div></div>
-                  <div class="row"><div class="k" id="t-flareHi"></div><div class="picks" id="p-flareHi"></div></div>
-                  <div class="row"><div class="k" id="t-flareLo"></div><div class="picks" id="p-flareLo"></div></div>
-                  <div class="row"><div class="k" id="t-flareEnd"></div><div class="picks" id="p-flareEnd"></div></div>
-                  <div class="gdesc" id="appr-desc"></div>
                 </div>
               </div>
 

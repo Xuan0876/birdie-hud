@@ -121,7 +121,6 @@ PANEL_SHOTS = [
     ("panel-symbols", "still&page=1"),
     ("panel-fine", "still&page=2"),
     ("panel-look", "still&page=5&set=tint_on:true"),
-    ("panel-approach", "still&page=8"),
     ("panel-terrain", "still&page=10&set=terrain_on:true", 2090),  # cut in the region list
     ("panel-camera", "still&page=11&set=camera_source:msfs"),
     ("panel-welcome", "still&welcome"),

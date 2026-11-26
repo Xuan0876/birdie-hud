@@ -253,6 +253,17 @@ html.ui-dusk .hud .el.focus { filter: drop-shadow(0 0 6px rgba(242, 180, 138, .9
   transition: opacity .5s cubic-bezier(.22, .61, .36, 1); }
 .gdesc b { display: block; font-weight: 400; color: var(--ink); }
 
+/* symbol details (symbols page): each symbol's own settings under its icon and name; dimmed while it is off */
+.sd-gh { margin-top: .86rem; }
+.sd { padding: .14rem 0 .29rem; transition: opacity .5s cubic-bezier(.22, .61, .36, 1); }
+.sd + .sd { border-top: 1px solid var(--line2); padding-top: .43rem; }
+.sd.off { opacity: .45; }
+.sd-h { display: flex; align-items: center; font-size: .93rem; color: var(--ink); margin-bottom: .36rem; }
+.sd-i { width: 1.43rem; height: 1.43rem; margin-right: .5rem; overflow: visible; color: var(--acc); }
+.sd-i .ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sd-i .t { fill: currentColor; stroke: none; font-family: var(--f-num); font-style: var(--num-style); }
+.sd .row { margin-bottom: .5rem; }
+.nav.inner.first-inner { margin-top: .43rem; }
 .row { margin-bottom: .71rem; }
 .row .k { font-size: .89rem; color: var(--ink2); }
 .picks { display: flex; flex-wrap: wrap; }

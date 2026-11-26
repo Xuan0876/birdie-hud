@@ -870,10 +870,13 @@ Scene build_scene(const Model& model, const SimState& s, double W, double H, dou
       scene.terrain_border = std::make_pair(std::move(*sp), fr.f * std::tan(rad(kBorderFeatherDeg)));
     }
   }
-  if (rp && !rp->empty() && set.show_runway) {
-    B.line(*rp, w, false, true);
+  // the touchdown zone is a symbol of its own (the model makes it only when show_tdz): shown with the outline off too
+  if (rp && !rp->empty()) {
+    if (set.show_runway) B.line(*rp, w, false, true);
     for (const auto& m : geo.tdz_marks) B.line(sh(m), std::max(1.2, 1.8 * sc), false, true);
     for (const auto& m : geo.tdz_end) B.fill(sh(m));
+  }
+  if (rp && !rp->empty() && set.show_runway) {
     if (!rwy_label.empty()) {
       Vec2 bmax = (*rp)[0];
       double cx = 0;

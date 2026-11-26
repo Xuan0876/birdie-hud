@@ -606,6 +606,7 @@ const struct {
     {"show_att", &Settings::show_att},       {"show_speed", &Settings::show_speed},
     {"show_alt", &Settings::show_alt},       {"show_vs", &Settings::show_vs},
     {"show_roll", &Settings::show_roll},     {"show_gs", &Settings::show_gs},
+    {"show_tdz", &Settings::show_tdz},
 };
 
 // The same settings with only one symbol drawn (and what it hangs on: the numbers beside the bird need the bird).
