@@ -117,7 +117,7 @@ def callouts(path, marks):
 
 # the settings window: (name, query) on the preview server; one picture per language
 PANEL_SHOTS = [
-    ("panel-home", "still&why=taxi"),
+    ("panel-home", "still&why=away"),  # the preview shows while the HUD is not on the screen
     ("panel-symbols", "still&page=1"),
     ("panel-fine", "still&page=2"),
     ("panel-look", "still&page=5&set=tint_on:true"),
