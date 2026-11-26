@@ -26,7 +26,6 @@ MSFS 2024 的 HUD 叠加层 · A HUD overlay for Microsoft Flight Simulator 2024
   - 托盘里的小鸟：单击打开设置，右键是菜单。
   - 显示 / 隐藏 HUD：Ctrl+Alt+Insert（设置 → 细调 → 快捷键 里可以改）。
   - 进驾驶舱视角就能看到 HUD；想起飞滑跑时才出现，在 设置 → 细调 → 自动显示 / 隐藏 里打开。
-  - 测试版的 HUD 在高度带上方显示"Birdie 测试版"，正式版没有。
 
 游戏内面板（可选）
   - 装上后，模拟器顶部工具栏里有小鸟，飞行中不用切出去也能调设置。
@@ -87,7 +86,6 @@ Use
   - Show / hide the HUD: Ctrl+Alt+Insert (change it under Settings > Fine tuning > Hotkeys).
   - Use the cockpit view and the HUD is there; to have it wait for the take-off roll, turn that on
     under Settings > Fine tuning > Show / hide by itself.
-  - Test versions show "Birdie beta" above the altitude tape; release versions do not.
 
 In-sim panel (optional)
   - Puts the bird in the sim's top toolbar, to adjust things without leaving the flight.

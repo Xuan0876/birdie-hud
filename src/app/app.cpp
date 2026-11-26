@@ -464,7 +464,7 @@ void App::ingame_action(const std::string& name) {
 }
 
 std::wstring App::watermark() {
-  return std::strchr(version(), '-') ? std::wstring(tr(S::Watermark)) : std::wstring();
+  return BIRDIE_WATERMARK && std::strchr(version(), '-') ? std::wstring(tr(S::Watermark)) : std::wstring();
 }
 
 nlohmann::json App::ingame_status() const {

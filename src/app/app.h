@@ -122,7 +122,7 @@ class App {
   void ingame_update_if_old();                    // at start: an older copy of Birdie's panel is replaced
   void ingame_action(const std::string& name);    // the panel's ingame_* actions
   nlohmann::json ingame_status() const;
-  // "Birdie beta" on the HUD while the version is a pre-release ("0.9.0-beta"), empty for a stable one
+  // "Birdie beta" on the HUD for a pre-release ("0.9.0-beta") built with BIRDIE_WATERMARK (CMake option, off), else empty
   static std::wstring watermark();
   std::optional<std::filesystem::path> pick_folder(const wchar_t* title);  // the Windows folder picker
 

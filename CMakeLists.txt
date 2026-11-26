@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(Birdie VERSION 2.0.0 LANGUAGES C CXX RC)
-set(BIRDIE_VERSION_SUFFIX "-beta")  # "" for a stable release; shown in the app and in the zip name
+set(BIRDIE_VERSION_SUFFIX "-beta.2")  # "" for a stable release; shown in the app and in the zip name
+# "Birdie beta" over the altitude tape (11/26: off from 2.0.0-beta.2 on; the version still says beta)
+option(BIRDIE_WATERMARK "Show the test-build line on the HUD" OFF)
 
 if(NOT WIN32 OR NOT MSVC)
   message(FATAL_ERROR "Birdie builds with MSVC on Windows only (MSFS 2024 is Windows-only).")
@@ -52,7 +54,8 @@ add_library(birdie_core STATIC
 )
 target_include_directories(birdie_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(birdie_core PUBLIC nlohmann_json miniz)
-target_compile_definitions(birdie_core PUBLIC BIRDIE_VERSION="${PROJECT_VERSION}${BIRDIE_VERSION_SUFFIX}")
+target_compile_definitions(birdie_core PUBLIC BIRDIE_VERSION="${PROJECT_VERSION}${BIRDIE_VERSION_SUFFIX}"
+                                              BIRDIE_WATERMARK=$<BOOL:${BIRDIE_WATERMARK}>)
 
 # --- render: Direct2D / DirectComposition overlay + off-screen rendering ----
 add_library(birdie_render STATIC
