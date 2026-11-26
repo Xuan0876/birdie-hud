@@ -66,7 +66,8 @@ def fetch_sources():
 def panel_text():
     """Every character the panel can show: its own words and the strings Birdie sends (RA notes, notices)."""
     text = LATIN + "，。、：；？！（）《》「」【】"
-    for f in [PAGE / "birdie.js", PAGE / "birdie.html", ROOT / "src" / "app" / "i18n.cpp"]:
+    for f in [PAGE / "birdie.js", PAGE / "birdie.html", ROOT / "src" / "app" / "i18n.cpp",
+              ROOT / "src" / "app" / "app.cpp", ROOT / "src" / "terrain" / "store.cpp"]:  # region names
         text += f.read_text(encoding="utf-8")
     # \uXXXX escapes in the JS
     text += "".join(chr(int(h, 16)) for h in re.findall(r"\\u([0-9a-fA-F]{4})", text))
