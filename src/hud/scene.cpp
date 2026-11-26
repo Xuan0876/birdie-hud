@@ -334,8 +334,8 @@ void speed_tape(Batch& B, const SimState& s, const HudFilters& filt, const Setti
       B.line(Polyline{{161.0, y1 + sg * 10}, {168.0, y1}, {175.0, y1 + sg * 10}}, w, true);
     }
   }
-  // the A320 HUD shows the ground speed only on the ground (taxi, take-off roll, roll-out), right of the tape
-  if (a320 && set.show_gs && s.on_ground != 0) B.text(178.0, TAPE_MID - 100.0, fmt("GS %.0f", s.gs_kt), 24, kStart, true);
+  // ground speed right of the tape, as the A320 HUD has it on the ground; Birdie keeps it in the air too (user, 11/25)
+  if (a320 && set.show_gs) B.text(178.0, TAPE_MID - 100.0, fmt("GS %.0f", s.gs_kt), 24, kStart, true);
   const double mach = s.mach;
   if (mach >= 0.5)
     B.text(box ? 93.0 : 104.0, box ? TAPE_MID + 60.0 : 730.0 - (TAPE_BOT - bot),

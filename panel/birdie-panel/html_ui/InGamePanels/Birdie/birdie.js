@@ -301,7 +301,7 @@
         '<path class="ic" d="M30 13L8 24"/><path class="ic" d="M6 10v18" opacity=".5"/>'],
       ['roll', 'show_roll', '坡度', 'Bank', '顶上的坡度刻度', 'Bank scale at the top',
         '<path class="ic" d="M4 24a13 13 0 0 1 26 0"/><path class="ic" d="M17 11l-3 5h6z"/>'],
-      ['gs', 'show_gs', '地速与风', 'GS & wind', '风向风速；地速只在地面上显示', 'Wind; the ground speed on the ground only',
+      ['gs', 'show_gs', '地速与风', 'GS & wind', '风向风速和地速', 'Wind and ground speed',
         '<text class="t" x="2" y="15" font-size="11">GS</text><path class="ic" d="M22 28V12M18 16l4-4 4 4"/>']]
   };
   var ALL = [].concat(GLYPHS.path, GLYPHS.world, GLYPHS.inst);
