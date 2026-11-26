@@ -157,6 +157,22 @@ void test_heights() {
   DemFn hilly = [](double, double) -> std::optional<double> { return 3577.2; };
   refine_heights(ap2, none, hilly);
   CHECK(rw2[0].alt_src == kAltAirport && std::abs(rw2[0].alt_m - (3581.7 + (3568.2 - 3585.5))) < 1e-6);
+  // the DEM right at the measured runway's centre but sloping along it (scenery flattened, like KONT 08L):
+  // 5 m over the five points -> the offset is borrowed; 2 m -> still the DEM
+  const double deg_per_m = 1.0 / (111320.0 * std::cos(rad(29.29)));
+  auto sloped = [&](double rise_m) -> DemFn {
+    const double k = rise_m / (0.8 * 4000 * deg_per_m);  // metres per degree of longitude, over -0.4..0.4 of 4000 m
+    return [k](double, double lon) -> std::optional<double> { return 3569.0 + (lon - 90.90) * k; };
+  };
+  for (const double rise : {5.0, 2.0}) {
+    std::vector<Runway> rw3 = rw;
+    std::vector<Runway*> ap4;
+    for (auto& r : rw3) ap4.push_back(&r), r.alt_src = r.anchored ? kAltGround : kAltFacility;
+    CHECK(std::abs(*dem_spread(rw3[2], sloped(rise)) - rise) < 0.05);
+    refine_heights(ap4, none, sloped(rise));
+    const double want = rise > kDemFlatM ? 3581.7 + (3568.2 - 3585.5) : 3569.0 - (3569.0 - 3568.2);
+    CHECK(rw3[0].alt_src == kAltAirport && std::abs(rw3[0].alt_m - want) < 0.05);
+  }
   // remembered for the next flight, only while the facility height is the same
   wchar_t tmp[MAX_PATH];
   GetTempPathW(MAX_PATH, tmp);

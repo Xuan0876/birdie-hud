@@ -78,20 +78,34 @@ size_t RunwayHeights::size() const {
   return n;
 }
 
-std::optional<double> dem_centre(const Runway& r, const DemFn& dem) {
-  if (!dem) return std::nullopt;
-  const double h = rad(r.hdg), rise = std::tan(rad(r.slope));
+namespace {
+// Five DEM heights along the centreline, each taken back to the centre along the slope; sorted. Empty = a gap.
+std::vector<double> dem_line(const Runway& r, const DemFn& dem) {
   std::vector<double> c;
+  if (!dem) return c;
+  const double h = rad(r.hdg), rise = std::tan(rad(r.slope));
   for (const double f : {-0.4, -0.2, 0.0, 0.2, 0.4}) {
     const double along = f * r.length;
     const Vec2 ll = offset_latlon(r.lat, r.lon, along * std::sin(h), along * std::cos(h));
     const auto z = dem(ll.x, ll.y);
-    if (!z) return std::nullopt;
+    if (!z) return {};
     c.push_back(*z - along * rise);
   }
   std::sort(c.begin(), c.end());
-  if (c.back() - c.front() > 30.0) return std::nullopt;
+  return c;
+}
+}  // namespace
+
+std::optional<double> dem_centre(const Runway& r, const DemFn& dem) {
+  const auto c = dem_line(r, dem);
+  if (c.empty() || c.back() - c.front() > 30.0) return std::nullopt;
   return c[c.size() / 2];
+}
+
+std::optional<double> dem_spread(const Runway& r, const DemFn& dem) {
+  const auto c = dem_line(r, dem);
+  if (c.empty()) return std::nullopt;
+  return c.back() - c.front();
 }
 
 std::vector<std::string> refine_heights(const std::vector<Runway*>& airport, const RunwayHeights& saved,
@@ -113,10 +127,15 @@ std::vector<std::string> refine_heights(const std::vector<Runway*>& airport, con
   const Runway* ref = nullptr;
   for (const Runway* r : airport)
     if (r->alt_src >= kAltSaved && (!ref || r->alt_src > ref->alt_src)) ref = r;
-  // how well the DEM matches this scenery where it has been measured (third-party airports flatten the ground)
+  // How well the DEM matches this scenery where it has been measured. Many airports are flattened to the facility
+  // height while the DEM keeps the real ground (KONT 08L falls 4 m along its length, KSEA 26 m): there the DEM can be
+  // right at the measured runway's centre and metres off at the next one (KONT 08R: 2.6 m). So the DEM is trusted
+  // only when it is also flat along the measured runway (tools/runway_height_check, 11/25: 8 runway pairs at 4
+  // airports, all within 1.9 m; a 2 m limit would drop ZULS 10R at 2.1 m).
   std::optional<double> dem_err;
   if (ref)
-    if (const auto d = dem_centre(*ref, dem)) dem_err = *d - ref->alt_m;
+    if (const auto d = dem_centre(*ref, dem))
+      if (const auto sp = dem_spread(*ref, dem); sp && *sp <= kDemFlatM) dem_err = *d - ref->alt_m;
   for (Runway* r : airport) {
     if (r->anchored || r->alt_src >= kAltSaved) continue;
     const auto d = dem_centre(*r, dem);

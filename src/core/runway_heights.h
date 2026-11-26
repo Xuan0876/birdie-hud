@@ -6,8 +6,8 @@
 // measures the real surface from the ground under the aircraft (anchor_from_ground). Until then, best first:
 //   ground    measured now (anchor_from_ground)
 //   saved     measured on an earlier flight, remembered in runway_heights.json (while the facility height is unchanged)
-//   airport   another runway of the airport was measured: the DEM where it agrees with that measurement there, else
-//             the same offset from the facility height
+//   airport   another runway of the airport was measured: the DEM where it agrees with that measurement there and
+//             is flat along it (within kDemFlatM), else the same offset from the facility height
 //   dem       the terrain heights (Copernicus, terrain/), along the centreline, when those tiles are on disk
 //   facility  as MSFS gives it
 #pragma once
@@ -53,6 +53,10 @@ using DemFn = std::function<std::optional<double>(double lat, double lon)>;
 // the slope, the median. nullopt when any of them is missing or they spread over more than 30 m (not a runway the
 // DEM sees as flat ground).
 std::optional<double> dem_centre(const Runway& r, const DemFn& dem);
+// How far those five points spread (highest - lowest), nullopt when any is missing.
+std::optional<double> dem_spread(const Runway& r, const DemFn& dem);
+// A measured runway whose DEM spreads more than this is on flattened scenery: the DEM is not used for the others.
+constexpr double kDemFlatM = 3.0;
 
 // Improves the ends of ONE airport that are not measured yet (alt_src < kAltSaved stays open to better sources).
 // Returns, for the log, one line per end whose height source changed.
