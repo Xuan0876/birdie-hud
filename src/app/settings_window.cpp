@@ -1,5 +1,6 @@
 // Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
 #include "app/settings_window.h"
+#include "app/platform.h"
 
 #include <dwmapi.h>
 #include <shellscalingapi.h>
@@ -166,18 +167,21 @@ struct SettingsWindow::Impl {
   void place_peek() {
     const POINT c = {(anchor.left + anchor.right) / 2, (anchor.top + anchor.bottom) / 2};
     HMONITOR mon = MonitorFromPoint(c, MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi = {sizeof(mi)};
-    GetMonitorInfoW(mon, &mi);
-    const RECT& wa = mi.rcWork;
+    const RECT wa = usable_area(mon);  // the taskbar's edge is kept clear even when it hides itself
     UINT dx = 96, dy = 96;
     GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dx, &dy);
     const double k = dx / 96.0;
     const int w = static_cast<int>(std::lround(css_w * k)), hh = static_cast<int>(std::lround(css_h * k));
     const int gap = static_cast<int>(std::lround(10 * k));
     int x = c.x - w / 2, y;
+    const bool side = anchor.right <= wa.left + 2 || anchor.left >= wa.right - 2;  // taskbar on the left / right
     if (anchor.top >= wa.bottom - 2) y = wa.bottom - gap - hh;  // taskbar at the bottom (the usual)
     else if (anchor.bottom <= wa.top + 2) y = wa.top + gap;      // at the top
-    else y = c.y - hh / 2;                                        // left / right: beside it
+    else if (side) y = c.y - hh / 2;                              // left / right: beside it
+    else {  // an icon in the overflow flyout: above it (below if no room), never over the mouse
+      y = anchor.top - gap - hh;
+      if (y < wa.top) y = anchor.bottom + gap;
+    }
     if (anchor.right <= wa.left + 2) x = wa.left + gap;
     else if (anchor.left >= wa.right - 2) x = wa.right - gap - w;
     x = std::clamp<int>(x, wa.left + gap, std::max<int>(wa.left, wa.right - gap - w));
@@ -189,9 +193,7 @@ struct SettingsWindow::Impl {
   void place(int x, int y) {
     const double k = scale();
     const int w = static_cast<int>(std::lround(css_w * k)), hh = static_cast<int>(std::lround(css_h * k));
-    MONITORINFO mi = {sizeof(mi)};
-    GetMonitorInfoW(MonitorFromPoint({x + w / 2, y + 10}, MONITOR_DEFAULTTONEAREST), &mi);
-    const RECT& wa = mi.rcWork;
+    const RECT wa = usable_area(MonitorFromPoint({x + w / 2, y + 10}, MONITOR_DEFAULTTONEAREST));
     const int h2 = std::min<int>(hh, wa.bottom - wa.top);
     x = std::clamp<int>(x, wa.left, std::max<int>(wa.left, wa.right - w));
     y = std::clamp<int>(y, wa.top, std::max<int>(wa.top, wa.bottom - h2));

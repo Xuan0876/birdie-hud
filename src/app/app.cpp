@@ -38,7 +38,19 @@ namespace {
 constexpr UINT WM_TRAY = WM_APP + 1;
 constexpr UINT WM_BORDER_END = WM_APP + 2;  // wp = save: ends the border editor outside the overlay's own message
 constexpr UINT kTrayId = 1;
-constexpr UINT_PTR kTimerPeek = 1, kTimerPeekRelease = 2;
+constexpr UINT_PTR kTimerPeek = 1, kTimerPeekRelease = 2, kTimerPeekDelay = 3;
+// The peek waits this long after Windows reports the mouse resting on the icon (~0.4 s), so passing over the tray
+// does not bring it up.
+constexpr UINT kPeekDelayMs = 600;
+
+bool cursor_on_tray_icon(HWND h) {
+  POINT pt;
+  NOTIFYICONIDENTIFIER id = {sizeof(id)};
+  id.hWnd = h;
+  id.uID = kTrayId;
+  RECT icon{};
+  return GetCursorPos(&pt) && SUCCEEDED(Shell_NotifyIconGetRect(&id, &icon)) && PtInRect(&icon, pt);
+}
 
 // The border editor's Enter / Esc; the panel's hotkeys (app/hotkeys.h) are kHkAction + their index.
 enum Hotkey { kHkEditSave = 8, kHkEditCancel = 9, kHkAction = 100 };
@@ -219,14 +231,19 @@ LRESULT App::on_message(HWND h, UINT m, WPARAM wp, LPARAM lp) {
           open_panel();
           break;
         case NIN_POPUPOPEN:  // the mouse rests on the icon (NOTIFYICON_VERSION_4, no standard tooltip)
-          show_peek();
+          SetTimer(h, kTimerPeekDelay, kPeekDelayMs, nullptr);
           break;
         case NIN_POPUPCLOSE:  // left the icon: peek_tick decides (the mouse may be on its way into the strip)
+          KillTimer(h, kTimerPeekDelay);
           break;
       }
       return 0;
     case WM_TIMER:
       if (wp == kTimerPeek) peek_tick();
+      else if (wp == kTimerPeekDelay) {
+        KillTimer(h, kTimerPeekDelay);
+        if (cursor_on_tray_icon(h)) show_peek();
+      }
       else if (wp == kTimerPeekRelease) {
         KillTimer(h, kTimerPeekRelease);
         peek_.release();
@@ -300,8 +317,16 @@ void App::show_menu() {
 
   POINT pt;
   GetCursorPos(&pt);
+  // Kept off the taskbar: a self-hiding one is not taken out of the work area, so Windows would put the menu's
+  // bottom under it.
+  HMONITOR mon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+  const RECT u = usable_area(mon);
+  pt.x = std::clamp<LONG>(pt.x, u.left, u.right - 1);
+  pt.y = std::clamp<LONG>(pt.y, u.top, u.bottom - 1);
+  TPMPARAMS tp = {sizeof(tp)};
+  const bool bar = taskbar_rect(mon, tp.rcExclude);
   SetForegroundWindow(hwnd_);  // so the menu closes when clicking elsewhere
-  TrackPopupMenuEx(m, TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, hwnd_, nullptr);
+  TrackPopupMenuEx(m, TPM_RIGHTBUTTON | TPM_BOTTOMALIGN | (bar ? TPM_VERTICAL : 0), pt.x, pt.y, hwnd_, bar ? &tp : nullptr);
   PostMessageW(hwnd_, WM_NULL, 0, 0);
   DestroyMenu(m);
 }
@@ -516,6 +541,7 @@ void App::show_peek() {
 }
 
 void App::hide_peek() {
+  KillTimer(hwnd_, kTimerPeekDelay);
   KillTimer(hwnd_, kTimerPeek);
   peek_.close();
   SetTimer(hwnd_, kTimerPeekRelease, 60000, nullptr);  // a minute without hovering: let the browser go

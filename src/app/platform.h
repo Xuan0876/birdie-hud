@@ -37,6 +37,12 @@ HWND find_msfs_window();
 // Client area in physical screen pixels.
 bool client_rect_screen(HWND h, RECT& out);
 
+// The taskbar's rectangle when it is on this monitor (where it shows, also while it hides itself), else false.
+bool taskbar_rect(HMONITOR mon, RECT& out);
+// The monitor's area the taskbar leaves free. With a self-hiding taskbar the system's work area is the whole monitor
+// and the taskbar slides over whatever sits at that edge, so it is taken off here as well. Physical pixels.
+RECT usable_area(HMONITOR mon);
+
 // Monotonic seconds.
 double now_s();
 

@@ -1,10 +1,12 @@
 // Birdie — HUD overlay for MSFS 2024. GPL-3.0-only.
 #include "app/platform.h"
 
+#include <shellapi.h>
 #include <shlobj.h>
 
 #include <share.h>
 
+#include <algorithm>
 #include <cstdarg>
 #include <cstdio>
 #include <fstream>
@@ -189,6 +191,31 @@ double now_s() {
   LARGE_INTEGER c;
   QueryPerformanceCounter(&c);
   return c.QuadPart / freq;
+}
+
+bool taskbar_rect(HMONITOR mon, RECT& out) {
+  APPBARDATA ab = {sizeof(ab)};
+  if (!SHAppBarMessage(ABM_GETTASKBARPOS, &ab)) return false;
+  if (MonitorFromRect(&ab.rc, MONITOR_DEFAULTTONULL) != mon) return false;
+  out = ab.rc;
+  return true;
+}
+
+RECT usable_area(HMONITOR mon) {
+  MONITORINFO mi = {sizeof(mi)};
+  GetMonitorInfoW(mon, &mi);
+  RECT r = mi.rcWork, tb;
+  if (!taskbar_rect(mon, tb)) return r;
+  const RECT& m = mi.rcMonitor;
+  const int w = tb.right - tb.left, h = tb.bottom - tb.top;
+  if (w >= h) {  // along the top or bottom
+    if (tb.bottom >= m.bottom - 1) r.bottom = std::min(r.bottom, tb.top);
+    else if (tb.top <= m.top + 1) r.top = std::max(r.top, tb.bottom);
+  } else {
+    if (tb.left <= m.left + 1) r.left = std::max(r.left, tb.right);
+    else if (tb.right >= m.right - 1) r.right = std::min(r.right, tb.left);
+  }
+  return r;
 }
 
 }  // namespace birdie::app
