@@ -68,8 +68,8 @@ struct Settings {
   std::map<std::string, std::string> hotkeys = default_hotkeys();
   // Showing and hiding by itself. On the ground the HUD waits until the ground speed passes auto_show_kt (the
   // take-off roll); up high it hides once the radio altitude has stayed above auto_hide_ft for auto_hide_s, and comes
-  // back as soon as it drops below.
-  bool auto_show = true;
+  // back as soon as it drops below. Both off by default (11/26): the HUD is there from the start, in the cockpit view.
+  bool auto_show = false;
   double auto_show_kt = 40.0;
   bool auto_hide = false;
   double auto_hide_ft = 2500.0;

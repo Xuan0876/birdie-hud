@@ -73,7 +73,7 @@
 <h3>In the sim</h3>
 <ol>
   <li>Start MSFS 2024 and ChasePlane (not needed with the MSFS native camera). Leave Birdie running; it connects by itself when the sim starts.</li>
-  <li>Use the cockpit view. On the ground the HUD stands by and shows once the take-off roll passes 40 kt. To see it at once, press <kbd>Ctrl+Alt+Insert</kbd>.</li>
+  <li>Use the cockpit view and the HUD is there. If not, press <kbd>Ctrl+Alt+Insert</kbd>.</li>
 </ol>
 
 <h2><span class="n">3</span>The HUD</h2>
@@ -137,7 +137,7 @@
 <table>
   <tr><th>Status</th><th>Why</th><th>What to do</th></tr>
   <tr><td class="k">HUD on</td><td>Shown; next to it the runway and glide angle.</td><td></td></tr>
-  <tr><td class="k">HUD standing by</td><td>On the ground, below 40 kt.</td><td>It shows on the take-off roll; or change it under Show / hide by itself.</td></tr>
+  <tr><td class="k">HUD standing by</td><td>"Show once the roll passes" is on and you are on the ground below that speed.</td><td>It shows on the take-off roll; or turn it off under Show / hide by itself.</td></tr>
   <tr><td class="k">HUD hidden</td><td>You are looking aside.</td><td>Look ahead.</td></tr>
   <tr><td class="k">HUD not shown</td><td>Outside view.</td><td>Go back to the cockpit view.</td></tr>
   <tr><td class="k">HUD paused</td><td>MSFS is not in front, or the sim is paused / the data stopped.</td><td>Switch back to the sim / unpause.</td></tr>
@@ -150,7 +150,7 @@
 <h3>Show / hide by itself</h3>
 <p>Under Fine tuning → Show / hide by itself:</p>
 <ul>
-  <li><b>Show once the roll passes</b> (on, 40 kt): on the ground the HUD waits until the take-off roll passes this speed. 20–80 kt.</li>
+  <li><b>Show once the roll passes</b> (off; 40 kt when on): on the ground the HUD waits until the take-off roll passes this speed. 20–80 kt.</li>
   <li><b>Hide when high</b> (off): hides once the radio altitude has stayed above the set height (2,500 ft) for the set time (30 s); comes back as soon as it drops below.</li>
 </ul>
 
@@ -314,7 +314,7 @@
 <h2><span class="n">11</span>Troubleshooting</h2>
 <table>
   <tr><th>What you see</th><th>Cause and fix</th></tr>
-  <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: not in the cockpit view, on the ground below 40 kt, or the HUD was turned off by its hotkey.</td></tr>
+  <tr><td class="k">No HUD at all</td><td>Read the status line on the settings home page (chapter 5). Most often: not in the cockpit view, the HUD turned off by its hotkey, or showing by itself on and still below its speed on the ground.</td></tr>
   <tr><td class="k">"ChasePlane not detected"</td><td>Make sure ChasePlane runs and use its cockpit view. Without ChasePlane, switch to the MSFS native camera under Fine tuning → Camera source.</td></tr>
   <tr><td class="k">Runway outline off with the MSFS native camera</td><td>The camera origin is not measured yet, or measured wrong. Stand still on the ground a few seconds, or pause in the air; if it is still off, press "Measure again" under Camera source.</td></tr>
   <tr><td class="k">"The eye position reads wrong, no tracing for now"</td><td>As above: measure the camera origin again, then trace the border.</td></tr>

@@ -43,8 +43,8 @@ run `Birdie.exe`. The `README.txt` inside covers install, use, upgrade and unins
 ## Using it
 
 - The bird in the tray: click for the settings, right-click for the menu.
-- **Ctrl+Alt+Insert** shows / hides the HUD (changeable in the settings). On the ground it waits until the take-off
-  roll passes 40 kt; it can also hide itself at cruise altitude (*Fine tuning → Show / hide by itself*).
+- **Ctrl+Alt+Insert** shows / hides the HUD (changeable in the settings). It shows from the start in the cockpit view;
+  it can also wait for the take-off roll or hide itself at cruise altitude (*Fine tuning → Show / hide by itself*).
 - Every setting lives in one page: a tap on a symbol turns it on or off, three scales (size, brightness, glide angle)
   and a folded "fine tuning". The same page opens on the desktop (Birdie's own window, WebView2) and, optionally,
   **in the sim** from the toolbar: *Fine tuning → In-sim panel → Install* writes the package to your Community

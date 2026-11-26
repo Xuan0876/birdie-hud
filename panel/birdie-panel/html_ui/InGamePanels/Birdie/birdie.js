@@ -20,7 +20,7 @@
            language: '', show_bird: true, show_fpa_num: true, show_vs_num: true, show_flare: true, show_glide: true,
            show_horizon: true, show_hdg: true, show_pitch_minor: true, show_runway: true, show_att: true, show_speed: true,
            show_alt: true, show_vs: true, show_roll: true, show_gs: true, show_bird_ra: true, bird_ra_below_ft: 2500, xwind_mode: false,
-           ui_style: 'tool', camera_source: 'chaseplane', auto_show: true, auto_show_kt: 40, auto_hide: false, auto_hide_ft: 2500, auto_hide_s: 30,
+           ui_style: 'tool', camera_source: 'chaseplane', auto_show: false, auto_show_kt: 40, auto_hide: false, auto_hide_ft: 2500, auto_hide_s: 30,
            // the HUD's look (core/settings.h): layout, element styles, finish, animations, approach marks
            lay_spread: 1, spd_dx: 0, spd_dy: 0, spd_len: 1, spd_size: 1, alt_dx: 0, alt_dy: 0, alt_len: 1, alt_size: 1,
            vs_dx: 0, vs_dy: 0, vs_size: 1, wind_dx: 0, wind_dy: 0, wind_size: 1, roll_dy: 0, roll_size: 1, att_size: 1,
