@@ -323,6 +323,7 @@
   function applyLook() {
     var k = look();
     each(STYLES, function (x) { cls(document.documentElement, 'ui-' + x, x === k); });
+    if ($('gdesc').innerHTML) fitDesc();  // each look has its own type
     try { window.localStorage && localStorage.setItem('birdie.look', k); } catch (e) { /* no storage */ }
   }
   function fmt(s, o) { return s.replace(/\{(\w+)\}/g, function (_, k) { return o[k]; }); }
@@ -909,15 +910,28 @@
     });
   }
   var descTimer = null;
+  function descHtml(k, off) {
+    var l = L(), g = k && glyph(k);
+    if (!g) return l.gIdle;
+    return '<b>' + (S.lang === 'zh' ? g[2] : g[3]) + '</b>' + (S.lang === 'zh' ? g[4] : g[5]) + (off ? (S.lang === 'zh' ? '。' : '. ') + l.nowOff : '');
+  }
+  // One height for every text the box can say (the longest, "now off" included), so hovering does not make the page jump.
+  // Measured again when the words, the look or the fonts change.
+  function fitDesc() {
+    var box = $('gdesc'), keep = box.innerHTML, h = 0;
+    box.style.height = 'auto';
+    [null].concat(ALL.map(function (g) { return g[0]; })).forEach(function (k) {
+      box.innerHTML = descHtml(k, !!k);
+      h = Math.max(h, box.offsetHeight);
+    });
+    box.innerHTML = keep;
+    var rem = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 14;
+    if (h) box.style.height = (h / rem).toFixed(3) + 'rem';  // the panel scales its type with its width (fit)
+  }
   function describe(k, now) {
     var box = $('gdesc');
     var put = function () {
-      var l = L();
-      if (!k) box.innerHTML = l.gIdle;
-      else {
-        var g = glyph(k), on = S.set[g[1]];
-        box.innerHTML = '<b>' + (S.lang === 'zh' ? g[2] : g[3]) + '</b>' + (S.lang === 'zh' ? g[4] : g[5]) + (on ? '' : (S.lang === 'zh' ? '。' : '. ') + l.nowOff);
-      }
+      box.innerHTML = descHtml(k, k && !S.set[glyph(k)[1]]);
       box.style.opacity = 1;
     };
     clearTimeout(descTimer);
@@ -1513,7 +1527,7 @@
     layoutWords(); keysWords();
     for (var id in map) $(id).textContent = l[map[id]];
     document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : 'en';
-    glyphs(); details(); picks(); describe(null, true);
+    glyphs(); details(); picks(); describe(null, true); fitDesc();
     voiceKey = ''; pvShown = null; paint();
   }
 
@@ -1659,8 +1673,10 @@
     fit();
     window.addEventListener('resize', fit);
     if (COUI) setInterval(fit, 500);  // the sim resizes panels without a resize event
-    window.addEventListener('load', fitPanel);
-    setTimeout(fitPanel, 300);  // fonts arrive late
+    var settle = function () { fitDesc(); fitPanel(); };
+    window.addEventListener('load', settle);
+    setTimeout(settle, 300);  // fonts arrive late
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(settle);
     connect();
   }
 
