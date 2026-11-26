@@ -654,6 +654,7 @@ nlohmann::json App::panel_status() const {
   st["lang"] = language() == Lang::kZh ? "zh" : "en";
   st["autostart"] = autostart_enabled();
   st["version"] = version();
+  st["watermark"] = !watermark().empty();  // the panel's preview draws it only when the HUD does
   st["border"] = border_status();
   st["ingame"] = ingame_status();
   st["terrain"] = terrain_status();

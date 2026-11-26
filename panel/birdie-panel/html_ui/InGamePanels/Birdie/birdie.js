@@ -646,9 +646,8 @@
     if (st === 'ring') extra = '<circle class="solid" cx="' + x + '" cy="' + f1(y) + '" r="' + f1(0.16 * r) + '"/>';
     return { d: d, extra: extra, r: r, cr: cr, wing: wing, tail: tail };
   }
-  function watermarkSvg(s) {  // test builds (version with a suffix): over the altitude tape, as the program draws it
-    var v = S.st && S.st.version ? String(S.st.version) : '';
-    if (v.indexOf('-') < 0) return '';
+  function watermarkSvg(s) {  // only when Birdie draws it on the HUD too (status.watermark), over the altitude tape
+    if (!(S.st && S.st.watermark)) return '';
     return TX(1095, f1(tapeSpan(s.alt_len)[0] - 18), S.lang === 'zh' ? 'Birdie 测试版' : 'Birdie beta', 22);
   }
 
@@ -853,6 +852,7 @@
       try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
     }
     $('panel').scrollLeft = 0;
+    $('scroll').scrollTop = 0;  // a new page starts at its top, under the preview
     setTimeout(function () { $('panel').scrollLeft = 0; }, 0);
   }
   function fitPanel() {

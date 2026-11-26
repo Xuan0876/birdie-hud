@@ -74,6 +74,15 @@ html.web #birdie { background: var(--back); }
 html.web .pocket { width: 352px; margin: 9vh auto 4vh; background: var(--bg); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
 html.host #birdie { overflow-x: hidden; overflow-y: auto; }  /* taller than the screen: the window stops at the work area */
 .pocket { position: relative; }
+/* Birdie's window and the sim's panel: the preview stays at the top and only the pages under it scroll, so the HUD
+   being adjusted stays in sight (11/26). A column the height of the frame; flex, not sticky (Coherent GT). */
+html.host #birdie, html.coui #birdie { overflow: hidden; display: flex; flex-direction: column; }
+html.host .pocket, html.coui .pocket { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html.host .pvwrap, html.coui .pvwrap, html.host .peekcard, html.coui .peekcard { flex: none; }
+html.host .scroll, html.coui .scroll { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; }
+.scroll::-webkit-scrollbar { width: 6px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--rail); }
+.scroll::-webkit-scrollbar-track { background: transparent; }
 
 [role="button"] { cursor: pointer; outline: none; }
 [role="button"]:focus-visible { outline: 1px solid var(--acc); outline-offset: .2rem; }
@@ -98,7 +107,7 @@ html.host .page { padding-top: 1.86rem; }
 
 /* ---------------------------------------------------------------- the peek: hovering the tray icon, a narrow card (236 px) */
 .peekcard { display: none; }
-html.peek .grip, html.peek .x, html.peek .pvwrap, html.peek .panel { display: none; }
+html.peek .grip, html.peek .x, html.peek .pvwrap, html.peek .panel, html.peek .scroll { display: none; }
 html.peek .peekcard { display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden;
   padding: 1.29rem 1.43rem 1.14rem; cursor: pointer; }
 .peekcard:before { content: ""; position: absolute; left: -30%; top: -4.3rem; width: 160%; height: 12rem; pointer-events: none;
